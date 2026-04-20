@@ -40,6 +40,8 @@ class DataPreprocessor:
             df[numeric_cols] = num_imputer.fit_transform(df[numeric_cols])
 
         if categorical_cols:
+            for col in categorical_cols:
+                df[col] = df[col].astype(str).replace("nan", pd.NA)
             cat_imputer = SimpleImputer(strategy="most_frequent")
             df[categorical_cols] = cat_imputer.fit_transform(df[categorical_cols])
 

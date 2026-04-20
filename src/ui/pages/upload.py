@@ -19,13 +19,24 @@ def render():
             try:
                 if uploaded_file.name.endswith(".csv"):
                     df = pd.read_csv(uploaded_file)
+                    selected_sheet = None
                 else:
-                    df = pd.read_excel(uploaded_file)
+                    excel_file = pd.ExcelFile(uploaded_file)
+                    sheet_names = excel_file.sheet_names
+                    if len(sheet_names) > 1:
+                        selected_sheet = st.selectbox(
+                            "El archivo tiene varias pestañas. ¿Cuál quieres usar?",
+                            options=sheet_names,
+                        )
+                    else:
+                        selected_sheet = sheet_names[0]
+                    df = excel_file.parse(selected_sheet)
 
                 ingestor.validate(df)
                 st.session_state["raw_df"] = df
                 st.session_state["file_name"] = uploaded_file.name
-                st.success(f"Cargado **{uploaded_file.name}**: {df.shape[0]} filas, {df.shape[1]} columnas")
+                label = f"{uploaded_file.name} — pestaña '{selected_sheet}'" if selected_sheet else uploaded_file.name
+                st.success(f"Cargado **{label}**: {df.shape[0]} filas, {df.shape[1]} columnas")
                 render_data_preview(df)
             except ValueError as e:
                 st.error(str(e))

@@ -1,5 +1,10 @@
 # Archetype Suite
 
+## Documentación (Obsidian)
+Notas en: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Documentición codigo/archetypeSuite/`
+Actualizar cuando cambien: nodos del pipeline, PipelineState, algoritmos de clustering, modelos LLM, prompts, páginas UI.
+No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
+
 ## Estado del Proyecto (Feb 19, 2026)
 - UI probada con datos reales por primera vez — pipeline funciona end-to-end
 - UI y prompts traducidos completamente al español
