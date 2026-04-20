@@ -5,11 +5,12 @@ Notas en: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Documentició
 Actualizar cuando cambien: nodos del pipeline, PipelineState, algoritmos de clustering, modelos LLM, prompts, páginas UI.
 No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 
-## Estado del Proyecto (Feb 19, 2026)
-- UI probada con datos reales por primera vez — pipeline funciona end-to-end
-- UI y prompts traducidos completamente al español
+## Estado del Proyecto (Apr 20, 2026)
+- UI probada con datos reales — pipeline funciona end-to-end
+- UI y prompts completamente en español
 - Contexto de dataset añadido (campo opcional en la página de carga)
-- Tests: 33/33 (pendiente re-verificar tras cambios de hoy)
+- Soporte Excel multi-pestaña: selectbox automático si hay más de una pestaña
+- Tests: 40/40
 
 ## Como ejecutar
 - **Activar venv:** `source .venv/bin/activate`
@@ -23,30 +24,12 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 - interpret usa x-ai/grok-4.1-fast via OpenRouter (modelo narrativo separado)
 - Loop de refinamiento limitado a 2 iteraciones max
 - UI Streamlit con 5 páginas (en español): Cargar Datos, Perfil de Datos, Ejecutar Pipeline, Resultados, Explorar
-- Clustering: KMeans, DBSCAN, AgglomerativeClustering, GaussianMixture
+- Clustering: KMeans, AgglomerativeClustering (DBSCAN y GaussianMixture eliminados)
 
-## Cambios realizados Feb 19, 2026
-1. **Modelo narrativo separado**: `interpret_node` usa `x-ai/grok-4.1-fast` en vez de Claude Sonnet
-   - `src/config/settings.py`: nuevo campo `llm_narrative_model`
-   - `src/llm/provider.py`: nueva función `get_narrative_llm()`
-   - `src/agents/nodes/interpret_node.py`: usa `get_narrative_llm()`
-
-2. **Fix parsing LLM**: Claude y Grok devuelven JSON envuelto en markdown ```json ... ```
-   - `src/llm/provider.py`: función `extract_json()` que limpia el markdown
-   - Los 4 nodos LLM usan `extract_json()` antes de `json.loads()`
-
-3. **Fix Grok archetypes**: Grok metía "summary" como elemento del array archetypes
-   - `src/agents/nodes/interpret_node.py`: filtra elementos no-dict del array antes de parsear
-
-4. **UI en español**: todas las páginas y componentes traducidos
-   - `src/ui/app.py`, todas las páginas en `src/ui/pages/`, todos los componentes en `src/ui/components/`
-
-5. **Contexto de dataset**: campo opcional que el usuario llena al cargar datos
-   - `src/models/state.py`: nuevo campo `dataset_context: Optional[str]`
-   - `src/ui/pages/upload.py`: textarea con placeholder descriptivo
-   - `src/ui/pages/pipeline.py`: pasa `dataset_context` al estado inicial
-   - `src/llm/prompts.py`: todos los prompts traducidos al español con bloque `{context}`
-   - Los 4 nodos LLM leen y pasan el contexto al prompt
+## Notas técnicas de ingesta y preprocesamiento
+- `ingest.py`: validación mínima 2 filas (antes 10) — soporta Excels con pestañas pequeñas
+- `preprocessor.py`: columnas categóricas se convierten a `str` antes de imputar — fix para Excels con tipos mixtos (int + str en la misma columna)
+- `upload.py`: usa `pd.ExcelFile` para leer pestañas; si hay más de una muestra `selectbox`
 
 ## Notas tecnicas
 - Python 3.9 - se usa `typing.Dict`, `typing.List`, `typing.Optional` en vez de `dict | None` syntax
