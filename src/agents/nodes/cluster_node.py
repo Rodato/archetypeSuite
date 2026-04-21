@@ -2,10 +2,11 @@ import pandas as pd
 
 from src.clustering.executor import ClusteringExecutor
 from src.clustering.registry import AlgorithmRegistry
+from src.config.constants import AVAILABLE_ALGORITHMS
 from src.models.state import PipelineState
 
 
-ALLOWED_ALGORITHMS = {"KMeans", "AgglomerativeClustering"}
+ALLOWED_ALGORITHMS = set(AVAILABLE_ALGORITHMS)
 
 
 def cluster_node(state: PipelineState) -> dict:
