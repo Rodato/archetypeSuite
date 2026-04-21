@@ -49,8 +49,8 @@ class TestDataIngestor:
 
     def test_validate_too_few_rows(self):
         ingestor = DataIngestor()
-        with pytest.raises(ValueError, match="at least 10 rows"):
-            ingestor.validate(pd.DataFrame({"a": range(5), "b": range(5)}))
+        with pytest.raises(ValueError, match="at least 2 rows"):
+            ingestor.validate(pd.DataFrame({"a": range(1), "b": range(1)}))
 
     def test_validate_success(self, sample_df):
         ingestor = DataIngestor()

@@ -1,10 +1,43 @@
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+
+from src.ui.quality import silhouette_to_quality
+
+PLOTLY_TEMPLATE = "plotly_dark"
+BRAND_PALETTE = ["#6366F1", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"]
+
+
+def _apply_brand_layout(fig):
+    fig.update_layout(
+        template=PLOTLY_TEMPLATE,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        colorway=BRAND_PALETTE,
+        font=dict(family="sans-serif", size=12, color="#E5E7EB"),
+        margin=dict(l=40, r=20, t=40, b=40),
+    )
+    return fig
+
+
+def render_quality_card(metrics: dict):
+    sil = metrics.get("silhouette_score")
+    quality = silhouette_to_quality(sil)
+
+    st.markdown(
+        f"<div class='quality-hero'>"
+        f"<div class='emoji'>{quality['emoji']}</div>"
+        f"<div>"
+        f"<div class='label'>Calidad del análisis</div>"
+        f"<div class='value'>{quality['label']}</div>"
+        f"<div class='desc'>{quality['description']}</div>"
+        f"</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def render_metrics_summary(metrics: dict):
@@ -28,16 +61,41 @@ def render_metrics_summary(metrics: dict):
         st.plotly_chart(fig, use_container_width=True)
 
 
+def render_cluster_sizes(metrics: dict, label_map: dict[int, str] | None = None):
+    sizes = metrics.get("cluster_sizes", {})
+    if not sizes:
+        return
+    keys = list(sizes.keys())
+    labels = [
+        (label_map or {}).get(int(k), f"Arquetipo {k}") for k in keys
+    ]
+    fig = px.bar(
+        x=labels,
+        y=list(sizes.values()),
+        labels={"x": "", "y": "Personas"},
+    )
+    fig.update_traces(marker_color="#6366F1")
+    _apply_brand_layout(fig)
+    fig.update_layout(showlegend=False, height=300, title=None)
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def render_scatter_2d(scatter_df: pd.DataFrame):
     fig = px.scatter(
         scatter_df,
         x="PC1",
         y="PC2",
         color="Arquetipo",
-        title="Clusters en 2D (proyección PCA)",
         hover_data=["Cluster"],
     )
-    fig.update_layout(height=600)
+    fig.update_traces(marker=dict(size=10, opacity=0.85, line=dict(width=0)))
+    _apply_brand_layout(fig)
+    fig.update_layout(
+        height=550,
+        xaxis_title="Eje 1",
+        yaxis_title="Eje 2",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -55,7 +113,6 @@ def render_radar_chart(
             val = profile.get(col, {}).get("mean", 0) or 0
             all_means[col].append(val)
 
-    # Normalize per column for radar display
     for col in numeric_cols:
         vals = all_means[col]
         min_v, max_v = min(vals), max(vals)
@@ -63,7 +120,7 @@ def render_radar_chart(
         all_means[col] = [(v - min_v) / rng for v in vals]
 
     for idx, cluster_id in enumerate(sorted(cluster_profiles.keys(), key=lambda x: int(x))):
-        label = label_map.get(int(cluster_id), f"Cluster {cluster_id}")
+        label = label_map.get(int(cluster_id), f"Arquetipo {cluster_id}")
         values = [all_means[col][idx] for col in numeric_cols]
         fig.add_trace(go.Scatterpolar(
             r=values + [values[0]],
@@ -72,10 +129,15 @@ def render_radar_chart(
             name=label,
         ))
 
+    _apply_brand_layout(fig)
     fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
-        title="Radar de Arquetipos (normalizado)",
-        height=600,
+        polar=dict(
+            radialaxis=dict(visible=True, range=[0, 1], gridcolor="rgba(255,255,255,0.1)"),
+            angularaxis=dict(gridcolor="rgba(255,255,255,0.1)"),
+            bgcolor="rgba(0,0,0,0)",
+        ),
+        height=550,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -86,7 +148,7 @@ def render_box_plots(df: pd.DataFrame, column: str, label_map: dict[int, str]):
         x="Arquetipo",
         y=column,
         color="Arquetipo",
-        title=f"Distribución de {column} por Arquetipo",
     )
-    fig.update_layout(height=500)
+    _apply_brand_layout(fig)
+    fig.update_layout(height=450, title=None, showlegend=False)
     st.plotly_chart(fig, use_container_width=True)

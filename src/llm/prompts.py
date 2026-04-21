@@ -106,15 +106,12 @@ si se necesita refinamiento.
 {metrics}
 
 ## Número de Clusters: {n_clusters}
-## Algoritmo Utilizado: {algorithm}
+## Algoritmo Utilizado: {algorithm} (fijo — no puede cambiarse)
 ## Parámetros: {params}
 ## Iteración de Refinamiento: {refinement_count} de 2
 
 ## Contexto del Dataset
 {context}
-
-## Algoritmos Disponibles (SOLO puedes sugerir estos)
-{algorithm_descriptions}
 
 ## Umbrales de Calidad
 - Silhouette Score: > 0.25 es aceptable, > 0.5 es bueno
@@ -122,17 +119,21 @@ si se necesita refinamiento.
 - Davies-Bouldin: menor es mejor (< 2.0 aceptable)
 
 ## Instrucciones
-Decide si el clustering debe refinarse. Considera:
+Decide si el clustering debe refinarse. El algoritmo y el número de clusters \
+están fijos — solo puedes sugerir ajustes de hiperparámetros secundarios \
+(ej. `init`, `n_init`, `max_iter`). No sugieras cambios de `n_clusters` \
+ni de algoritmo.
+
+Considera:
 - ¿Son aceptables las métricas de calidad?
-- ¿Un algoritmo o parámetros diferentes mejorarían los resultados?
+- ¿Ajustar hiperparámetros mejoraría los resultados?
 - ¿Es probable que un refinamiento adicional ayude?
-- Si sugieres un algoritmo, DEBE ser uno de los disponibles arriba.
 
 Responde SOLO con un objeto JSON:
 {{
   "should_refine": true/false,
   "reason": "Explicación",
-  "suggested_algorithm": "NombreAlgoritmo o null",
+  "suggested_algorithm": null,
   "suggested_params": {{...}} o null
 }}
 """
