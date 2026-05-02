@@ -49,13 +49,27 @@ def render():
     if not st.button("Generar arquetipos", type="primary"):
         return
 
+    selected_columns = st.session_state.get("selected_columns")
+    static_filter_result = st.session_state.get("static_filter_result")
+    column_recommendation = st.session_state.get("column_recommendation")
+    filtered_df = st.session_state.get("filtered_df")
+
+    if selected_columns and filtered_df is not None:
+        df_for_pipeline = filtered_df[selected_columns]
+    else:
+        df_for_pipeline = df
+
     initial_state = {
-        "raw_data": df.to_dict(orient="list"),
+        "raw_data": df_for_pipeline.to_dict(orient="list"),
         "file_name": st.session_state.get("file_name", "desconocido"),
         "dataset_context": context,
         "refinement_count": 0,
         "log_messages": [],
     }
+    if selected_columns and static_filter_result and column_recommendation:
+        initial_state["selected_columns"] = selected_columns
+        initial_state["static_filter_result"] = static_filter_result
+        initial_state["column_recommendation"] = column_recommendation
 
     graph = compile_graph()
 

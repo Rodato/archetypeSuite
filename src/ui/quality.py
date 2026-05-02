@@ -42,6 +42,7 @@ def silhouette_to_quality(score: Optional[float]) -> Dict[str, str]:
 NODE_FRIENDLY_MESSAGES = {
     "ingest": "📥 Cargando tus datos...",
     "profile": "🔍 Entendiendo tus datos...",
+    "column_selection": "🎛️ Aplicando selección de variables...",
     "preprocess": "🧹 Preparando datos...",
     "optimize_k": "📐 Buscando el mejor número de grupos...",
     "select": "🎯 Eligiendo método de análisis...",

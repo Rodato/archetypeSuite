@@ -11,6 +11,12 @@ class PipelineState(TypedDict, total=False):
     # Profiling
     profile: Dict[str, Any]
 
+    # Column selection (static filters + LLM relevance)
+    static_filter_result: Dict[str, Any]
+    column_recommendation: Dict[str, Any]
+    selected_columns: List[str]
+    datetime_columns: List[str]
+
     # Preprocessing
     preprocess_strategy: Dict[str, Any]
     processed_data: Dict[str, list]

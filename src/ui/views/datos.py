@@ -1,10 +1,32 @@
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
+from src.agents.nodes.column_selection_node import suggest_columns
 from src.data.ingest import DataIngestor
 from src.data.profiler import DataProfiler
+from src.ui.components.column_selector import render_column_selector
+from src.ui.components.data_chat import render_data_chat
 from src.ui.components.data_preview import render_data_preview
 from src.ui.components.profile_cards import render_profile_cards
+
+DEMO_DATASET_PATH = Path(__file__).resolve().parents[3] / "sample_data" / "customers.csv"
+DEMO_CONTEXT = (
+    "50 clientes de retail. Queremos entender perfiles de comportamiento de compra "
+    "para diseñar campañas y experiencias diferenciadas."
+)
+
+
+def _load_demo_dataset() -> None:
+    df = pd.read_csv(DEMO_DATASET_PATH)
+    DataIngestor().validate(df)
+    st.session_state["raw_df"] = df
+    st.session_state["file_name"] = DEMO_DATASET_PATH.name
+    st.session_state["dataset_context"] = DEMO_CONTEXT
+    for k in list(st.session_state.keys()):
+        if k.startswith("_column_suggestion::"):
+            del st.session_state[k]
 
 
 def _render_upload_block():
@@ -114,6 +136,14 @@ def render():
     else:
         _render_upload_block()
 
+    if "raw_df" not in st.session_state:
+        if st.button("Probar con datos de ejemplo", type="secondary"):
+            _load_demo_dataset()
+            st.rerun()
+        st.caption(
+            "Si es tu primera vez, usa el dataset de ejemplo para ver el flujo completo."
+        )
+
     st.subheader("Contexto (opcional pero recomendado)")
     context = st.text_area(
         "Cuéntanos qué representa este dataset: qué es cada fila, el dominio, y para qué lo vas a usar. "
@@ -134,6 +164,24 @@ def render():
 
         render_data_preview(df)
 
+        with st.expander("💬 Pregúntale a tus datos"):
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+            cat_cols = [c for c in df.columns if c not in numeric_cols]
+            suggestions = []
+            if cat_cols:
+                suggestions.append(f"¿Cuántos hay por {cat_cols[0]}?")
+            if numeric_cols:
+                suggestions.append(f"Distribución de {numeric_cols[0]}")
+            if numeric_cols and cat_cols:
+                suggestions.append(f"{numeric_cols[0]} promedio por {cat_cols[0]}")
+            render_data_chat(
+                df,
+                context=context,
+                mode="raw",
+                key="step1",
+                suggestions=suggestions,
+            )
+
         if advanced:
             st.divider()
             st.subheader("Estadísticas detalladas")
@@ -151,6 +199,54 @@ def render():
             render_profile_cards(profile)
 
         st.divider()
-        if st.button("Continuar al análisis →", type="primary"):
+        _render_column_selection_section(df, context)
+
+
+def _render_column_selection_section(df: pd.DataFrame, context: str) -> None:
+    """Run static filters + LLM relevance suggestion, let the user confirm."""
+    file_name = st.session_state.get("file_name", "")
+    suggestion_key = f"_column_suggestion::{file_name}::{hash(context) & 0xFFFF}"
+
+    if suggestion_key not in st.session_state:
+        st.markdown(
+            "Antes de generar arquetipos, vamos a quedarnos con las variables más "
+            "relevantes para tu objetivo. Esto evita que columnas como `id`, "
+            "fechas o texto libre contaminen el análisis."
+        )
+        if st.button("Sugerir variables ✨", type="secondary"):
+            with st.spinner("Analizando columnas..."):
+                result = suggest_columns(df, dataset_context=context)
+            st.session_state[suggestion_key] = result
+            st.rerun()
+        return
+
+    suggestion = st.session_state[suggestion_key]
+    static_report = suggestion["static_filter_result"]
+    recommendation = suggestion["column_recommendation"]
+    filtered_df = suggestion["filtered_df"]
+
+    if suggestion.get("llm_error"):
+        st.warning(
+            f"No pudimos llamar al modelo para sugerir variables ({suggestion['llm_error']}). "
+            "Te mostramos la lista de columnas válidas para que elijas tú."
+        )
+
+    user_choice = render_column_selector(
+        static_report=static_report,
+        recommendation=recommendation,
+        available_columns=list(filtered_df.columns),
+    )
+    st.session_state["selected_columns"] = user_choice
+    st.session_state["static_filter_result"] = static_report
+    st.session_state["column_recommendation"] = recommendation
+    st.session_state["filtered_df"] = filtered_df
+
+    cols = st.columns([1, 1])
+    with cols[0]:
+        if st.button("Re-sugerir variables", type="secondary"):
+            st.session_state.pop(suggestion_key, None)
+            st.rerun()
+    with cols[1]:
+        if st.button("Continuar al análisis →", type="primary", disabled=not user_choice):
             st.session_state["_force_page"] = "Analizar"
             st.rerun()

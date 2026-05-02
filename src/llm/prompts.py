@@ -1,3 +1,96 @@
+DATA_QA_PROMPT = """\
+Eres un analista de datos. El usuario te hizo una pregunta en español sobre un \
+dataset. Tu trabajo es elegir UNA operación pandas válida que conteste la pregunta, \
+y describir el resultado esperado en una narrativa breve. NO ejecutes código — \
+sólo devuelve la operación estructurada.
+
+## Modo: {mode}
+{mode_description}
+
+## Contexto del dataset
+{context}
+
+## Columnas disponibles (con tipos y muestras)
+{columns_summary}
+
+## Pregunta del usuario
+{question}
+
+## Operaciones disponibles
+- "describe": estadísticas descriptivas (mean, std, min, max…) de columnas numéricas. `columns` es lista.
+- "value_counts": frecuencia de valores únicos. `columns` debe tener exactamente 1 columna.
+- "groupby_count": cuenta filas por grupo. `groupby` lista de 1-2 columnas.
+- "groupby_agg": agrega `columns[0]` (numérica) usando `agg`, agrupado por `groupby` (lista de 1-2 columnas).
+- "distribution": histograma o boxplot de una columna numérica. `columns` debe tener 1 columna.
+- "correlation": matriz de correlación entre columnas numéricas. `columns` lista de 2+ columnas numéricas.
+- "top_n": top N valores de `columns[0]` ordenados por sí mismos (descendente). Requiere `top_n` (entero).
+- "filter_count": cuenta total de filas (no toma columnas).
+
+## Tipos de gráfico
+- "bar": barras (default para conteos y agregados)
+- "pie": pastel (sólo para distribuciones de pocas categorías)
+- "histogram": histograma (para distribución de numéricas)
+- "box": boxplot (para distribución de numéricas, idealmente agrupada)
+- "scatter": dispersión (para correlación entre 2 numéricas)
+- "table": tabla (default si no aplica visualización)
+- "none": sólo narrativa, sin tabla ni gráfico
+
+## REGLAS DURAS
+- Las columnas en `columns` y `groupby` DEBEN existir EXACTAMENTE como aparecen arriba.
+- No inventes columnas. Si la pregunta no se puede responder con las columnas disponibles, devuelve `operation="filter_count"`, narrativa explicando la limitación, y `chart_type="none"`.
+- La narrativa debe ser 1-2 oraciones EN ESPAÑOL describiendo qué calcula la operación (no el resultado, que aún no conoces).
+
+Responde SOLO con un objeto JSON:
+{{
+  "operation": "<operation>",
+  "columns": ["<col>", ...],
+  "groupby": null o ["<col>", ...],
+  "agg": null o "mean|median|sum|min|max|count",
+  "top_n": null o <entero>,
+  "chart_type": "<chart_type>",
+  "narrative": "Frase breve en español describiendo qué se calculó."
+}}
+"""
+
+COLUMN_RELEVANCE_PROMPT = """\
+Eres un experto en segmentación de clientes y ciencia del comportamiento. Dado un \
+conjunto de datos y el objetivo del usuario, decide qué columnas son MÁS relevantes \
+para construir arquetipos significativos y cuáles deberían quedar fuera.
+
+## Contexto del dataset (objetivo del usuario)
+{context}
+
+## Columnas disponibles (ya filtradas — sin IDs, fechas, ni texto libre)
+{columns_summary}
+
+## Criterios para seleccionar
+- Privilegia variables de COMPORTAMIENTO sobre demografía pura cuando ambas existan.
+- Descarta columnas redundantes (correlación obvia o medidas equivalentes).
+- Descarta columnas que el contexto del usuario sugiere que NO son relevantes para su objetivo.
+- Si dudas entre una columna y otra, marca la menos clara con importancia "low" pero inclúyela.
+- Mantén entre 4 y 10 columnas seleccionadas idealmente. Si hay menos de 4, marca todas como seleccionadas.
+
+## Importancia
+- "high": esencial para diferenciar arquetipos.
+- "medium": aporta separación pero no es crítica.
+- "low": útil sólo si el dataset es pequeño en variables.
+
+## IMPORTANTE
+- Los nombres de columna en `selected_columns` y `excluded_columns` DEBEN ser EXACTAMENTE iguales a los listados arriba (case-sensitive).
+- No inventes nombres.
+
+Responde SOLO con un objeto JSON:
+{{
+  "selected_columns": [
+    {{"name": "<nombre_columna>", "reason": "<por qué es relevante>", "importance": "high|medium|low"}}
+  ],
+  "excluded_columns": [
+    {{"name": "<nombre_columna>", "reason": "<por qué se excluye>"}}
+  ],
+  "summary": "Razonamiento general de la selección (1-2 oraciones)"
+}}
+"""
+
 PREPROCESSING_PROMPT = """\
 Eres un experto en ciencia de datos. Analiza el siguiente perfil de datos y decide \
 la estrategia de preprocesamiento óptima para clustering.

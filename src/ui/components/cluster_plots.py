@@ -152,3 +152,43 @@ def render_box_plots(df: pd.DataFrame, column: str, label_map: dict[int, str]):
     _apply_brand_layout(fig)
     fig.update_layout(height=450, title=None, showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
+
+
+def render_silhouette_curve(k_analysis: dict, optimal_k: int) -> None:
+    """Plot silhouette score vs k with a marker on the chosen k."""
+    if not k_analysis:
+        return
+    sil_scores = k_analysis.get("silhouette_scores")
+    k_values = k_analysis.get("k_range") or k_analysis.get("k_values")
+    if not sil_scores or not k_values:
+        return
+
+    k_list = list(k_values)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=k_list,
+        y=list(sil_scores),
+        mode="lines+markers",
+        line=dict(color="#6366F1", width=3),
+        marker=dict(size=9),
+        name="Silhouette",
+    ))
+
+    if optimal_k in k_list:
+        idx = k_list.index(optimal_k)
+        fig.add_trace(go.Scatter(
+            x=[optimal_k],
+            y=[sil_scores[idx]],
+            mode="markers",
+            marker=dict(size=18, color="#F59E0B", line=dict(color="#fff", width=2)),
+            name=f"k elegido ({optimal_k})",
+        ))
+
+    _apply_brand_layout(fig)
+    fig.update_layout(
+        height=320,
+        xaxis_title="Número de arquetipos (k)",
+        yaxis_title="Calidad de separación",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    st.plotly_chart(fig, use_container_width=True)

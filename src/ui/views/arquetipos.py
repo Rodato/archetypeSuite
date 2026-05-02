@@ -4,6 +4,7 @@ import streamlit as st
 from sklearn.decomposition import PCA
 
 from src.ui.components.archetype_cards import render_archetype_cards
+from src.ui.components.data_chat import render_data_chat
 from src.ui.components.cluster_plots import (
     render_box_plots,
     render_cluster_sizes,
@@ -11,14 +12,30 @@ from src.ui.components.cluster_plots import (
     render_quality_card,
     render_radar_chart,
     render_scatter_2d,
+    render_silhouette_curve,
 )
 from src.ui.export import archetypes_to_csv, build_markdown_report, labels_to_csv
+
+ARCHETYPE_TOOLTIP = (
+    "**Un arquetipo es un patrón de comportamiento.** "
+    "Agrupa a las personas que se parecen entre sí en cómo actúan, "
+    "deciden o consumen — no simplemente por edad, género o región. "
+    "Cada arquetipo te da un retrato narrativo: cómo es esa persona, "
+    "qué la motiva, qué la frena. Sirve para diseñar productos, "
+    "campañas o servicios pensando en grupos reales en vez de en un "
+    "promedio que no representa a nadie."
+)
 
 
 def render():
     advanced = st.session_state.get("advanced_mode", False)
 
-    st.header("3. Arquetipos")
+    header_col, info_col = st.columns([6, 1])
+    with header_col:
+        st.header("3. Arquetipos")
+    with info_col:
+        with st.popover("ℹ️ ¿Qué es esto?"):
+            st.markdown(ARCHETYPE_TOOLTIP)
 
     if "pipeline_result" not in st.session_state:
         st.info(
@@ -42,9 +59,27 @@ def render():
     label_map = {a["cluster_id"]: a["label"] for a in archetypes}
     render_cluster_sizes(metrics, label_map)
 
+    cluster_sizes_raw = metrics.get("cluster_sizes", {})
+    cluster_sizes = {}
+    for k, v in cluster_sizes_raw.items():
+        try:
+            cluster_sizes[int(k)] = int(v)
+        except (TypeError, ValueError):
+            continue
+
+    k_analysis = result.get("k_analysis")
+    optimal_k = result.get("optimal_k") or result.get("n_clusters")
+    if k_analysis and optimal_k:
+        with st.expander(f"¿Por qué {optimal_k} arquetipos?"):
+            st.markdown(
+                "El sistema probó diferentes números de grupos y eligió el que "
+                "produce mejor separación (más alto en la curva)."
+            )
+            render_silhouette_curve(k_analysis, int(optimal_k))
+
     st.divider()
     st.subheader("Tus arquetipos")
-    render_archetype_cards(archetypes)
+    render_archetype_cards(archetypes, cluster_sizes=cluster_sizes)
 
     if archetypes:
         st.subheader("Descargar resultados")
@@ -77,7 +112,9 @@ def render():
         raw_df["Cluster"] = labels
         raw_df["Arquetipo"] = raw_df["Cluster"].map(label_map).fillna("Desconocido")
 
-    tab1, tab2, tab3 = st.tabs(["🗺️ Mapa", "📊 Comparar", "📈 Por variable"])
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🗺️ Mapa", "📊 Comparar", "📈 Por variable", "💬 Conversar",
+    ])
 
     with tab1:
         st.caption(
@@ -119,6 +156,31 @@ def render():
         if numeric_cols:
             selected_col = st.selectbox("Variable", numeric_cols)
             render_box_plots(raw_df, selected_col, label_map)
+
+    with tab4:
+        st.caption(
+            "Pregunta cosas como: '¿qué arquetipo tiene la edad promedio más alta?', "
+            "'compara ingreso entre arquetipos', '¿cuántos hay por género en cada arquetipo?'."
+        )
+        suggestions: list[str] = []
+        if archetypes:
+            sample_archetype = archetypes[0].get("label", f"Arquetipo {archetypes[0].get('cluster_id', 0)}")
+            numeric_in_chat = [
+                c for c in raw_df.select_dtypes(include=np.number).columns.tolist() if c != "Cluster"
+            ]
+            cat_in_chat = [c for c in raw_df.columns if c not in numeric_in_chat and c not in ("Cluster", "Arquetipo")]
+            if numeric_in_chat:
+                suggestions.append(f"{numeric_in_chat[0]} promedio por arquetipo")
+            if cat_in_chat:
+                suggestions.append(f"distribución de {cat_in_chat[0]} en cada arquetipo")
+            suggestions.append(f"¿qué hace único a {sample_archetype}?")
+        render_data_chat(
+            raw_df,
+            context=st.session_state.get("dataset_context", ""),
+            mode="archetypes",
+            key="step3",
+            suggestions=suggestions,
+        )
 
     if advanced:
         st.divider()

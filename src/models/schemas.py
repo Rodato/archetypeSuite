@@ -1,6 +1,23 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
+
+
+class ColumnRecommendation(BaseModel):
+    name: str
+    reason: str = ""
+    importance: Literal["high", "medium", "low"] = "medium"
+
+
+class ColumnExclusion(BaseModel):
+    name: str
+    reason: str = ""
+
+
+class ColumnRelevanceDecision(BaseModel):
+    selected_columns: List[ColumnRecommendation] = Field(default_factory=list)
+    excluded_columns: List[ColumnExclusion] = Field(default_factory=list)
+    summary: str = ""
 
 
 class PreprocessingDecision(BaseModel):
@@ -36,3 +53,27 @@ class RefinementDecision(BaseModel):
     reason: str = ""
     suggested_algorithm: Optional[str] = None
     suggested_params: Optional[dict] = None
+
+
+DataOperation = Literal[
+    "describe",
+    "groupby_count",
+    "groupby_agg",
+    "filter_count",
+    "distribution",
+    "correlation",
+    "top_n",
+    "value_counts",
+]
+ChartType = Literal["bar", "pie", "histogram", "box", "scatter", "table", "none"]
+AggFunc = Literal["mean", "median", "sum", "min", "max", "count"]
+
+
+class DataQuery(BaseModel):
+    operation: DataOperation
+    columns: List[str] = Field(default_factory=list)
+    groupby: Optional[List[str]] = None
+    agg: Optional[AggFunc] = None
+    top_n: Optional[int] = None
+    chart_type: ChartType = "table"
+    narrative: str = ""

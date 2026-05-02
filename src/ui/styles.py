@@ -181,6 +181,16 @@ footer { visibility: hidden; }
     line-height: 1.6;
     margin-bottom: 1rem;
 }
+.archetype-card .prevalence {
+    display: inline-block;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: #A5B4FC;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+}
 
 .step-indicator {
     display: flex;
