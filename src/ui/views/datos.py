@@ -186,11 +186,12 @@ def render():
 
     with cola:
         with st.container(border=True):
-            head_l, head_r = st.columns([3, 2])
+            head_l, head_r = st.columns([5, 1])
             with head_l:
                 st.markdown('<div class="panel-eyebrow">Tipos de variables</div>', unsafe_allow_html=True)
             with head_r:
-                with st.popover("Cambiar archivo", use_container_width=True):
+                with st.popover("⋯", use_container_width=True, help="Cambiar archivo"):
+                    st.markdown("**Cambiar archivo**")
                     if advanced:
                         source = st.radio(
                             "Fuente",
