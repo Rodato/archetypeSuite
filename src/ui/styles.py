@@ -425,6 +425,20 @@ footer { visibility: hidden; }
 .space-lg { height: var(--space-lg); }
 .space-xl { height: var(--space-xl); }
 
+/* Custom scrollbar for st.container(height=...) usado en column_selector,
+   para que el scroll interno se sienta más profesional */
+[data-testid="stVerticalBlockBorderWrapper"]:has([data-testid="stVerticalBlock"]) [data-testid="stVerticalBlock"]::-webkit-scrollbar {
+    width: 6px;
+}
+[data-testid="stVerticalBlock"]::-webkit-scrollbar-track { background: transparent; }
+[data-testid="stVerticalBlock"]::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+}
+[data-testid="stVerticalBlock"]::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
 /* ===================================================================
    WIZARD PROGRESS BAR
    ------------------------------------------------------------------- */

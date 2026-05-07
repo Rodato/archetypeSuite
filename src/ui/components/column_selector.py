@@ -110,25 +110,32 @@ def render_column_selector(
 
     user_choice: List[str] = []
 
-    # Recomendadas — checked por default. El user puede destildar.
+    # Recomendadas — checked por default. El user puede deseleccionar.
     if n_recommended > 0:
         st.markdown(
             "<div style='font-weight:600;font-size:0.825rem;color:var(--text-secondary);"
             "margin:0.7rem 0 0.35rem;text-transform:uppercase;letter-spacing:0.05em'>"
-            "Recomendadas — destílada las que no quieras"
+            "Recomendadas — deselecciona las que no quieras"
             "</div>",
             unsafe_allow_html=True,
         )
-        for col in available_columns:
-            if col not in selected_names:
-                continue
-            if _render_recommended_row(col, suggestion_by_name[col]):
-                user_choice.append(col)
+        # Container con scroll interno: si la lista crece, el card no empuja el resto.
+        scroll_height = 320 if n_recommended > 5 else None
+        if scroll_height:
+            list_container = st.container(height=scroll_height, border=False)
+        else:
+            list_container = st.container()
+        with list_container:
+            for col in available_columns:
+                if col not in selected_names:
+                    continue
+                if _render_recommended_row(col, suggestion_by_name[col]):
+                    user_choice.append(col)
 
-    # Otras disponibles — unchecked. El user puede tildar.
+    # Otras disponibles — unchecked. El user puede agregar.
     others = [c for c in available_columns if c not in selected_names]
     if others:
-        with st.expander(f"Otras disponibles ({len(others)}) — añade las que quieras"):
+        with st.expander(f"Otras disponibles ({len(others)}) — agrégalas si las quieres"):
             for col in others:
                 reason = next((e["reason"] for e in excluded_recs if e["name"] == col), "")
                 if _render_other_row(col, reason):

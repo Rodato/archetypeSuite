@@ -208,7 +208,6 @@ def render():
 
     with colb:
         with st.container(border=True):
-            st.markdown('<div class="panel--accent"></div>', unsafe_allow_html=True)
             st.markdown('<div class="panel-eyebrow">Contexto</div>', unsafe_allow_html=True)
             st.markdown(
                 '<div class="panel-title">¿Qué representa este dataset?</div>',
