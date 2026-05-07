@@ -6,7 +6,7 @@ from src.data.ingest import DataIngestor
 from src.data.profiler import DataProfiler
 from src.ui.components.column_selector import render_column_selector
 from src.ui.components.data_chat import render_data_chat
-from src.ui.components.data_preview import render_data_preview
+from src.ui.components.data_preview import render_data_preview, render_type_donut
 from src.ui.components.profile_cards import render_profile_cards
 from src.ui.copy import COPY
 
@@ -76,29 +76,6 @@ def _render_sql_block():
             st.success(f"Consulta cargada: {df.shape[0]} filas, {df.shape[1]} columnas")
         except Exception as e:
             st.error(str(e))
-
-
-def _render_natural_summary(df: pd.DataFrame):
-    n_rows, n_cols = df.shape
-    numeric_cols = df.select_dtypes(include="number").columns.tolist()
-    categorical_cols = [c for c in df.columns if c not in numeric_cols]
-    missing = int(df.isnull().sum().sum())
-
-    parts = [f"**{n_rows}** filas con **{n_cols}** columnas."]
-    if numeric_cols:
-        parts.append(f"**{len(numeric_cols)}** numéricas")
-    if categorical_cols:
-        parts.append(f"**{len(categorical_cols)}** categóricas")
-    summary = " · ".join(parts)
-
-    st.markdown(summary)
-    if missing == 0:
-        st.caption("Sin valores faltantes.")
-    else:
-        pct = missing / (n_rows * n_cols) * 100
-        st.caption(
-            f"{missing} valores faltantes ({pct:.1f}%). El sistema los imputará automáticamente."
-        )
 
 
 def _render_column_selection_section(df: pd.DataFrame, context: str) -> None:
@@ -204,30 +181,39 @@ def render():
     df = st.session_state["raw_df"]
     context = st.session_state.get("dataset_context", "")
 
-    # Row A: Dataset | Contexto | Variables
-    cola, colb, colc = st.columns([1.2, 2, 2.2], gap="medium")
+    # Row A: Tipos (donut) | Contexto | Variables a usar
+    cola, colb, colc = st.columns([1.5, 2, 2.5], gap="medium")
 
     with cola:
         with st.container(border=True):
-            st.markdown('<div class="panel-eyebrow">Dataset</div>', unsafe_allow_html=True)
-            file_name = st.session_state.get("file_name", "dataset")
-            st.markdown(f"**{file_name}**")
-            st.caption(f"{df.shape[0]} filas · {df.shape[1]} columnas")
-            st.markdown("<div class='space-xs'></div>", unsafe_allow_html=True)
-            if advanced:
-                source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True)
-                if source == "Subir archivo":
-                    _render_upload_block(compact=True)
-                else:
-                    _render_sql_block()
-            else:
-                _render_upload_block(compact=True)
+            head_l, head_r = st.columns([3, 2])
+            with head_l:
+                st.markdown('<div class="panel-eyebrow">Tipos de variables</div>', unsafe_allow_html=True)
+            with head_r:
+                with st.popover("Cambiar archivo", use_container_width=True):
+                    if advanced:
+                        source = st.radio(
+                            "Fuente",
+                            ["Subir archivo", "Conexión SQL"],
+                            horizontal=True,
+                            label_visibility="collapsed",
+                        )
+                        if source == "Subir archivo":
+                            _render_upload_block(compact=True)
+                        else:
+                            _render_sql_block()
+                    else:
+                        _render_upload_block(compact=True)
+            render_type_donut(df)
 
     with colb:
         with st.container(border=True):
             st.markdown('<div class="panel--accent"></div>', unsafe_allow_html=True)
             st.markdown('<div class="panel-eyebrow">Contexto</div>', unsafe_allow_html=True)
-            st.markdown('<div class="panel-title">¿Qué es este dataset?</div>', unsafe_allow_html=True)
+            st.markdown(
+                '<div class="panel-title">¿Qué representa este dataset?</div>',
+                unsafe_allow_html=True,
+            )
             context = st.text_area(
                 "Contexto",
                 value=context,
@@ -251,23 +237,18 @@ def render():
             render_data_preview(df)
 
     with col2:
-        st.markdown('<div class="panel-eyebrow">Pregunta sobre tus datos</div>', unsafe_allow_html=True)
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        cat_cols = [c for c in df.columns if c not in numeric_cols]
-        suggestions = ["¿Hay valores faltantes?"]
-        if cat_cols:
-            suggestions.append(f"¿Cuántos hay por {cat_cols[0]}?")
-        if numeric_cols and cat_cols:
-            suggestions.append(f"{numeric_cols[0]} promedio por {cat_cols[0]}")
-        elif numeric_cols:
-            suggestions.append(f"Distribución de {numeric_cols[0]}")
-        render_data_chat(df, context=context, mode="raw", key="step1", suggestions=suggestions)
-
-    # Row C: Resumen natural
-    with st.container(border=True):
-        st.markdown('<div class="panel--ghost"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="panel-eyebrow">Resumen</div>', unsafe_allow_html=True)
-        _render_natural_summary(df)
+        with st.container(border=True):
+            st.markdown('<div class="panel-eyebrow">Pregunta sobre tus datos</div>', unsafe_allow_html=True)
+            numeric_cols = df.select_dtypes(include="number").columns.tolist()
+            cat_cols = [c for c in df.columns if c not in numeric_cols]
+            suggestions = ["¿Hay valores faltantes?"]
+            if cat_cols:
+                suggestions.append(f"¿Cuántos hay por {cat_cols[0]}?")
+            if numeric_cols and cat_cols:
+                suggestions.append(f"{numeric_cols[0]} promedio por {cat_cols[0]}")
+            elif numeric_cols:
+                suggestions.append(f"Distribución de {numeric_cols[0]}")
+            render_data_chat(df, context=context, mode="raw", key="step1", suggestions=suggestions)
 
     if advanced:
         st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
