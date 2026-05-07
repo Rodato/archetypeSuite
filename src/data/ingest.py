@@ -25,11 +25,15 @@ class DataIngestor:
 
     def validate(self, df: pd.DataFrame) -> None:
         if df.empty:
-            raise ValueError("DataFrame is empty")
+            raise ValueError("El archivo está vacío.")
         if df.shape[1] < 2:
-            raise ValueError(f"DataFrame must have at least 2 columns, got {df.shape[1]}")
+            raise ValueError(
+                f"Necesitamos al menos 2 variables (columnas) para segmentar; el archivo trae {df.shape[1]}."
+            )
         if df.shape[0] < 2:
-            raise ValueError(f"DataFrame must have at least 2 rows, got {df.shape[0]}")
+            raise ValueError(
+                f"Necesitamos al menos 2 filas para encontrar patrones; el archivo trae {df.shape[0]}."
+            )
 
     def load_sql(self, connection_string: str, query: str) -> pd.DataFrame:
         engine = sqlalchemy.create_engine(connection_string)

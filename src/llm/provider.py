@@ -10,7 +10,6 @@ from src.config.settings import settings
 
 T = TypeVar("T", bound=BaseModel)
 
-LLM_REQUEST_TIMEOUT = 60
 RETRY_BACKOFF_SECONDS = (1, 3)
 
 
@@ -21,46 +20,47 @@ def extract_json(content: str) -> str:
     return content.strip()
 
 
-def get_llm() -> ChatOpenAI:
-    return ChatOpenAI(
-        model=settings.llm_model,
-        temperature=settings.llm_temperature,
-        openai_api_key=settings.openrouter_api_key,
-        openai_api_base="https://openrouter.ai/api/v1",
-        request_timeout=LLM_REQUEST_TIMEOUT,
-    )
+def _ensure_api_key() -> None:
+    if not settings.openrouter_api_key:
+        raise RuntimeError(
+            "Falta OPENROUTER_API_KEY. Crea un archivo .env en la raíz del proyecto "
+            "(usa .env.example como plantilla) con tu clave de https://openrouter.ai/keys."
+        )
 
 
 def get_llm_json() -> ChatOpenAI:
+    _ensure_api_key()
     return ChatOpenAI(
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         openai_api_key=settings.openrouter_api_key,
         openai_api_base="https://openrouter.ai/api/v1",
         model_kwargs={"response_format": {"type": "json_object"}},
-        request_timeout=LLM_REQUEST_TIMEOUT,
+        request_timeout=settings.llm_request_timeout,
     )
 
 
 def get_fast_text_llm() -> ChatOpenAI:
     """Plain text (no JSON) using the fast narrative model. For short conversational answers."""
+    _ensure_api_key()
     return ChatOpenAI(
         model=settings.llm_narrative_model,
         temperature=settings.llm_temperature,
         openai_api_key=settings.openrouter_api_key,
         openai_api_base="https://openrouter.ai/api/v1",
-        request_timeout=30,
+        request_timeout=settings.llm_fast_request_timeout,
     )
 
 
 def get_narrative_llm() -> ChatOpenAI:
+    _ensure_api_key()
     return ChatOpenAI(
         model=settings.llm_narrative_model,
         temperature=settings.llm_temperature,
         openai_api_key=settings.openrouter_api_key,
         openai_api_base="https://openrouter.ai/api/v1",
         model_kwargs={"response_format": {"type": "json_object"}},
-        request_timeout=LLM_REQUEST_TIMEOUT,
+        request_timeout=settings.llm_request_timeout,
     )
 
 

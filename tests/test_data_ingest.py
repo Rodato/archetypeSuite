@@ -39,17 +39,17 @@ class TestDataIngestor:
 
     def test_validate_empty(self):
         ingestor = DataIngestor()
-        with pytest.raises(ValueError, match="empty"):
+        with pytest.raises(ValueError, match="vacío"):
             ingestor.validate(pd.DataFrame())
 
     def test_validate_too_few_columns(self):
         ingestor = DataIngestor()
-        with pytest.raises(ValueError, match="at least 2 columns"):
+        with pytest.raises(ValueError, match="2 variables"):
             ingestor.validate(pd.DataFrame({"a": range(20)}))
 
     def test_validate_too_few_rows(self):
         ingestor = DataIngestor()
-        with pytest.raises(ValueError, match="at least 2 rows"):
+        with pytest.raises(ValueError, match="2 filas"):
             ingestor.validate(pd.DataFrame({"a": range(1), "b": range(1)}))
 
     def test_validate_success(self, sample_df):
