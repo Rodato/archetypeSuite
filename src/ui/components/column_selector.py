@@ -4,9 +4,9 @@ import streamlit as st
 
 
 _IMPORTANCE_CONFIG = {
-    "high": ("Alta", "importance-badge--high"),
-    "medium": ("Media", "importance-badge--medium"),
-    "low": ("Baja", "importance-badge--low"),
+    "high": ("Alta", "importance-badge--high", "Esencial para diferenciar arquetipos"),
+    "medium": ("Media", "importance-badge--medium", "Aporta separación pero no es crítica"),
+    "low": ("Baja", "importance-badge--low", "Útil solo si el dataset tiene pocas variables"),
 }
 
 
@@ -35,7 +35,7 @@ def _render_static_summary(static_report: Dict[str, Any]) -> None:
 def _render_recommended_row(col: str, rec: Dict[str, Any]) -> bool:
     """Una fila por variable recomendada: checkbox + nombre + badge + razón."""
     importance = rec.get("importance", "medium")
-    label, badge_class = _IMPORTANCE_CONFIG.get(importance, _IMPORTANCE_CONFIG["medium"])
+    label, badge_class, tooltip = _IMPORTANCE_CONFIG.get(importance, _IMPORTANCE_CONFIG["medium"])
     reason = rec.get("reason", "")
 
     chk_col, body_col = st.columns([1, 12], gap="small")
@@ -50,7 +50,7 @@ def _render_recommended_row(col: str, rec: Dict[str, Any]) -> bool:
         st.markdown(
             f"<div style='line-height:1.35'>"
             f"<code style='font-size:0.85rem'>{col}</code> "
-            f"<span class='importance-badge {badge_class}'>{label}</span>"
+            f"<span class='importance-badge {badge_class}' title='{tooltip}'>{label}</span>"
             f"<div style='color:var(--text-muted);font-size:0.78rem;margin-top:0.15rem'>{reason}</div>"
             f"</div>",
             unsafe_allow_html=True,
@@ -105,6 +105,15 @@ def render_column_selector(
     )
     if summary:
         st.caption(summary)
+    # Leyenda de los badges de importancia
+    st.markdown(
+        "<div style='font-size:0.72rem;color:var(--text-muted);margin-top:0.25rem;line-height:1.45'>"
+        "<span class='importance-badge importance-badge--high'>Alta</span> clave para diferenciar &nbsp;·&nbsp; "
+        "<span class='importance-badge importance-badge--medium'>Media</span> aporta &nbsp;·&nbsp; "
+        "<span class='importance-badge importance-badge--low'>Baja</span> útil con pocas columnas"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     _render_static_summary(static_report)
 
