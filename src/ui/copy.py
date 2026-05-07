@@ -15,8 +15,6 @@ COPY = {
     # Onboarding (paso 1)
     "upload_label": "Sube tu archivo",
     "upload_hint": "Acepta CSV y Excel. Hasta 10 MB.",
-    "demo_button": "Probar con datos de ejemplo",
-    "demo_hint": "Carga un dataset de 50 clientes en 1 click.",
 
     # Acciones del wizard
     "analyze_button": "Ejecutar análisis",

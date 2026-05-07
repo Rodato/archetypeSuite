@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pandas as pd
 import streamlit as st
 
@@ -11,12 +9,6 @@ from src.ui.components.data_chat import render_data_chat
 from src.ui.components.data_preview import render_data_preview
 from src.ui.components.profile_cards import render_profile_cards
 from src.ui.copy import COPY
-
-DEMO_DATASET_PATH = Path(__file__).resolve().parents[3] / "sample_data" / "customers.csv"
-DEMO_CONTEXT = (
-    "50 clientes de retail. Queremos entender perfiles de comportamiento de compra "
-    "para diseñar campañas y experiencias diferenciadas."
-)
 
 LOAD_ERROR_MAP = {
     "ParserError": (
@@ -34,17 +26,6 @@ LOAD_ERROR_MAP = {
 
 def _humanize_load_error(e: Exception) -> str:
     return LOAD_ERROR_MAP.get(type(e).__name__, COPY["error_load_file"])
-
-
-def _load_demo_dataset() -> None:
-    df = pd.read_csv(DEMO_DATASET_PATH)
-    DataIngestor().validate(df)
-    st.session_state["raw_df"] = df
-    st.session_state["file_name"] = DEMO_DATASET_PATH.name
-    st.session_state["dataset_context"] = DEMO_CONTEXT
-    for k in list(st.session_state.keys()):
-        if k.startswith("_column_suggestion::"):
-            del st.session_state[k]
 
 
 def _render_upload_block(compact: bool = False):
@@ -189,10 +170,15 @@ def render():
                 unsafe_allow_html=True,
             )
 
-            cta_left, cta_right = st.columns(2, gap="medium")
-            with cta_left:
+            _, mid, _ = st.columns([1, 2, 1])
+            with mid:
                 if advanced:
-                    source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True, label_visibility="collapsed")
+                    source = st.radio(
+                        "Fuente",
+                        ["Subir archivo", "Conexión SQL"],
+                        horizontal=True,
+                        label_visibility="collapsed",
+                    )
                     if source == "Subir archivo":
                         _render_upload_block()
                     else:
@@ -200,25 +186,17 @@ def render():
                 else:
                     _render_upload_block()
                 st.markdown(
-                    f"<div class='hero-onboarding__hint'>{COPY['upload_hint']}</div>",
-                    unsafe_allow_html=True,
-                )
-            with cta_right:
-                if st.button(
-                    f"⚡ {COPY['demo_button']}",
-                    type="primary",
-                    use_container_width=True,
-                ):
-                    _load_demo_dataset()
-                    st.rerun()
-                st.markdown(
-                    f"<div class='hero-onboarding__hint'>{COPY['demo_hint']}</div>",
+                    f"<div class='hero-onboarding__hint' style='text-align:center'>"
+                    f"{COPY['upload_hint']}"
+                    "</div>",
                     unsafe_allow_html=True,
                 )
 
             st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
-            with st.popover("¿Qué es un arquetipo?"):
-                st.markdown(COPY["what_is_archetype"])
+            _, pop_col, _ = st.columns([2, 1, 2])
+            with pop_col:
+                with st.popover("¿Qué es un arquetipo?", use_container_width=True):
+                    st.markdown(COPY["what_is_archetype"])
 
         return
 
@@ -244,9 +222,6 @@ def render():
                     _render_sql_block()
             else:
                 _render_upload_block(compact=True)
-            if st.button("Usar ejemplo", type="secondary", use_container_width=True, key="demo_loaded"):
-                _load_demo_dataset()
-                st.rerun()
 
     with colb:
         with st.container(border=True):
