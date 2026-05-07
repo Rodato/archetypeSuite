@@ -25,6 +25,8 @@ def render_archetype_cards(
                 description = html.escape(str(archetype.get("description", "")))
 
                 prevalence_html = ""
+                size = 0
+                pct = 0.0
                 if cluster_sizes and total > 0:
                     try:
                         size = cluster_sizes.get(int(cluster_id), 0)
@@ -47,14 +49,24 @@ def render_archetype_cards(
                 ]
                 st.markdown("\n".join(card_html), unsafe_allow_html=True)
 
-                char_col, diff_col = st.columns(2)
-                with char_col:
-                    st.markdown("**Características clave**")
-                    for char in archetype.get("key_characteristics", []) or []:
-                        st.markdown(f"- {char}")
-                with diff_col:
-                    st.markdown("**Diferenciadores**")
-                    for diff in archetype.get("differentiators", []) or []:
-                        st.markdown(f"- {diff}")
+                characteristics = archetype.get("key_characteristics", []) or []
+                differentiators = archetype.get("differentiators", []) or []
+                if characteristics or differentiators:
+                    with st.expander("Ver detalles"):
+                        char_col, diff_col = st.columns(2)
+                        with char_col:
+                            st.markdown("**Características clave**")
+                            if characteristics:
+                                for char in characteristics:
+                                    st.markdown(f"- {char}")
+                            else:
+                                st.caption("—")
+                        with diff_col:
+                            st.markdown("**Diferenciadores**")
+                            if differentiators:
+                                for diff in differentiators:
+                                    st.markdown(f"- {diff}")
+                            else:
+                                st.caption("—")
 
-        st.markdown("<div style='height:.5rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='space-sm'></div>", unsafe_allow_html=True)

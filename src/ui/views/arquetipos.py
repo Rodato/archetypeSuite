@@ -14,6 +14,7 @@ from src.ui.components.cluster_plots import (
     render_scatter_2d,
     render_silhouette_curve,
 )
+from src.ui.copy import COPY
 from src.ui.export import archetypes_to_csv, build_markdown_report, labels_to_csv
 
 ARCHETYPE_TOOLTIP = (
@@ -43,7 +44,8 @@ def render():
                 unsafe_allow_html=True,
             )
             target = "Datos" if no_data else "Analizar"
-            if st.button(f"Ir a {target}", type="primary"):
+            label = COPY["go_to_data"] if no_data else COPY["go_to_analyze"]
+            if st.button(label, type="primary"):
                 st.session_state["_force_page"] = target
                 st.rerun()
         return
@@ -70,9 +72,34 @@ def render():
 
     # Row A: Quality hero panel
     with st.container(border=True):
-        hdr_col, info_col = st.columns([10, 1])
+        hdr_col, dl_col, info_col = st.columns([10, 2, 1])
         with hdr_col:
             st.markdown('<div class="panel-eyebrow">Resultados</div>', unsafe_allow_html=True)
+        with dl_col:
+            if archetypes:
+                with st.popover("📥 Descargar", use_container_width=True):
+                    st.download_button(
+                        "Arquetipos (CSV)",
+                        data=archetypes_to_csv(archetypes),
+                        file_name="arquetipos.csv",
+                        mime="text/csv",
+                        use_container_width=True,
+                    )
+                    if raw_data and labels:
+                        st.download_button(
+                            "Datos etiquetados (CSV)",
+                            data=labels_to_csv(raw_data, labels, archetypes),
+                            file_name="datos_etiquetados.csv",
+                            mime="text/csv",
+                            use_container_width=True,
+                        )
+                    st.download_button(
+                        "Reporte (Markdown)",
+                        data=build_markdown_report(result).encode("utf-8"),
+                        file_name="reporte_arquetipos.md",
+                        mime="text/markdown",
+                        use_container_width=True,
+                    )
         with info_col:
             with st.popover("?"):
                 st.markdown(ARCHETYPE_TOOLTIP)
@@ -84,13 +111,13 @@ def render():
             render_cluster_sizes(metrics, label_map)
 
     # Row B: Archetype cards
-    st.markdown("<div style='height:.75rem'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown('<div class="panel-eyebrow">Arquetipos</div>', unsafe_allow_html=True)
         render_archetype_cards(archetypes, cluster_sizes=cluster_sizes)
 
-    # Row C: Explore (large) + Downloads & Why-k (narrow)
-    st.markdown("<div style='height:.75rem'></div>", unsafe_allow_html=True)
+    # Row C: Explore (large) + Why-k (narrow)
+    st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
     raw_df = pd.DataFrame(raw_data)
     if labels:
         raw_df["Cluster"] = labels
@@ -146,19 +173,21 @@ def render():
 
             with tab4:
                 st.caption(
-                    "Haz preguntas como: '¿qué arquetipo tiene la edad promedio más alta?', "
-                    "'compara ingreso entre arquetipos', '¿cuántos hay por género en cada arquetipo?'."
+                    "Pregunta cualquier cosa sobre los arquetipos: comparar, "
+                    "buscar diferencias o entender por qué uno se distingue."
                 )
                 suggestions: list = []
                 if archetypes:
-                    sample_archetype = archetypes[0].get("label", f"Arquetipo {archetypes[0].get('cluster_id', 0)}")
                     num_in_chat = [c for c in raw_df.select_dtypes(include=np.number).columns if c != "Cluster"]
                     cat_in_chat = [c for c in raw_df.columns if c not in num_in_chat and c not in ("Cluster", "Arquetipo")]
+                    arch_a = archetypes[0].get("label", f"Arquetipo {archetypes[0].get('cluster_id', 0)}")
+                    if len(archetypes) >= 2:
+                        arch_b = archetypes[1].get("label", f"Arquetipo {archetypes[1].get('cluster_id', 1)}")
+                        suggestions.append(f"Diferencias clave entre {arch_a} y {arch_b}")
                     if num_in_chat:
-                        suggestions.append(f"{num_in_chat[0]} promedio por arquetipo")
+                        suggestions.append(f"¿Qué arquetipo tiene mayor {num_in_chat[0]} promedio?")
                     if cat_in_chat:
-                        suggestions.append(f"distribución de {cat_in_chat[0]} en cada arquetipo")
-                    suggestions.append(f"¿qué hace único a {sample_archetype}?")
+                        suggestions.append(f"Distribución de {cat_in_chat[0]} por arquetipo")
                 render_data_chat(
                     raw_df,
                     context=st.session_state.get("dataset_context", ""),
@@ -168,73 +197,38 @@ def render():
                 )
 
     with side_col:
-        with st.container(border=True):
-            st.markdown('<div class="panel-eyebrow">Descargas</div>', unsafe_allow_html=True)
-            if archetypes:
-                st.download_button(
-                    "Arquetipos (CSV)",
-                    data=archetypes_to_csv(archetypes),
-                    file_name="arquetipos.csv",
-                    mime="text/csv",
-                    use_container_width=True,
-                )
-                if raw_data and labels:
-                    st.download_button(
-                        "Datos etiquetados (CSV)",
-                        data=labels_to_csv(raw_data, labels, archetypes),
-                        file_name="datos_etiquetados.csv",
-                        mime="text/csv",
-                        use_container_width=True,
-                    )
-                st.download_button(
-                    "Reporte (Markdown)",
-                    data=build_markdown_report(result).encode("utf-8"),
-                    file_name="reporte_arquetipos.md",
-                    mime="text/markdown",
-                    use_container_width=True,
-                )
-
         if k_analysis and optimal_k:
-            st.markdown("<div style='height:.5rem'></div>", unsafe_allow_html=True)
             with st.container(border=True):
                 st.markdown('<div class="panel-eyebrow">Metodología</div>', unsafe_allow_html=True)
                 with st.expander(f"¿Por qué {optimal_k} arquetipos?"):
                     st.markdown(
-                        "El sistema probó distintos números de grupos y eligió el que "
-                        "produce mejor separación entre ellos."
+                        f"El sistema probó dividir tus datos en **2, 3, 4, …, hasta {optimal_k + 2 if k_analysis.get('k_range') else 9} grupos** "
+                        "y midió qué tan bien separados quedaban en cada caso.\n\n"
+                        f"- **Con menos de {optimal_k}**, los grupos se mezclan y los arquetipos pierden personalidad.\n"
+                        f"- **Con más de {optimal_k}**, se vuelven casi idénticos entre sí.\n"
+                        f"- **{optimal_k} es el punto donde cada grupo es distintivo y suficientemente grande** "
+                        "para que valga la pena nombrarlo."
                     )
                     render_silhouette_curve(k_analysis, int(optimal_k))
 
-    # Advanced: technical details
+    # Advanced: technical details (agrupado en un solo expander)
     if advanced:
-        st.markdown("<div style='height:.75rem'></div>", unsafe_allow_html=True)
-        a1, a2, a3, a4 = st.columns(4, gap="medium")
-        with a1:
-            with st.container(border=True):
-                st.markdown('<div class="panel-eyebrow">Métricas</div>', unsafe_allow_html=True)
-                render_metrics_summary(metrics)
-        with a2:
-            with st.container(border=True):
-                st.markdown('<div class="panel-eyebrow">Selección</div>', unsafe_allow_html=True)
-                if result.get("selection_reasoning"):
-                    with st.expander("Razonamiento"):
-                        st.markdown(result["selection_reasoning"])
-                else:
-                    st.caption("Sin razonamiento disponible.")
-        with a3:
-            with st.container(border=True):
-                st.markdown('<div class="panel-eyebrow">Refinamiento</div>', unsafe_allow_html=True)
-                if result.get("refinement_reason"):
-                    with st.expander("Decisión"):
-                        st.markdown(result["refinement_reason"])
-                else:
-                    st.caption("Sin refinamiento.")
-        with a4:
-            with st.container(border=True):
-                st.markdown('<div class="panel-eyebrow">Logs</div>', unsafe_allow_html=True)
-                logs = st.session_state.get("pipeline_logs", [])
-                if logs:
-                    with st.expander("Ver logs"):
+        st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('<div class="panel-eyebrow">Detalles técnicos</div>', unsafe_allow_html=True)
+            with st.expander("Métricas, razonamientos y logs"):
+                a1, a2 = st.columns(2, gap="medium")
+                with a1:
+                    st.markdown("**Métricas**")
+                    render_metrics_summary(metrics)
+                    if result.get("selection_reasoning"):
+                        st.markdown("**Selección de algoritmo**")
+                        st.caption(result["selection_reasoning"])
+                with a2:
+                    if result.get("refinement_reason"):
+                        st.markdown("**Decisión de refinamiento**")
+                        st.caption(result["refinement_reason"])
+                    logs = st.session_state.get("pipeline_logs", [])
+                    if logs:
+                        st.markdown("**Logs del pipeline**")
                         st.code("\n".join(logs), language="text")
-                else:
-                    st.caption("Sin logs.")
