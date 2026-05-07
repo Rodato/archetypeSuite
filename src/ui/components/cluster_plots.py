@@ -27,32 +27,19 @@ def render_quality_card(metrics: dict):
     sil = metrics.get("silhouette_score")
     quality = silhouette_to_quality(sil)
     score_str = f"{sil:.2f}" if sil is not None else "—"
-
-    color_map = {
-        "green": {"bg": "#DCFCE7", "text": "#15803D", "border": "#86EFAC"},
-        "orange": {"bg": "#FEF9C3", "text": "#B45309", "border": "#FDE68A"},
-        "red": {"bg": "#FEE2E2", "text": "#DC2626", "border": "#FCA5A5"},
-        "gray": {"bg": "#F1F5F9", "text": "#64748B", "border": "#CBD5E1"},
-    }
-    c = color_map.get(quality.get("color", "gray"), color_map["gray"])
+    color = quality.get("color", "gray")
     grade = quality.get("grade", "—")
-
-    bg = c["bg"]
-    text_color = c["text"]
-    border_color = c["border"]
     quality_label = quality["label"]
     quality_desc = quality["description"]
     st.markdown(
         f"<div class='quality-hero'>"
-        f"<div class='qh-grade' style='background:{bg};color:{text_color};border:2px solid {border_color}'>"
-        f"{grade}"
-        f"</div>"
+        f"<div class='qh-grade qh-grade--{color}'>{grade}</div>"
         f"<div style='flex:1'>"
         f"<div class='label'>Calidad del análisis</div>"
         f"<div class='value'>{quality_label}</div>"
         f"<div class='desc'>{quality_desc}</div>"
         f"</div>"
-        f"<div style='font-size:1.6rem;font-weight:700;color:{text_color};letter-spacing:-0.03em;margin-left:0.5rem'>{score_str}</div>"
+        f"<div class='qh-score qh-score--{color}'>{score_str}</div>"
         f"</div>",
         unsafe_allow_html=True,
     )

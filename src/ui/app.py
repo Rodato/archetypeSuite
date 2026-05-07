@@ -6,7 +6,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Archetype Suite",
-    page_icon=None,
+    page_icon="◆",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -65,7 +65,12 @@ def _render_topbar() -> str:
 
     with L:
         st.markdown(
-            "<div class='topbar-brand'>Archetype Suite</div>",
+            "<div class='topbar-brand'>"
+            "<span class='topbar-brand__mark'>◆</span>"
+            "<span class='topbar-brand__name'>"
+            "<strong>Archetype</strong> Suite"
+            "</span>"
+            "</div>",
             unsafe_allow_html=True,
         )
         if "raw_df" in st.session_state:
@@ -79,15 +84,26 @@ def _render_topbar() -> str:
                 unsafe_allow_html=True,
             )
 
+    statuses = {step: _step_status(step) for step in STEPS}
+
     with C:
-        c1, c2, c3 = st.columns(3)
-        for col, step in zip((c1, c2, c3), STEPS):
-            status = _step_status(step)
+        current_step = next((s for s in STEPS if statuses[s] == "current"), STEPS[0])
+        current_idx = STEPS.index(current_step) + 1
+        st.markdown(
+            f"<div class='wizard-progress__label'>Paso {current_idx} de {len(STEPS)}</div>"
+            f"<div class='wizard-progress__current-name'>{current_step}</div>"
+            "<div class='wizard-progress'>"
+            + "".join(
+                f"<div class='wizard-progress__step wizard-progress__step--{statuses[s]}'></div>"
+                for s in STEPS
+            )
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+        nav_cols = st.columns(len(STEPS))
+        for col, step in zip(nav_cols, STEPS):
+            status = statuses[step]
             with col:
-                st.markdown(
-                    f'<div class="topbar-pill--{status}"></div>',
-                    unsafe_allow_html=True,
-                )
                 if st.button(
                     _step_label(step, status),
                     key=f"pill_{step}",
