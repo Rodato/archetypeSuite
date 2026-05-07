@@ -14,8 +14,17 @@ TYPE_COLORS = {
 
 
 def render_data_preview(df: pd.DataFrame):
-    st.dataframe(df.head(MAX_PREVIEW_ROWS), use_container_width=True, hide_index=True)
-    st.caption(f"Primeras {min(MAX_PREVIEW_ROWS, len(df))} filas de {len(df)}.")
+    n = min(MAX_PREVIEW_ROWS, len(df))
+    # Altura ≈ header (38px) + n filas (35px c/u). Sin esto Streamlit reserva ~400px aunque
+    # haya 5 filas y queda mucho espacio vacío que parece scrollable.
+    height = 38 + 35 * max(n, 1)
+    st.dataframe(
+        df.head(MAX_PREVIEW_ROWS),
+        use_container_width=True,
+        hide_index=True,
+        height=height,
+    )
+    st.caption(f"Primeras {n} filas de {len(df)}.")
 
 
 def _classify_columns(df: pd.DataFrame) -> dict:
