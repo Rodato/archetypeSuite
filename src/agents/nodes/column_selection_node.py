@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
+from src.config.settings import settings
 from src.data.column_filter import apply_static_filters
 from src.llm.prompts import COLUMN_RELEVANCE_PROMPT
 from src.llm.provider import get_llm_json, invoke_json_with_retry
@@ -43,7 +44,7 @@ def _summarize_column(col: str, series: pd.Series) -> Dict[str, Any]:
             info["sample"] = [
                 float(x)
                 for x in series.dropna()
-                .sample(min(3, int(series.notna().sum())), random_state=0)
+                .sample(min(3, int(series.notna().sum())), random_state=settings.random_seed)
                 .tolist()
             ]
     else:

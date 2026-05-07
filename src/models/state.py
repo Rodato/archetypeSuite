@@ -20,7 +20,6 @@ class PipelineState(TypedDict, total=False):
     # Preprocessing
     preprocess_strategy: Dict[str, Any]
     processed_data: Dict[str, list]
-    preprocessing_metadata: Dict[str, Any]
     original_columns: List[str]
 
     # K optimization
@@ -50,6 +49,3 @@ class PipelineState(TypedDict, total=False):
 
     # Logging
     log_messages: Annotated[List[str], operator.add]
-
-    # Error handling
-    error: Optional[str]

@@ -171,38 +171,6 @@ Responde SOLO con un objeto JSON:
 }}
 """
 
-ALGORITHM_SELECTION_PROMPT = """\
-Eres un experto en clustering. Basándote en las características de los datos, selecciona \
-el mejor algoritmo de clustering y sus hiperparámetros.
-
-## Características de los Datos
-- Dimensiones: {n_rows} filas x {n_cols} columnas
-- Columnas numéricas: {n_numeric}
-- Preprocesamiento aplicado: {preprocessing_metadata}
-
-## Contexto del Dataset
-{context}
-
-## Número Óptimo de Clusters (análisis matemático)
-- Silhouette Analysis: k={best_silhouette_k} (score={best_silhouette_score:.3f})
-- Elbow Method: k={elbow_k}
-- **k seleccionado: {optimal_k}** — DEBES usar este valor en tus parámetros.
-
-## Algoritmos Disponibles
-{algorithm_descriptions}
-
-## Instrucciones
-Selecciona el algoritmo y especifica sus hiperparámetros. El número de clusters \
-ya fue determinado matemáticamente: usa n_clusters={optimal_k}.
-
-Responde SOLO con un objeto JSON:
-{{
-  "algorithm": "NombreAlgoritmo",
-  "params": {{...}},
-  "reasoning": "Breve explicación"
-}}
-"""
-
 INTERPRETATION_PROMPT = """\
 Eres un experto en análisis de negocio y marketing. Analiza los resultados del clustering \
 y crea descripciones de arquetipos vívidas y accionables. Responde siempre en español.
