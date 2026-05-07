@@ -84,17 +84,20 @@ def render_data_chat(
 
     history: List[Dict[str, Any]] = st.session_state[history_key]
 
-    # Render history
-    for entry in history[-8:]:
-        _render_message(entry["role"], entry["payload"])
-
-    # Suggestion chips (only when chat is empty)
-    if suggestions and not history:
-        st.caption("Prueba con:")
-        for i, q in enumerate(suggestions[:3]):
-            if st.button(q, key=f"{history_key}_suggest_{i}", use_container_width=True):
-                _process_question(df, q, context=context, mode=mode, history_key=history_key)
-                st.rerun()
+    # Historial con scroll interno: el card no crece sin importar cuántos
+    # mensajes haya. El input queda siempre visible abajo.
+    history_box = st.container(height=320, border=False)
+    with history_box:
+        if history:
+            for entry in history[-8:]:
+                _render_message(entry["role"], entry["payload"])
+        elif suggestions:
+            # Empty state con sugerencias dentro del mismo box (mantiene altura)
+            st.caption("Prueba con:")
+            for i, q in enumerate(suggestions[:3]):
+                if st.button(q, key=f"{history_key}_suggest_{i}", use_container_width=True):
+                    _process_question(df, q, context=context, mode=mode, history_key=history_key)
+                    st.rerun()
 
     # Input form
     with st.form(key=f"{history_key}_form", clear_on_submit=True):
