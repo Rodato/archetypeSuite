@@ -10,12 +10,30 @@ from src.ui.components.column_selector import render_column_selector
 from src.ui.components.data_chat import render_data_chat
 from src.ui.components.data_preview import render_data_preview
 from src.ui.components.profile_cards import render_profile_cards
+from src.ui.copy import COPY
 
 DEMO_DATASET_PATH = Path(__file__).resolve().parents[3] / "sample_data" / "customers.csv"
 DEMO_CONTEXT = (
     "50 clientes de retail. Queremos entender perfiles de comportamiento de compra "
     "para diseñar campañas y experiencias diferenciadas."
 )
+
+LOAD_ERROR_MAP = {
+    "ParserError": (
+        "No pudimos leer el archivo. ¿Está bien formado? "
+        "Si es CSV, verifica el separador — puede usar `;` o `\\t` en lugar de `,`."
+    ),
+    "UnicodeDecodeError": (
+        "El archivo usa una codificación que no reconocemos. "
+        "Intenta guardarlo como UTF-8 antes de subirlo."
+    ),
+    "EmptyDataError": "El archivo parece estar vacío.",
+    "FileNotFoundError": "No encontramos el archivo. Vuelve a subirlo.",
+}
+
+
+def _humanize_load_error(e: Exception) -> str:
+    return LOAD_ERROR_MAP.get(type(e).__name__, COPY["error_load_file"])
 
 
 def _load_demo_dataset() -> None:
@@ -57,19 +75,11 @@ def _render_upload_block(compact: bool = False):
                 del st.session_state[k]
         st.rerun()
     except ValueError as e:
+        # Validación explícita del DataIngestor (filas/columnas mínimas, vacío)
         st.error(str(e))
-    except pd.errors.ParserError as e:
-        st.error(
-            f"No se pudo leer el archivo: {e}. "
-            "Verifica el separador — puede que el CSV use `;` o `\\t` en lugar de `,`."
-        )
-    except UnicodeDecodeError as e:
-        st.error(
-            f"Problema de codificación: {e}. "
-            "Intenta guardar el archivo como UTF-8 antes de subirlo."
-        )
     except Exception as e:
-        st.error(f"Error al cargar el archivo: {type(e).__name__}: {e}")
+        st.error(_humanize_load_error(e))
+        st.caption(f"Detalle técnico: {type(e).__name__}: {e}")
 
 
 def _render_sql_block():
@@ -167,41 +177,49 @@ def render():
     if "raw_df" not in st.session_state:
         with st.container(border=True):
             st.markdown('<div class="panel--hero"></div>', unsafe_allow_html=True)
-            col_left, col_right = st.columns([3, 2], gap="medium")
-            with col_left:
-                st.markdown('<div class="panel-eyebrow">Paso 1 de 3</div>', unsafe_allow_html=True)
-                st.markdown("## Carga tu dataset")
-                st.markdown(
-                    "Cada fila debe representar una persona, cliente, encuesta o unidad de análisis."
-                )
+            st.markdown(
+                "<div class='hero-onboarding'>"
+                "<div class='hero-onboarding__mark'>◆</div>"
+                f"<div class='hero-onboarding__title'>{COPY['product_tagline']}</div>"
+                "<div class='hero-onboarding__sub'>"
+                "Sube un CSV o Excel donde cada fila sea una persona, cliente o unidad de análisis. "
+                "El sistema descubre los grupos de comportamiento y los describe en lenguaje natural."
+                "</div>"
+                "</div>",
+                unsafe_allow_html=True,
+            )
+
+            cta_left, cta_right = st.columns(2, gap="medium")
+            with cta_left:
                 if advanced:
-                    source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True)
+                    source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True, label_visibility="collapsed")
                     if source == "Subir archivo":
                         _render_upload_block()
                     else:
                         _render_sql_block()
                 else:
                     _render_upload_block()
-
-                if st.button("Usar dataset de ejemplo", type="secondary"):
+                st.markdown(
+                    f"<div class='hero-onboarding__hint'>{COPY['upload_hint']}</div>",
+                    unsafe_allow_html=True,
+                )
+            with cta_right:
+                if st.button(
+                    f"⚡ {COPY['demo_button']}",
+                    type="primary",
+                    use_container_width=True,
+                ):
                     _load_demo_dataset()
                     st.rerun()
-                st.caption("Si es tu primera vez, usa el dataset de ejemplo para ver el flujo completo.")
+                st.markdown(
+                    f"<div class='hero-onboarding__hint'>{COPY['demo_hint']}</div>",
+                    unsafe_allow_html=True,
+                )
 
-            with col_right:
-                st.markdown('<div class="panel-eyebrow">Contexto (opcional pero recomendado)</div>', unsafe_allow_html=True)
-                st.markdown('<div class="panel-title">¿Qué es este dataset?</div>', unsafe_allow_html=True)
-                context = st.text_area(
-                    "Contexto",
-                    value=st.session_state.get("dataset_context", ""),
-                    placeholder="Ejemplo: Clientes de una tienda de ropa online. Queremos segmentarlos por comportamiento de compra para personalizar campañas.",
-                    height=160,
-                    label_visibility="collapsed",
-                )
-                st.session_state["dataset_context"] = context
-                st.caption(
-                    "El contexto ayuda al sistema a generar nombres y descripciones más precisas para cada arquetipo."
-                )
+            st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
+            with st.popover("¿Qué es un arquetipo?"):
+                st.markdown(COPY["what_is_archetype"])
+
         return
 
     # Dataset loaded
@@ -217,7 +235,7 @@ def render():
             file_name = st.session_state.get("file_name", "dataset")
             st.markdown(f"**{file_name}**")
             st.caption(f"{df.shape[0]} filas · {df.shape[1]} columnas")
-            st.markdown("<div style='height:.4rem'></div>", unsafe_allow_html=True)
+            st.markdown("<div class='space-xs'></div>", unsafe_allow_html=True)
             if advanced:
                 source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True)
                 if source == "Subir archivo":
@@ -261,13 +279,13 @@ def render():
         st.markdown('<div class="panel-eyebrow">Pregunta sobre tus datos</div>', unsafe_allow_html=True)
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
         cat_cols = [c for c in df.columns if c not in numeric_cols]
-        suggestions = []
+        suggestions = ["¿Hay valores faltantes?"]
         if cat_cols:
             suggestions.append(f"¿Cuántos hay por {cat_cols[0]}?")
-        if numeric_cols:
-            suggestions.append(f"Distribución de {numeric_cols[0]}")
         if numeric_cols and cat_cols:
             suggestions.append(f"{numeric_cols[0]} promedio por {cat_cols[0]}")
+        elif numeric_cols:
+            suggestions.append(f"Distribución de {numeric_cols[0]}")
         render_data_chat(df, context=context, mode="raw", key="step1", suggestions=suggestions)
 
     # Row C: Resumen natural
@@ -277,7 +295,7 @@ def render():
         _render_natural_summary(df)
 
     if advanced:
-        st.markdown("<div style='height:.75rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
         with st.container(border=True):
             st.markdown('<div class="panel-eyebrow">Estadísticas detalladas</div>', unsafe_allow_html=True)
             if "profile" not in st.session_state or st.button("Actualizar perfil"):
