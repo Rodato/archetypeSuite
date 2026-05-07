@@ -1,3 +1,37 @@
+NATURAL_ANSWER_PROMPT = """\
+Eres un analista de datos respondiendo a un colega. Contesta la pregunta de forma natural y conversacional, mencionando los números clave del resultado.
+
+## Pregunta original
+{question}
+
+## Resultado del cálculo
+{result}
+
+## Reglas
+- Responde en 1-2 oraciones en español, como hablando con un colega.
+- Menciona los números clave del resultado (no inventes).
+- NO uses jerga técnica: nada de "operación", "filtro", "groupby", "agregación", "binning".
+- NO empieces con "Se cuenta", "Se muestra", "Se calcula", "Se filtra" ni verbos pasivos en tercera persona.
+- Si el resultado tiene varios grupos, menciona los 2-3 más relevantes (más altos, más bajos, o el contraste).
+- Si hay 0 resultados, dilo claramente y explica brevemente por qué.
+
+## Ejemplos
+Pregunta: "cuántos hombres mayores de 22"
+Resultado: filas encontradas = 504
+✓ "Hay 504 hombres mayores de 22 años en tu dataset."
+
+Pregunta: "distribución de edad por arquetipo"
+Resultado: tabla con 4 arquetipos y edad promedio
+✓ "El arquetipo Pioneros es el más joven (promedio 24 años) mientras que Tradicionales llega a 51."
+
+Pregunta: "ingreso promedio por género"
+Resultado: Male=4200, Female=3950, Other=4050
+✓ "Los hombres ganan en promedio $4,200 — un poco más que las mujeres ($3,950) y el grupo Other ($4,050)."
+
+Responde SOLO con la oración (o dos), sin comillas ni formato.
+"""
+
+
 DATA_QA_PROMPT = """\
 Eres un analista de datos. El usuario te hizo una pregunta en español sobre un \
 dataset. Tu trabajo es elegir UNA operación pandas válida que conteste la pregunta, \
@@ -20,11 +54,26 @@ sólo devuelve la operación estructurada.
 - "describe": estadísticas descriptivas (mean, std, min, max…) de columnas numéricas. `columns` es lista.
 - "value_counts": frecuencia de valores únicos. `columns` debe tener exactamente 1 columna.
 - "groupby_count": cuenta filas por grupo. `groupby` lista de 1-2 columnas.
-- "groupby_agg": agrega `columns[0]` (numérica) usando `agg`, agrupado por `groupby` (lista de 1-2 columnas).
+- "groupby_agg": agrega una o varias columnas numéricas (`columns`, lista) usando `agg`, agrupado por `groupby` (lista de 1-2 columnas). Para comparar varios indicadores entre grupos al mismo tiempo, pasa todas las columnas relevantes en `columns`.
 - "distribution": histograma o boxplot de una columna numérica. `columns` debe tener 1 columna.
 - "correlation": matriz de correlación entre columnas numéricas. `columns` lista de 2+ columnas numéricas.
 - "top_n": top N valores de `columns[0]` ordenados por sí mismos (descendente). Requiere `top_n` (entero).
-- "filter_count": cuenta total de filas (no toma columnas).
+- "filter_count": cuenta filas que cumplen los filtros de `filter_by`. Usar para "¿cuántos X tienen Y?" sin agrupar. Si no hay filtros devuelve el total.
+
+## Filtros — filter_by (opcional)
+Para preguntas con condiciones (ej. "mayores de 25", "de género Male", "con ingresos > 50000"):
+- Cada condición: `{{"column": "<col>", "op": "<op>", "value": <value>}}`
+- Operadores disponibles: "eq" (igual), "ne" (distinto), "gt" (>), "lt" (<), "gte" (>=), "lte" (<=), "in" (lista de valores), "contains" (substring en texto)
+- Para strings usa el valor tal como aparece en `top_values` (case-insensitive al ejecutar).
+- Múltiples condiciones se combinan con AND.
+- Ejemplo: hombres mayores de 22 → `"filter_by": [{{"column": "gender", "op": "eq", "value": "Male"}}, {{"column": "age", "op": "gt", "value": 22}}]`
+- `filter_by` también aplica a `groupby_count`, `value_counts`, `groupby_agg`, etc. — filtra el dataframe antes de la operación.
+
+## Rangos personalizados (bins) — opcional
+Si la pregunta pide agrupar una columna numérica en rangos (ej. "edad de 16 a 19 y de 20 a 25", "ingresos bajos/medios/altos"), añade `bins`:
+- Cada bin tiene `column` (la columna numérica original), `edges` (lista creciente de cortes inclusivos por la izquierda, ej. [16, 19, 25]) y `labels` opcional (una etiqueta por intervalo, ej. ["16-19", "20-25"]).
+- La columna binned reemplaza a la original en `groupby`/`columns`. Sigue usando el nombre original — el binning se aplica antes de la operación.
+- Si no se piden rangos, omite `bins` o pásalo como null.
 
 ## Tipos de gráfico
 - "bar": barras (default para conteos y agregados)
@@ -47,6 +96,8 @@ Responde SOLO con un objeto JSON:
   "groupby": null o ["<col>", ...],
   "agg": null o "mean|median|sum|min|max|count",
   "top_n": null o <entero>,
+  "bins": null o [{{"column": "<col>", "edges": [<n>, <n>, ...], "labels": null o ["<label>", ...]}}],
+  "filter_by": null o [{{"column": "<col>", "op": "<op>", "value": <value>}}],
   "chart_type": "<chart_type>",
   "narrative": "Frase breve en español describiendo qué se calculó."
 }}

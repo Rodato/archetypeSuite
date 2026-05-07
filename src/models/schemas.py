@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ColumnRecommendation(BaseModel):
@@ -55,6 +55,15 @@ class RefinementDecision(BaseModel):
     suggested_params: Optional[dict] = None
 
 
+FilterOp = Literal["eq", "ne", "gt", "lt", "gte", "lte", "in", "contains"]
+
+
+class FilterCondition(BaseModel):
+    column: str
+    op: FilterOp
+    value: Union[str, int, float, List[Any]]
+
+
 DataOperation = Literal[
     "describe",
     "groupby_count",
@@ -69,11 +78,24 @@ ChartType = Literal["bar", "pie", "histogram", "box", "scatter", "table", "none"
 AggFunc = Literal["mean", "median", "sum", "min", "max", "count"]
 
 
+class BinSpec(BaseModel):
+    column: str
+    edges: List[float] = Field(default_factory=list)
+    labels: Optional[List[str]] = None
+
+
 class DataQuery(BaseModel):
     operation: DataOperation
     columns: List[str] = Field(default_factory=list)
     groupby: Optional[List[str]] = None
     agg: Optional[AggFunc] = None
     top_n: Optional[int] = None
+    bins: Optional[List[BinSpec]] = None
+    filter_by: Optional[List[FilterCondition]] = None
     chart_type: ChartType = "table"
     narrative: str = ""
+
+    @field_validator("columns", mode="before")
+    @classmethod
+    def _columns_none_to_empty(cls, v):
+        return [] if v is None else v

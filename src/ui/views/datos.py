@@ -29,10 +29,9 @@ def _load_demo_dataset() -> None:
             del st.session_state[k]
 
 
-def _render_upload_block():
-    uploaded_file = st.file_uploader(
-        "Sube tu archivo (CSV o Excel)", type=["csv", "xlsx", "xls"]
-    )
+def _render_upload_block(compact: bool = False):
+    label = "Sube tu archivo" if compact else "Sube tu archivo (CSV o Excel)"
+    uploaded_file = st.file_uploader(label, type=["csv", "xlsx", "xls"])
     if uploaded_file is None:
         return
 
@@ -45,10 +44,7 @@ def _render_upload_block():
             excel_file = pd.ExcelFile(uploaded_file)
             sheet_names = excel_file.sheet_names
             if len(sheet_names) > 1:
-                selected_sheet = st.selectbox(
-                    "El archivo tiene varias pestañas. ¿Cuál quieres usar?",
-                    options=sheet_names,
-                )
+                selected_sheet = st.selectbox("Pestaña a usar:", options=sheet_names)
             else:
                 selected_sheet = sheet_names[0]
             df = excel_file.parse(selected_sheet)
@@ -56,14 +52,10 @@ def _render_upload_block():
         ingestor.validate(df)
         st.session_state["raw_df"] = df
         st.session_state["file_name"] = uploaded_file.name
-        label = (
-            f"{uploaded_file.name} — pestaña '{selected_sheet}'"
-            if selected_sheet
-            else uploaded_file.name
-        )
-        st.success(
-            f"Cargado **{label}**: {df.shape[0]} filas, {df.shape[1]} columnas"
-        )
+        for k in list(st.session_state.keys()):
+            if k.startswith("_column_suggestion::"):
+                del st.session_state[k]
+        st.rerun()
     except ValueError as e:
         st.error(str(e))
     except pd.errors.ParserError as e:
@@ -90,9 +82,7 @@ def _render_sql_block():
             ingestor.validate(df)
             st.session_state["raw_df"] = df
             st.session_state["file_name"] = "sql_query"
-            st.success(
-                f"Consulta cargada: {df.shape[0]} filas, {df.shape[1]} columnas"
-            )
+            st.success(f"Consulta cargada: {df.shape[0]} filas, {df.shape[1]} columnas")
         except Exception as e:
             st.error(str(e))
 
@@ -112,108 +102,24 @@ def _render_natural_summary(df: pd.DataFrame):
 
     st.markdown(summary)
     if missing == 0:
-        st.caption("✅ Sin valores faltantes.")
+        st.caption("Sin valores faltantes.")
     else:
         pct = missing / (n_rows * n_cols) * 100
-        st.caption(f"⚠️ {missing} valores faltantes ({pct:.1f}%). El sistema los imputará automáticamente.")
-
-
-def render():
-    advanced = st.session_state.get("advanced_mode", False)
-
-    st.header("1. Datos")
-    st.markdown(
-        "Sube un dataset para descubrir arquetipos. "
-        "Cada fila debe representar una persona, cliente, encuesta o unidad de análisis."
-    )
-
-    if advanced:
-        source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True)
-        if source == "Subir archivo":
-            _render_upload_block()
-        else:
-            _render_sql_block()
-    else:
-        _render_upload_block()
-
-    if "raw_df" not in st.session_state:
-        if st.button("Probar con datos de ejemplo", type="secondary"):
-            _load_demo_dataset()
-            st.rerun()
         st.caption(
-            "Si es tu primera vez, usa el dataset de ejemplo para ver el flujo completo."
+            f"{missing} valores faltantes ({pct:.1f}%). El sistema los imputará automáticamente."
         )
-
-    st.subheader("Contexto (opcional pero recomendado)")
-    context = st.text_area(
-        "Cuéntanos qué representa este dataset: qué es cada fila, el dominio, y para qué lo vas a usar. "
-        "Esto ayuda al sistema a generar descripciones más precisas.",
-        value=st.session_state.get("dataset_context", ""),
-        placeholder="Ejemplo: Clientes de una tienda de ropa online. "
-                    "Queremos segmentarlos por comportamiento de compra para personalizar campañas.",
-        height=100,
-    )
-    st.session_state["dataset_context"] = context
-
-    if "raw_df" in st.session_state:
-        df = st.session_state["raw_df"]
-
-        st.divider()
-        st.subheader("Resumen")
-        _render_natural_summary(df)
-
-        render_data_preview(df)
-
-        with st.expander("💬 Pregúntale a tus datos"):
-            numeric_cols = df.select_dtypes(include="number").columns.tolist()
-            cat_cols = [c for c in df.columns if c not in numeric_cols]
-            suggestions = []
-            if cat_cols:
-                suggestions.append(f"¿Cuántos hay por {cat_cols[0]}?")
-            if numeric_cols:
-                suggestions.append(f"Distribución de {numeric_cols[0]}")
-            if numeric_cols and cat_cols:
-                suggestions.append(f"{numeric_cols[0]} promedio por {cat_cols[0]}")
-            render_data_chat(
-                df,
-                context=context,
-                mode="raw",
-                key="step1",
-                suggestions=suggestions,
-            )
-
-        if advanced:
-            st.divider()
-            st.subheader("Estadísticas detalladas")
-            if "profile" not in st.session_state or st.button("Actualizar perfil"):
-                profiler = DataProfiler()
-                st.session_state["profile"] = profiler.profile(df)
-            profile = st.session_state["profile"]
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Filas", profile["n_rows"])
-            col2.metric("Columnas", profile["n_cols"])
-            col3.metric(
-                "Numéricas / Categóricas",
-                f"{len(profile['numeric_columns'])} / {len(profile['categorical_columns'])}",
-            )
-            render_profile_cards(profile)
-
-        st.divider()
-        _render_column_selection_section(df, context)
 
 
 def _render_column_selection_section(df: pd.DataFrame, context: str) -> None:
-    """Run static filters + LLM relevance suggestion, let the user confirm."""
     file_name = st.session_state.get("file_name", "")
     suggestion_key = f"_column_suggestion::{file_name}::{hash(context) & 0xFFFF}"
 
     if suggestion_key not in st.session_state:
-        st.markdown(
-            "Antes de generar arquetipos, vamos a quedarnos con las variables más "
-            "relevantes para tu objetivo. Esto evita que columnas como `id`, "
-            "fechas o texto libre contaminen el análisis."
+        st.caption(
+            "Selecciona las variables más relevantes para el análisis. "
+            "Esto evita que columnas como `id`, fechas o texto libre contaminen los resultados."
         )
-        if st.button("Sugerir variables ✨", type="secondary"):
+        if st.button("Sugerir variables", type="secondary", use_container_width=True):
             with st.spinner("Analizando columnas..."):
                 result = suggest_columns(df, dataset_context=context)
             st.session_state[suggestion_key] = result
@@ -227,8 +133,8 @@ def _render_column_selection_section(df: pd.DataFrame, context: str) -> None:
 
     if suggestion.get("llm_error"):
         st.warning(
-            f"No pudimos llamar al modelo para sugerir variables ({suggestion['llm_error']}). "
-            "Te mostramos la lista de columnas válidas para que elijas tú."
+            f"No pudimos llamar al modelo ({suggestion['llm_error']}). "
+            "Te mostramos las columnas válidas para que elijas tú."
         )
 
     user_choice = render_column_selector(
@@ -241,12 +147,148 @@ def _render_column_selection_section(df: pd.DataFrame, context: str) -> None:
     st.session_state["column_recommendation"] = recommendation
     st.session_state["filtered_df"] = filtered_df
 
-    cols = st.columns([1, 1])
-    with cols[0]:
-        if st.button("Re-sugerir variables", type="secondary"):
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("Re-sugerir", type="secondary", use_container_width=True):
             st.session_state.pop(suggestion_key, None)
             st.rerun()
-    with cols[1]:
-        if st.button("Continuar al análisis →", type="primary", disabled=not user_choice):
+    with col_b:
+        if st.button(
+            "Continuar", type="primary",
+            disabled=not user_choice, use_container_width=True,
+        ):
             st.session_state["_force_page"] = "Analizar"
             st.rerun()
+
+
+def render():
+    advanced = st.session_state.get("advanced_mode", False)
+
+    if "raw_df" not in st.session_state:
+        with st.container(border=True):
+            st.markdown('<div class="panel--hero"></div>', unsafe_allow_html=True)
+            col_left, col_right = st.columns([3, 2], gap="medium")
+            with col_left:
+                st.markdown('<div class="panel-eyebrow">Paso 1 de 3</div>', unsafe_allow_html=True)
+                st.markdown("## Carga tu dataset")
+                st.markdown(
+                    "Cada fila debe representar una persona, cliente, encuesta o unidad de análisis."
+                )
+                if advanced:
+                    source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True)
+                    if source == "Subir archivo":
+                        _render_upload_block()
+                    else:
+                        _render_sql_block()
+                else:
+                    _render_upload_block()
+
+                if st.button("Usar dataset de ejemplo", type="secondary"):
+                    _load_demo_dataset()
+                    st.rerun()
+                st.caption("Si es tu primera vez, usa el dataset de ejemplo para ver el flujo completo.")
+
+            with col_right:
+                st.markdown('<div class="panel-eyebrow">Contexto (opcional pero recomendado)</div>', unsafe_allow_html=True)
+                st.markdown('<div class="panel-title">¿Qué es este dataset?</div>', unsafe_allow_html=True)
+                context = st.text_area(
+                    "Contexto",
+                    value=st.session_state.get("dataset_context", ""),
+                    placeholder="Ejemplo: Clientes de una tienda de ropa online. Queremos segmentarlos por comportamiento de compra para personalizar campañas.",
+                    height=160,
+                    label_visibility="collapsed",
+                )
+                st.session_state["dataset_context"] = context
+                st.caption(
+                    "El contexto ayuda al sistema a generar nombres y descripciones más precisas para cada arquetipo."
+                )
+        return
+
+    # Dataset loaded
+    df = st.session_state["raw_df"]
+    context = st.session_state.get("dataset_context", "")
+
+    # Row A: Dataset | Contexto | Variables
+    cola, colb, colc = st.columns([1.2, 2, 2.2], gap="medium")
+
+    with cola:
+        with st.container(border=True):
+            st.markdown('<div class="panel-eyebrow">Dataset</div>', unsafe_allow_html=True)
+            file_name = st.session_state.get("file_name", "dataset")
+            st.markdown(f"**{file_name}**")
+            st.caption(f"{df.shape[0]} filas · {df.shape[1]} columnas")
+            st.markdown("<div style='height:.4rem'></div>", unsafe_allow_html=True)
+            if advanced:
+                source = st.radio("Fuente", ["Subir archivo", "Conexión SQL"], horizontal=True)
+                if source == "Subir archivo":
+                    _render_upload_block(compact=True)
+                else:
+                    _render_sql_block()
+            else:
+                _render_upload_block(compact=True)
+            if st.button("Usar ejemplo", type="secondary", use_container_width=True, key="demo_loaded"):
+                _load_demo_dataset()
+                st.rerun()
+
+    with colb:
+        with st.container(border=True):
+            st.markdown('<div class="panel--accent"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-eyebrow">Contexto</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">¿Qué es este dataset?</div>', unsafe_allow_html=True)
+            context = st.text_area(
+                "Contexto",
+                value=context,
+                placeholder="Ejemplo: Clientes de una tienda de ropa online...",
+                height=130,
+                label_visibility="collapsed",
+            )
+            st.session_state["dataset_context"] = context
+
+    with colc:
+        with st.container(border=True):
+            st.markdown('<div class="panel-eyebrow">Variables a usar</div>', unsafe_allow_html=True)
+            _render_column_selection_section(df, context)
+
+    # Row B: Vista previa | Chat
+    col1, col2 = st.columns([3, 2], gap="medium")
+
+    with col1:
+        with st.container(border=True):
+            st.markdown('<div class="panel-eyebrow">Vista previa</div>', unsafe_allow_html=True)
+            render_data_preview(df)
+
+    with col2:
+        st.markdown('<div class="panel-eyebrow">Pregunta sobre tus datos</div>', unsafe_allow_html=True)
+        numeric_cols = df.select_dtypes(include="number").columns.tolist()
+        cat_cols = [c for c in df.columns if c not in numeric_cols]
+        suggestions = []
+        if cat_cols:
+            suggestions.append(f"¿Cuántos hay por {cat_cols[0]}?")
+        if numeric_cols:
+            suggestions.append(f"Distribución de {numeric_cols[0]}")
+        if numeric_cols and cat_cols:
+            suggestions.append(f"{numeric_cols[0]} promedio por {cat_cols[0]}")
+        render_data_chat(df, context=context, mode="raw", key="step1", suggestions=suggestions)
+
+    # Row C: Resumen natural
+    with st.container(border=True):
+        st.markdown('<div class="panel--ghost"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="panel-eyebrow">Resumen</div>', unsafe_allow_html=True)
+        _render_natural_summary(df)
+
+    if advanced:
+        st.markdown("<div style='height:.75rem'></div>", unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('<div class="panel-eyebrow">Estadísticas detalladas</div>', unsafe_allow_html=True)
+            if "profile" not in st.session_state or st.button("Actualizar perfil"):
+                profiler = DataProfiler()
+                st.session_state["profile"] = profiler.profile(df)
+            profile = st.session_state["profile"]
+            mc1, mc2, mc3 = st.columns(3)
+            mc1.metric("Filas", profile["n_rows"])
+            mc2.metric("Columnas", profile["n_cols"])
+            mc3.metric(
+                "Numéricas / Categóricas",
+                f"{len(profile['numeric_columns'])} / {len(profile['categorical_columns'])}",
+            )
+            render_profile_cards(profile)

@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from src.llm.prompts import DATA_QA_PROMPT
-from src.llm.provider import get_llm_json, invoke_json_with_retry
+from src.llm.prompts import DATA_QA_PROMPT, NATURAL_ANSWER_PROMPT
+from src.llm.provider import get_fast_text_llm, get_llm_json, invoke_json_with_retry
 from src.models.schemas import DataQuery
 
 
@@ -55,14 +55,77 @@ def _validate_columns(query: DataQuery, available: set) -> Optional[str]:
     for col in (query.groupby or []):
         if col not in available:
             return f"La columna de agrupación `{col}` no existe."
+    for f in (query.filter_by or []):
+        if f.column not in available:
+            return f"La columna de filtro `{f.column}` no existe."
     return None
+
+
+def _apply_filters(df: pd.DataFrame, query: DataQuery) -> pd.DataFrame:
+    if not query.filter_by:
+        return df
+    for cond in query.filter_by:
+        col = cond.column
+        if col not in df.columns:
+            continue
+        val = cond.value
+        s = df[col]
+        is_str = s.dtype == object or pd.api.types.is_string_dtype(s)
+        if cond.op == "eq":
+            mask = s.str.lower() == str(val).lower() if is_str else s == val
+        elif cond.op == "ne":
+            mask = s.str.lower() != str(val).lower() if is_str else s != val
+        elif cond.op == "gt":
+            mask = s > val
+        elif cond.op == "lt":
+            mask = s < val
+        elif cond.op == "gte":
+            mask = s >= val
+        elif cond.op == "lte":
+            mask = s <= val
+        elif cond.op == "in":
+            vals = val if isinstance(val, list) else [val]
+            if is_str:
+                lower_vals = [str(v).lower() for v in vals]
+                mask = s.str.lower().isin(lower_vals)
+            else:
+                mask = s.isin(vals)
+        elif cond.op == "contains":
+            mask = s.astype(str).str.contains(str(val), case=False, na=False)
+        else:
+            continue
+        df = df[mask]
+    return df
+
+
+def _apply_bins(df: pd.DataFrame, query: DataQuery) -> pd.DataFrame:
+    """Replace columns referenced in `query.bins` with binned categorical versions."""
+    if not query.bins:
+        return df
+    df = df.copy()
+    for spec in query.bins:
+        if spec.column not in df.columns or len(spec.edges) < 2:
+            continue
+        labels = spec.labels
+        if labels is not None and len(labels) != len(spec.edges) - 1:
+            labels = None
+        df[spec.column] = pd.cut(
+            df[spec.column],
+            bins=spec.edges,
+            labels=labels,
+            include_lowest=True,
+            right=True,
+        ).astype(object)
+    return df
 
 
 def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
     """Run the operation deterministically. Returns dict with 'table' and optional 'chart'."""
+    df = _apply_bins(df, query)
+    df = _apply_filters(df, query)
     op = query.operation
     if op == "filter_count":
-        table = pd.DataFrame({"métrica": ["total_filas"], "valor": [len(df)]})
+        table = pd.DataFrame({"métrica": ["filas encontradas"], "valor": [len(df)]})
         return {"table": table, "chart": None}
 
     if op == "describe":
@@ -97,13 +160,19 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         if not query.groupby or not query.columns:
             raise ValueError("groupby_agg requiere groupby y columns.")
         agg = query.agg or "mean"
-        target = query.columns[0]
-        gb = df.groupby(query.groupby, dropna=False)[target].agg(agg).reset_index()
+        targets = [c for c in query.columns if c in df.columns]
+        if not targets:
+            raise ValueError("Ninguna columna objetivo es válida.")
+        gb = df.groupby(query.groupby, dropna=False)[targets].agg(agg).reset_index()
+        if len(targets) > 1:
+            numeric_cols = [c for c in gb.columns if c in targets]
+            gb[numeric_cols] = gb[numeric_cols].round(3)
+        chart_y = targets[0] if len(targets) == 1 else None
         chart = {
-            "type": query.chart_type,
+            "type": query.chart_type if len(targets) == 1 else "table",
             "data": gb,
             "x": query.groupby[0],
-            "y": target,
+            "y": chart_y,
             "color": query.groupby[1] if len(query.groupby) > 1 else None,
         }
         return {"table": gb, "chart": chart}
@@ -144,6 +213,30 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         return {"table": top, "chart": chart}
 
     raise ValueError(f"Operación no soportada: {op}")
+
+
+def _summarize_table_for_prompt(table: pd.DataFrame, max_rows: int = 12) -> str:
+    if table is None or table.empty:
+        return "(sin resultados)"
+    if len(table) > max_rows:
+        head = table.head(max_rows).to_string(index=False)
+        return f"{head}\n... ({len(table) - max_rows} filas más)"
+    return table.to_string(index=False)
+
+
+def _generate_natural_narrative(question: str, table: pd.DataFrame) -> Optional[str]:
+    """Second LLM call: turn a structured result into a conversational answer."""
+    try:
+        prompt = NATURAL_ANSWER_PROMPT.format(
+            question=question,
+            result=_summarize_table_for_prompt(table),
+        )
+        llm = get_fast_text_llm()
+        response = llm.invoke(prompt)
+        text = (response.content or "").strip()
+        return text or None
+    except Exception:
+        return None
 
 
 def answer_data_question(
@@ -194,9 +287,11 @@ def answer_data_question(
             error=str(exc),
         )
 
+    table = execution.get("table")
+    natural = _generate_natural_narrative(question, table)
     return DataQAResult(
-        narrative=query.narrative,
+        narrative=natural or query.narrative,
         operation=query.operation,
-        table=execution.get("table"),
+        table=table,
         chart=execution.get("chart"),
     )

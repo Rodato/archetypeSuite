@@ -21,10 +21,14 @@ def chat_df():
 
 
 def _patch_llm(query: DataQuery, error=None):
-    return patch(
-        "src.llm.data_qa.invoke_json_with_retry",
-        lambda *_args, **_kwargs: (query, error),
-    ), patch("src.llm.data_qa.get_llm_json", lambda: None)
+    return (
+        patch(
+            "src.llm.data_qa.invoke_json_with_retry",
+            lambda *_args, **_kwargs: (query, error),
+        ),
+        patch("src.llm.data_qa.get_llm_json", lambda: None),
+        patch("src.llm.data_qa._generate_natural_narrative", lambda *_a, **_kw: None),
+    )
 
 
 def test_filter_count_returns_total_rows(chat_df):
@@ -114,8 +118,8 @@ def test_answer_data_question_full_pipeline(chat_df):
         chart_type="bar",
         narrative="Cuento por género.",
     )
-    p1, p2 = _patch_llm(fake_query)
-    with p1, p2:
+    p1, p2, p3 = _patch_llm(fake_query)
+    with p1, p2, p3:
         result = answer_data_question(chat_df, "cuántos hombres y mujeres", context="", mode="raw")
 
     assert result.error is None
@@ -131,8 +135,8 @@ def test_answer_data_question_invalid_column_returns_error(chat_df):
         chart_type="bar",
         narrative="x",
     )
-    p1, p2 = _patch_llm(fake_query)
-    with p1, p2:
+    p1, p2, p3 = _patch_llm(fake_query)
+    with p1, p2, p3:
         result = answer_data_question(chat_df, "?", mode="raw")
 
     assert result.error is not None
@@ -145,8 +149,8 @@ def test_answer_data_question_llm_error_falls_through(chat_df):
         narrative="No entendí, mostrando conteo.",
         chart_type="none",
     )
-    p1, p2 = _patch_llm(fake_query, error="boom")
-    with p1, p2:
+    p1, p2, p3 = _patch_llm(fake_query, error="boom")
+    with p1, p2, p3:
         result = answer_data_question(chat_df, "?", mode="raw")
 
     assert result.error == "boom"

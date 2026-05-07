@@ -1,18 +1,12 @@
-"""UI component for the column selection step.
-
-Renders the static-filter summary and the LLM recommendation, and lets the
-user toggle which columns to use. Persists the final list in
-`st.session_state["selected_columns"]`.
-"""
 from typing import Any, Dict, List
 
 import streamlit as st
 
 
-_IMPORTANCE_BADGE = {
-    "high": ("🟢", "Alta"),
-    "medium": ("🟡", "Media"),
-    "low": ("⚪", "Baja"),
+_IMPORTANCE_CONFIG = {
+    "high": ("Alta", "importance-badge--high"),
+    "medium": ("Media", "importance-badge--medium"),
+    "low": ("Baja", "importance-badge--low"),
 }
 
 
@@ -39,8 +33,6 @@ def render_column_selector(
     recommendation: Dict[str, Any],
     available_columns: List[str],
 ) -> List[str]:
-    """Render the column selection UI and return the user-chosen list."""
-    st.subheader("Variables a usar para los arquetipos")
     summary = recommendation.get("summary", "")
     if summary:
         st.caption(summary)
@@ -51,28 +43,30 @@ def render_column_selector(
     excluded_recs = recommendation.get("excluded_columns", [])
 
     selected_names = {r["name"] for r in selected_recs}
-    excluded_names = {r["name"] for r in excluded_recs}
     suggestion_by_name = {r["name"]: r for r in selected_recs}
 
     user_choice: List[str] = []
-    st.markdown("**Recomendadas para clustering** (marca/desmarca según lo que tenga sentido)")
+    st.markdown("**Recomendadas**")
     for col in available_columns:
         if col not in selected_names:
             continue
         rec = suggestion_by_name[col]
-        emoji, label = _IMPORTANCE_BADGE.get(rec.get("importance", "medium"), _IMPORTANCE_BADGE["medium"])
+        importance = rec.get("importance", "medium")
+        label, badge_class = _IMPORTANCE_CONFIG.get(importance, _IMPORTANCE_CONFIG["medium"])
+        badge_html = f"<span class='importance-badge {badge_class}'>{label}</span>"
         checked = st.checkbox(
-            f"{emoji} `{col}` — {rec.get('reason', '')}",
+            f"`{col}` — {rec.get('reason', '')}",
             value=True,
             key=f"col_select_{col}",
             help=f"Importancia: {label}",
         )
+        st.markdown(badge_html, unsafe_allow_html=True)
         if checked:
             user_choice.append(col)
 
     others = [c for c in available_columns if c not in selected_names]
     if others:
-        with st.expander(f"Mostrar columnas no recomendadas ({len(others)})"):
+        with st.expander(f"Columnas no recomendadas ({len(others)})"):
             for col in others:
                 reason = next((e["reason"] for e in excluded_recs if e["name"] == col), "")
                 checked = st.checkbox(

@@ -5,11 +5,14 @@ Notas en: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Documentició
 Actualizar cuando cambien: nodos del pipeline, PipelineState, algoritmos de clustering, modelos LLM, prompts, páginas UI.
 No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 
-## Estado del Proyecto (May 1, 2026)
+## Estado del Proyecto (May 5, 2026)
 - Pipeline de **10 nodos** (insertado `column_selection_node` entre `profile` y `preprocess`, May 2026)
 - **Selección inteligente de variables** (May 2026): filtros estáticos deterministas (IDs, free-text, fechas, alta missing, varianza-cero) + sugerencia LLM contextual + checkboxes en UI con badges de importancia
 - **Transparencia del por qué** (May 2026): curva de silueta vs k visible (expander "¿Por qué N arquetipos?"), prevalencia % en cards, popover "ℹ️ ¿Qué es esto?", botón "Probar con datos de ejemplo"
 - **Chat conversacional** (May 2026) en paso 1 (datos crudos, modo `raw`) y paso 3 (sobre arquetipos, modo `archetypes`). LLM elige operación pandas estructurada (`DataQuery`), Python ejecuta determinísticamente — nunca se ejecuta código LLM-generado
+  - `groupby_agg` soporta **múltiples columnas objetivo** — "muéstrame las diferencias entre arquetipos" agrega todas las numéricas relevantes en una sola tabla
+  - `DataQuery.bins` permite **rangos personalizados** vía `pd.cut` (ej. "edad agrupada 16-19 y 20-25") aplicados antes del groupby
+  - `DataQuery.columns` tolera `null` del LLM (validator coerce → `[]`) — fix `ValidationError` que rompía preguntas complejas
 - UI wizard 3 pasos (Datos, Analizar, Arquetipos) con toggle "Modo avanzado"
 - Tema dark profesional con CSS custom (`.streamlit/config.toml` + `src/ui/styles.py`)
 - Pipeline determinístico: `temperature=0`, `select_node` fijo en KMeans, refinement no cambia algoritmo

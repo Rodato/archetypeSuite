@@ -42,6 +42,17 @@ def get_llm_json() -> ChatOpenAI:
     )
 
 
+def get_fast_text_llm() -> ChatOpenAI:
+    """Plain text (no JSON) using the fast narrative model. For short conversational answers."""
+    return ChatOpenAI(
+        model=settings.llm_narrative_model,
+        temperature=settings.llm_temperature,
+        openai_api_key=settings.openrouter_api_key,
+        openai_api_base="https://openrouter.ai/api/v1",
+        request_timeout=30,
+    )
+
+
 def get_narrative_llm() -> ChatOpenAI:
     return ChatOpenAI(
         model=settings.llm_narrative_model,

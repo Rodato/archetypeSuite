@@ -4,35 +4,34 @@ from typing import Dict, Optional
 def silhouette_to_quality(score: Optional[float]) -> Dict[str, str]:
     if score is None:
         return {
-            "emoji": "❓",
+            "grade": "—",
             "label": "Sin calcular",
             "description": "No se pudo calcular la calidad del análisis.",
             "color": "gray",
         }
-
     if score >= 0.5:
         return {
-            "emoji": "🌟",
+            "grade": "A",
             "label": "Excelente",
             "description": "Los arquetipos están muy bien diferenciados entre sí.",
             "color": "green",
         }
     if score >= 0.3:
         return {
-            "emoji": "✅",
+            "grade": "B",
             "label": "Buena",
             "description": "Los arquetipos son claramente distinguibles.",
             "color": "green",
         }
     if score >= 0.15:
         return {
-            "emoji": "⚠️",
+            "grade": "C",
             "label": "Aceptable",
             "description": "Hay cierto solapamiento entre arquetipos, pero la segmentación es útil.",
             "color": "orange",
         }
     return {
-        "emoji": "❌",
+        "grade": "D",
         "label": "Baja",
         "description": "Los arquetipos se solapan mucho. Considera más datos o variables más diferenciadoras.",
         "color": "red",
@@ -40,16 +39,16 @@ def silhouette_to_quality(score: Optional[float]) -> Dict[str, str]:
 
 
 NODE_FRIENDLY_MESSAGES = {
-    "ingest": "📥 Cargando tus datos...",
-    "profile": "🔍 Entendiendo tus datos...",
-    "column_selection": "🎛️ Aplicando selección de variables...",
-    "preprocess": "🧹 Preparando datos...",
-    "optimize_k": "📐 Buscando el mejor número de grupos...",
-    "select": "🎯 Eligiendo método de análisis...",
-    "cluster": "🔗 Encontrando patrones...",
-    "evaluate": "✅ Validando resultados...",
-    "interpret": "📝 Describiendo arquetipos...",
-    "refinement": "🔄 Ajustando...",
+    "ingest": "Cargando tus datos...",
+    "profile": "Entendiendo tus datos...",
+    "column_selection": "Aplicando selección de variables...",
+    "preprocess": "Preparando datos...",
+    "optimize_k": "Buscando el mejor número de grupos...",
+    "select": "Eligiendo método de análisis...",
+    "cluster": "Encontrando patrones...",
+    "evaluate": "Validando resultados...",
+    "interpret": "Describiendo arquetipos...",
+    "refinement": "Ajustando...",
 }
 
 
