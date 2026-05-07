@@ -1,16 +1,32 @@
+from typing import Optional
+
 import streamlit as st
 
 from src.agents.graph import compile_graph
-from src.ui.quality import natural_log_message
+from src.config.settings import settings
+from src.ui.copy import COPY
+from src.ui.quality import PIPELINE_UI_STEPS, nodes_with_logs
 
 
-def _seen_steps_from_logs(logs: list) -> list:
-    seen: list = []
-    for raw in logs:
-        friendly = natural_log_message(raw)
-        if friendly and friendly not in seen:
-            seen.append(friendly)
-    return seen
+def _render_checklist(active_node: Optional[str], completed: set, error_node: Optional[str] = None) -> str:
+    """HTML para la lista de pasos esperados con estado visual."""
+    items = []
+    for key, label in PIPELINE_UI_STEPS:
+        if error_node == key:
+            cls = "is-failed"
+        elif key in completed:
+            cls = "is-done"
+        elif key == active_node:
+            cls = "is-running"
+        else:
+            cls = "is-pending"
+        items.append(
+            f"<li class='{cls}'>"
+            f"<span class='pipeline-checklist__marker'></span>"
+            f"<span>{label}</span>"
+            f"</li>"
+        )
+    return "<ul class='pipeline-checklist'>" + "".join(items) + "</ul>"
 
 
 def render():
@@ -28,7 +44,7 @@ def render():
                 '</div>',
                 unsafe_allow_html=True,
             )
-            if st.button("Ir a Datos", type="primary"):
+            if st.button(COPY["go_to_data"], type="primary"):
                 st.session_state["_force_page"] = "Datos"
                 st.rerun()
         return
@@ -45,13 +61,13 @@ def render():
             st.markdown("Los arquetipos ya fueron generados. Puedes verlos o volver a ejecutar el análisis.")
             bcol1, bcol2 = st.columns(2)
             with bcol1:
-                if st.button("Volver a analizar", type="secondary", use_container_width=True):
+                if st.button(COPY["analyze_again"], type="secondary", use_container_width=True):
                     st.session_state.pop("pipeline_result", None)
                     st.session_state.pop("pipeline_logs", None)
                     st.session_state["_current_step"] = "Analizar"
                     st.rerun()
             with bcol2:
-                if st.button("Ver arquetipos", type="primary", use_container_width=True):
+                if st.button(COPY["go_to_results"], type="primary", use_container_width=True):
                     st.session_state["_force_page"] = "Arquetipos"
                     st.rerun()
         return
@@ -62,13 +78,18 @@ def render():
         n_arch = len(result.get("archetypes", [])) if result else 0
         with st.container(border=True):
             st.markdown('<div class="panel--success"></div>', unsafe_allow_html=True)
-            st.markdown('<div class="panel-eyebrow">Análisis completado</div>', unsafe_allow_html=True)
-            st.markdown(f"### {n_arch} arquetipos encontrados")
             st.markdown(
-                "El sistema identificó los patrones de comportamiento en tu dataset. "
-                "Pasa al siguiente paso para explorarlos en detalle."
+                "<div class='success-hero'>"
+                "<div class='success-hero__sparkle'>✨</div>"
+                f"<div class='success-hero__title'>{COPY['analysis_done']}</div>"
+                f"<div class='success-hero__sub'>"
+                f"Encontramos <strong>{n_arch} arquetipos</strong> en tu dataset. "
+                "Pasa al siguiente paso para explorar quiénes son y en qué se diferencian."
+                "</div>"
+                "</div>",
+                unsafe_allow_html=True,
             )
-            if st.button("Ver arquetipos", type="primary", use_container_width=True):
+            if st.button(COPY["go_to_results"] + " →", type="primary", use_container_width=True):
                 st.session_state["_force_page"] = "Arquetipos"
                 st.session_state["_just_finished"] = False
                 st.rerun()
@@ -76,7 +97,7 @@ def render():
         if advanced:
             final_state = st.session_state.get("pipeline_result", {})
             all_logs = st.session_state.get("pipeline_logs", [])
-            st.markdown("<div style='height:.75rem'></div>", unsafe_allow_html=True)
+            st.markdown("<div class='space-md'></div>", unsafe_allow_html=True)
             adv1, adv2, adv3 = st.columns(3, gap="medium")
             with adv1:
                 with st.container(border=True):
@@ -112,12 +133,21 @@ def render():
             with st.expander("Contexto que usará el análisis"):
                 st.markdown(context)
 
-        clicked = st.button("Iniciar análisis", type="primary")
+        clicked = st.button(COPY["analyze_button"], type="primary")
 
     if not clicked:
         return
 
-    # Running
+    # Validación temprana de API key
+    if not settings.openrouter_api_key:
+        st.error(COPY["error_no_api_key"])
+        st.caption(
+            "Crea un archivo `.env` en la raíz del proyecto con la línea "
+            "`OPENROUTER_API_KEY=...`. Mira `.env.example` como referencia."
+        )
+        return
+
+    # Build initial state
     selected_columns = st.session_state.get("selected_columns")
     static_filter_result = st.session_state.get("static_filter_result")
     column_recommendation = st.session_state.get("column_recommendation")
@@ -143,54 +173,87 @@ def render():
     graph = compile_graph()
     final_state = None
     all_logs: list = []
+    last_running_node: Optional[str] = None
 
     run_col, status_col = st.columns([2, 1], gap="medium")
     with run_col:
         with st.container(border=True):
             st.markdown('<div class="panel-eyebrow">Progreso</div>', unsafe_allow_html=True)
-            progress_area = st.empty()
+            checklist_area = st.empty()
+            checklist_area.markdown(_render_checklist(None, set()), unsafe_allow_html=True)
     with status_col:
         with st.container(border=True):
             st.markdown('<div class="panel--accent"></div>', unsafe_allow_html=True)
             st.markdown('<div class="panel-eyebrow">En curso</div>', unsafe_allow_html=True)
             status_area = st.empty()
+            status_area.markdown(
+                f"<div style='color:var(--text-muted);font-size:.875rem'>"
+                f"Esto suele tomar 1-2 minutos."
+                f"</div>",
+                unsafe_allow_html=True,
+            )
 
     advanced_log_area = None
     if advanced:
-        st.markdown("<div style='height:.5rem'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='space-sm'></div>", unsafe_allow_html=True)
         with st.container(border=True):
             st.markdown('<div class="panel--ghost"></div>', unsafe_allow_html=True)
             st.markdown('<div class="panel-eyebrow">Logs en tiempo real</div>', unsafe_allow_html=True)
             advanced_log_area = st.empty()
 
-    with st.spinner("Analizando..."):
-        for state in graph.stream(initial_state, stream_mode="values"):
-            final_state = state
-            logs = state.get("log_messages", [])
-            all_logs = logs
+    pipeline_keys = [k for k, _ in PIPELINE_UI_STEPS]
 
-            friendly_steps = _seen_steps_from_logs(logs)
-            if friendly_steps:
-                last_i = len(friendly_steps) - 1
-                item_parts = []
-                for i, step in enumerate(friendly_steps):
-                    color = "#4F46E5" if i == last_i else "#94A3B8"
-                    marker = "›" if i == last_i else "–"
-                    item_parts.append(
-                        f"<li style='padding:.2rem 0;color:{color};font-size:.875rem'>{marker} {step}</li>"
-                    )
-                items = "\n".join(item_parts)
-                progress_area.markdown(
-                    f"<ul style='list-style:none;padding:0;margin:0'>{items}</ul>",
+    try:
+        with st.spinner(COPY["analyzing"]):
+            for state in graph.stream(initial_state, stream_mode="values"):
+                final_state = state
+                logs = state.get("log_messages", [])
+                all_logs = logs
+
+                completed_nodes = nodes_with_logs(logs) & set(pipeline_keys)
+                # Determinar el "siguiente" paso después del último completado
+                running = None
+                for k in pipeline_keys:
+                    if k not in completed_nodes:
+                        running = k
+                        break
+                if running is None and completed_nodes:
+                    # All steps already done — show last as running until refinement loop ends
+                    running = pipeline_keys[-1]
+                last_running_node = running
+
+                checklist_area.markdown(
+                    _render_checklist(running, completed_nodes),
                     unsafe_allow_html=True,
+                )
+                running_label = next(
+                    (label for k, label in PIPELINE_UI_STEPS if k == running), "Procesando…"
                 )
                 status_area.markdown(
-                    f"<div style='color:#4F46E5;font-size:.875rem;font-weight:500'>{friendly_steps[-1]}</div>",
+                    f"<div style='color:var(--accent);font-size:.875rem;font-weight:500'>"
+                    f"{running_label}…"
+                    f"</div>",
                     unsafe_allow_html=True,
                 )
 
-            if advanced and advanced_log_area is not None:
-                advanced_log_area.code("\n".join(logs), language="text")
+                if advanced and advanced_log_area is not None:
+                    advanced_log_area.code("\n".join(logs), language="text")
+    except Exception as e:
+        # Marcar el step que estaba corriendo como fallido
+        completed_nodes = nodes_with_logs(all_logs) & set(pipeline_keys)
+        checklist_area.markdown(
+            _render_checklist(None, completed_nodes, error_node=last_running_node),
+            unsafe_allow_html=True,
+        )
+        st.error(COPY["error_pipeline_interrupted"])
+        with st.expander("Detalles técnicos"):
+            st.code(f"{type(e).__name__}: {e}")
+            if all_logs:
+                st.caption("Últimos logs antes del error:")
+                st.code("\n".join(all_logs[-10:]), language="text")
+        if st.button(COPY["retry"], type="primary"):
+            st.rerun()
+        return
 
     st.session_state["pipeline_result"] = final_state
     st.session_state["pipeline_logs"] = all_logs
