@@ -47,8 +47,17 @@ sólo devuelve la operación estructurada.
 ## Columnas disponibles (con tipos y muestras)
 {columns_summary}
 
+## Historial reciente de la conversación
+{history}
+
 ## Pregunta del usuario
 {question}
+
+## Cómo usar el historial
+- Si la pregunta nueva es independiente, ignora el historial.
+- Si la pregunta hace referencia a la respuesta previa ("y de esos", "ese grupo", "ahí", "el anterior", "compáralo", "y ahora por…"), reconstruye los filtros/agrupaciones de la pregunta anterior y combínalos con lo nuevo.
+- Si la pregunta omite la métrica pero la previa la usaba (p. ej. antes era promedio de ingresos por región y ahora "y por género"), reutiliza la misma métrica/agregación y cambia sólo lo que el usuario pide.
+- Si lo que pide es contradictorio con el historial, prioriza la pregunta nueva.
 
 ## Operaciones disponibles
 - "describe": estadísticas descriptivas (mean, std, min, max…) de columnas numéricas. `columns` es lista.
@@ -75,14 +84,44 @@ Si la pregunta pide agrupar una columna numérica en rangos (ej. "edad de 16 a 1
 - La columna binned reemplaza a la original en `groupby`/`columns`. Sigue usando el nombre original — el binning se aplica antes de la operación.
 - Si no se piden rangos, omite `bins` o pásalo como null.
 
-## Tipos de gráfico
-- "bar": barras (default para conteos y agregados)
-- "pie": pastel (sólo para distribuciones de pocas categorías)
-- "histogram": histograma (para distribución de numéricas)
-- "box": boxplot (para distribución de numéricas, idealmente agrupada)
-- "scatter": dispersión (para correlación entre 2 numéricas)
-- "table": tabla (default si no aplica visualización)
-- "none": sólo narrativa, sin tabla ni gráfico
+## Tipos de gráfico — elige el MÁS adecuado, no por defecto "bar"
+Criterios por intención de la pregunta:
+- "bar": comparar valores entre categorías (conteos por grupo, promedio por grupo). Default razonable para `groupby_count` o `groupby_agg` con 1 sola métrica y 2-15 grupos.
+- "pie": composición porcentual de un TODO con MUY pocas categorías (2-5). NO usar pie si hay >5 grupos o si la pregunta es comparar magnitudes (usa bar).
+- "line": evolución/orden — usa cuando el eje X es ordinal (rango de edad binned, fecha, año, mes, decil). Especialmente útil con `bins` sobre variable numérica + `groupby_count` o `groupby_agg`. NO uses line si las categorías del X no tienen orden natural.
+- "histogram": distribución de UNA variable numérica (operación `distribution` o `value_counts` sobre numérica). El eje X es la variable misma.
+- "box": distribución de una numérica AGRUPADA por una categórica (compara mediana/dispersión entre grupos). Úsalo en `groupby_agg` cuando interesa la dispersión, no sólo el promedio. Default fuerte cuando la pregunta menciona "variabilidad", "dispersión", "outliers".
+- "scatter": relación entre DOS variables numéricas. Sólo aplica si tienes 2 columnas numéricas y la pregunta es de correlación/relación. (Operación `correlation` con 2 columnas + scatter es válido si interesa ver la nube de puntos.)
+- "heatmap": matriz de correlación con 3+ variables numéricas — default para `correlation` cuando hay más de 2 columnas. Mucho más legible que tabla.
+- "table": tabla — usa cuando ningún gráfico aporta (descriptivos, conteos puntuales).
+- "none": sólo narrativa — usa para `filter_count` (la respuesta es un número) o cuando explicas una limitación.
+
+## Reglas duras de elección
+- `correlation` con 3+ columnas → SIEMPRE "heatmap". Con exactamente 2 → "scatter" o "table".
+- `distribution` → "histogram" (o "box" si hay una agrupación implícita).
+- `filter_count` → "none".
+- `value_counts` con >10 categorías → "bar" horizontal (no "pie", se vuelve ilegible).
+- Cuando el eje X tiene orden natural (binned numérico, fecha, ranking) → preferir "line" sobre "bar".
+- No uses "pie" si hay más de 5 segmentos o si una sola categoría domina (>70%).
+- No repitas "bar" por inercia — pregúntate qué cuenta mejor la historia del dato.
+
+## Absoluto vs relativo — normalize y clarificación
+Cuando la pregunta cuenta algo cruzado por más de un eje (ej. "cuántos hombres por arquetipo", "distribución de género en cada cluster"), suele ser AMBIGUO si el usuario quiere conteo absoluto o porcentaje. Política:
+
+1. **Si la pregunta es explícita** (contiene "porcentaje", "%", "proporción", "qué porcentaje", "porcentualmente", "absoluto", "conteo", "cuántos en total"): elige el `normalize` correcto y NO pidas clarificación.
+   - "en porcentaje por grupo" / "% dentro de cada arquetipo" → `normalize="row_pct"`
+   - "porcentaje del total" / "% del total" → `normalize="total_pct"`
+   - "conteo" / "cuántos en total" / "absoluto" → `normalize="none"`
+
+2. **Si la pregunta es ambigua** (sólo dice "cuántos X por Y", "distribución de X en Y", "qué arquetipo tiene más X" sin especificar formato), Y la operación es `groupby_count` con 2 columnas en `groupby` o `value_counts` que se va a comparar entre grupos:
+   - `needs_clarification=true`
+   - `clarification_question`: una pregunta corta y clara, ej. "¿Cómo prefieres ver los resultados?"
+   - `clarification_options`: SIEMPRE estos tres textos exactos en este orden: ["Conteo absoluto", "% dentro de cada grupo", "% del total"]
+   - Devuelve también la operación y los demás campos como si fueras a ejecutar (los usaremos cuando el usuario aclare).
+
+3. **Si la operación NO se beneficia de normalize** (`describe`, `correlation`, `distribution`, `top_n`, `filter_count`, `groupby_agg` con mean/median/sum), no marques clarificación y deja `normalize="none"`.
+
+4. **Si en el historial el usuario YA aclaró** (la última instrucción incluye explícitamente "en porcentaje", "absoluto", etc.), respétalo y NO vuelvas a preguntar.
 
 ## REGLAS DURAS
 - Las columnas en `columns` y `groupby` DEBEN existir EXACTAMENTE como aparecen arriba.
@@ -99,7 +138,11 @@ Responde SOLO con un objeto JSON:
   "bins": null o [{{"column": "<col>", "edges": [<n>, <n>, ...], "labels": null o ["<label>", ...]}}],
   "filter_by": null o [{{"column": "<col>", "op": "<op>", "value": <value>}}],
   "chart_type": "<chart_type>",
-  "narrative": "Frase breve en español describiendo qué se calculó."
+  "narrative": "Frase breve en español describiendo qué se calculó.",
+  "normalize": "none|row_pct|total_pct",
+  "needs_clarification": false,
+  "clarification_question": null,
+  "clarification_options": null
 }}
 """
 

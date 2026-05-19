@@ -30,6 +30,7 @@ class DataQAResult:
     table: Optional[pd.DataFrame] = None
     chart: Optional[Dict[str, Any]] = None  # {type, data, x, y, color}
     error: Optional[str] = None
+    clarification: Optional[Dict[str, Any]] = None  # {question, options}
 
 
 def _summarize_columns(df: pd.DataFrame, max_cols: int = 30) -> List[Dict[str, Any]]:
@@ -119,6 +120,33 @@ def _apply_bins(df: pd.DataFrame, query: DataQuery) -> pd.DataFrame:
     return df
 
 
+def _apply_normalize(
+    table: pd.DataFrame,
+    *,
+    value_col: str,
+    primary: Optional[str],
+    mode: str,
+) -> str:
+    """Convert a count column into a percentage in-place. Returns the new column name.
+
+    - mode="row_pct" + `primary` set: % dentro de cada valor de `primary` (suma 100% por grupo).
+      Si no hay `primary`, cae a total_pct (un solo nivel = mismo resultado).
+    - mode="total_pct": % sobre el total general.
+    - mode="none" (o cualquier otro): no toca la tabla.
+    """
+    if mode == "none" or value_col not in table.columns:
+        return value_col
+    if mode == "row_pct" and primary and primary in table.columns:
+        totals = table.groupby(primary)[value_col].transform("sum")
+        table[value_col] = (table[value_col] / totals * 100).round(1)
+    else:
+        total = table[value_col].sum()
+        if total > 0:
+            table[value_col] = (table[value_col] / total * 100).round(1)
+    table.rename(columns={value_col: "porcentaje"}, inplace=True)
+    return "porcentaje"
+
+
 def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
     """Run the operation deterministically. Returns dict with 'table' and optional 'chart'."""
     df = _apply_bins(df, query)
@@ -140,18 +168,21 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         col = query.columns[0]
         counts = df[col].value_counts(dropna=False).reset_index()
         counts.columns = [col, "conteo"]
-        chart = {"type": query.chart_type, "data": counts, "x": col, "y": "conteo", "color": None}
+        value_col = _apply_normalize(counts, value_col="conteo", primary=None, mode=query.normalize)
+        chart = {"type": query.chart_type, "data": counts, "x": col, "y": value_col, "color": None}
         return {"table": counts, "chart": chart}
 
     if op == "groupby_count":
         if not query.groupby:
             raise ValueError("groupby_count requiere groupby.")
         gb = df.groupby(query.groupby, dropna=False).size().reset_index(name="conteo")
+        primary = query.groupby[0] if len(query.groupby) >= 2 else None
+        value_col = _apply_normalize(gb, value_col="conteo", primary=primary, mode=query.normalize)
         chart = {
             "type": query.chart_type,
             "data": gb,
             "x": query.groupby[0],
-            "y": "conteo",
+            "y": value_col,
             "color": query.groupby[1] if len(query.groupby) > 1 else None,
         }
         return {"table": gb, "chart": chart}
@@ -195,8 +226,18 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         cols = [c for c in (query.columns or []) if c in df.columns]
         if not cols:
             cols = df.select_dtypes(include="number").columns.tolist()
-        corr = df[cols].corr().round(3).reset_index().rename(columns={"index": "variable"})
-        return {"table": corr, "chart": None}
+        corr_matrix = df[cols].corr().round(3)
+        table = corr_matrix.reset_index().rename(columns={"index": "variable"})
+        chart = None
+        if query.chart_type == "heatmap" and not corr_matrix.empty:
+            chart = {
+                "type": "heatmap",
+                "data": corr_matrix,
+                "x": None,
+                "y": None,
+                "color": None,
+            }
+        return {"table": table, "chart": chart}
 
     if op == "top_n":
         if not query.columns:
@@ -224,6 +265,29 @@ def _summarize_table_for_prompt(table: pd.DataFrame, max_rows: int = 12) -> str:
     return table.to_string(index=False)
 
 
+def _format_history(history: Optional[List[Dict[str, str]]], max_turns: int = 3) -> str:
+    """Format the last N user/assistant turns for the prompt.
+
+    Each item in `history` is `{"role": "user" | "assistant", "text": str}`.
+    Returns "(sin historial)" when empty so the prompt block stays legible.
+    """
+    if not history:
+        return "(sin historial — esta es la primera pregunta)"
+    cleaned = [h for h in history if h.get("text")]
+    if not cleaned:
+        return "(sin historial — esta es la primera pregunta)"
+    # Cada vuelta = 1 user + 1 assistant ⇒ tomamos las últimas 2*N entradas.
+    tail = cleaned[-(max_turns * 2):]
+    lines = []
+    for entry in tail:
+        label = "Usuario" if entry["role"] == "user" else "Asistente"
+        text = entry["text"].strip().replace("\n", " ")
+        if len(text) > 280:
+            text = text[:277] + "…"
+        lines.append(f"{label}: {text}")
+    return "\n".join(lines)
+
+
 def _generate_natural_narrative(question: str, table: pd.DataFrame) -> Optional[str]:
     """Second LLM call: turn a structured result into a conversational answer."""
     try:
@@ -245,6 +309,7 @@ def answer_data_question(
     *,
     context: str = "",
     mode: str = "raw",
+    history: Optional[List[Dict[str, str]]] = None,
 ) -> DataQAResult:
     columns_summary = _summarize_columns(df)
     prompt = DATA_QA_PROMPT.format(
@@ -252,6 +317,7 @@ def answer_data_question(
         mode_description=MODE_DESCRIPTIONS.get(mode, MODE_DESCRIPTIONS["raw"]),
         context=context or "No se proporcionó contexto adicional.",
         columns_summary=json.dumps(columns_summary, indent=2, default=str, ensure_ascii=False),
+        history=_format_history(history),
         question=question,
     )
 
@@ -276,6 +342,18 @@ def answer_data_question(
             narrative=f"{query.narrative} (Pero {validation_error})",
             operation=query.operation,
             error=validation_error,
+        )
+
+    # Cortocircuito: el LLM detectó ambigüedad (absoluto vs relativo, etc.).
+    # No ejecutamos — devolvemos la pregunta para que la UI muestre chips.
+    if query.needs_clarification and query.clarification_question and query.clarification_options:
+        return DataQAResult(
+            narrative=query.narrative or "Antes de calcular, ¿en qué formato lo quieres?",
+            operation=query.operation,
+            clarification={
+                "question": query.clarification_question,
+                "options": list(query.clarification_options),
+            },
         )
 
     try:

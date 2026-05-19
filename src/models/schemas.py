@@ -74,8 +74,9 @@ DataOperation = Literal[
     "top_n",
     "value_counts",
 ]
-ChartType = Literal["bar", "pie", "histogram", "box", "scatter", "table", "none"]
+ChartType = Literal["bar", "pie", "histogram", "box", "scatter", "line", "heatmap", "table", "none"]
 AggFunc = Literal["mean", "median", "sum", "min", "max", "count"]
+NormalizeMode = Literal["none", "row_pct", "total_pct"]
 
 
 class BinSpec(BaseModel):
@@ -94,6 +95,10 @@ class DataQuery(BaseModel):
     filter_by: Optional[List[FilterCondition]] = None
     chart_type: ChartType = "table"
     narrative: str = ""
+    normalize: NormalizeMode = "none"
+    needs_clarification: bool = False
+    clarification_question: Optional[str] = None
+    clarification_options: Optional[List[str]] = None
 
     @field_validator("columns", mode="before")
     @classmethod

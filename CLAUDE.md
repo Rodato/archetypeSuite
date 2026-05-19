@@ -49,9 +49,10 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 **Tests: 80/80** (74 originales + 6 nuevos en `tests/test_robustez.py` cubriendo guards de optimize_k_node y `_ensure_api_key`).
 
 ### Pendiente (acordado con usuario, May 2026)
+- **Marco Metodológico v1 — escrito, en revisión del equipo (May 12, 2026).** Archivo: `knowledge_database/methodology_v1.md` (~3.5k palabras, 10 secciones). Construido a partir de `knowledge_database/Plural Ai - Enfoque narrativo.md`, `garaje/Ficha para Construcción de Arquetipos.md`, `garaje/Comunicación en [Plural].md` y `garaje/Modelo ccc Plural .md`. El doc redefine arquetipo como **hipótesis comportamental** (no retrato de persona), introduce schema de 8 campos (nombre · descripción patrón · comportamiento principal · microcomportamientos · barreras · habilitadores · oportunidades · nivel de cautela), marco teórico COM-B + socioecológico + sociología cultural + lentes (género/interseccionalidad/acción sin daño), tabla evitar/priorizar de voz Plural, ejemplos canónicos y 10 "reglas duras para el LLM" como TL;DR. **Próximos pasos cuando el equipo termine la revisión:** (1) aplicar ajustes al `.md`; (2) decidir si ampliar `ArchetypeDescription` (4 campos actuales) con los 8 campos del schema o conservar 4 y enriquecer narrativa por dentro; (3) actualizar `INTERPRETATION_PROMPT` y `REFINEMENT_PROMPT` para inyectar el `.md` como bloque de sistema (cargar desde disco al iniciar el nodo); (4) actualizar `archetype_cards.py` si cambia el schema; (5) actualizar tests del nodo interpret (fixture `_interpret_response()` en `tests/test_pipeline_e2e.py`).
 - Memoria entre corridas (persistencia + comparación) — diferido, nivel 2 del plan.
-- Marco Metodológico — equipo metodológico lo construye en paralelo; cuando entreguen `methodology_v1.md`, inyectar en `INTERPRETATION_PROMPT` + `REFINEMENT_PROMPT` y ampliar `ArchetypeDescription` con tensión/motivadores/barreras/heurísticas/detonante/palanca.
 - Pulido equivalente al paso 1 para los pasos 2 y 3 (próxima sesión — la base ya está sólida).
+- Mejoras de chat (`chat_pendientes.md` en memoria): memoria de conversación (prioridad alta), más tipos de gráficas, absolutos vs relativos como follow-up.
 - Eventualmente nivel 3: SaaS multi-tenant (auth, persistencia DB, deployment, CI/CD) — fuera de scope ahora.
 
 ## Como ejecutar
@@ -85,19 +86,30 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 - `views/arquetipos.py` — paso 3: quality card + cluster sizes + cards compactas (con "Ver detalles") + tabs Mapa/Comparar/Por variable/**Conversar** + popover descargas + expander metodología.
 - `components/` — `archetype_cards.py` (cards compactas con expander), `cluster_plots.py` (incluye `render_silhouette_curve`), `column_selector.py` (con tooltips importance + expander Recomendadas), `data_chat.py` (con scroll interno), `data_preview.py` (5 filas + `render_type_donut`), `profile_cards.py`.
 
-## Marco Metodológico (pendiente de construir)
-Objetivo: consolidar los múltiples documentos metodológicos existentes en un marco único que se inyecte en los prompts del pipeline (principalmente `interpret`, `refinement`) para que los arquetipos y narrativas reflejen la metodología propia del estudio.
+## Marco Metodológico (v1 escrito — en revisión del equipo)
+Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plural (cambio comportamental con lentes críticos), no en clave marketing.
 
-**Secciones que debe tener el documento metodológico:**
-1. **Fundamentos** — definición propia de "arquetipo" (qué es y qué no es), unidad de análisis.
-2. **Marco teórico** — corrientes de ciencias del comportamiento en uso (COM-B, EAST, Fogg, Dual Process, SDT, etc.), glosario operativo.
-3. **Schema del arquetipo** — campos fijos (nombre, tensión, motivadores, barreras, heurísticas, contexto detonante, palanca de cambio), longitud y tono por campo, ejemplos buenos/malos.
-4. **Narrativa** — voz, tono, qué debe explicar (porqué conductual, teoría, implicación de diseño), formato.
-5. **Criterios de calidad** — checklist de arquetipo bien formado, errores típicos (ej. confundir demografía con conducta).
-6. **Ejemplos canónicos** — 2-3 arquetipos reales de proyectos pasados.
-7. **Alcance** — qué decisiones no toma el arquetipo.
+**Archivo:** `knowledge_database/methodology_v1.md` (May 12, 2026).
 
-Documento completo en vault: `06 - archetypeSuite - Marco Metodológico.md`.
+**Insumos consolidados:** todos los docs en `knowledge_database/`:
+- `Plural Ai - Enfoque narrativo.md` — insumo central (definición de arquetipo como hipótesis comportamental, schema de 8 campos, tabla evitar/priorizar, frases prohibidas/preferidas).
+- `garaje/Ficha para Construcción de Arquetipos.md` — 12 dimensiones de la ficha (contexto, identidades, condiciones, tensiones, habilitadores, relatos, emociones, canales, acción sin daño).
+- `garaje/Comunicación en [Plural].md` — voz Plural literal (clara, crítica, cuidadora, inclusiva, situada).
+- `garaje/Modelo ccc Plural .md` + `Bases y Enfoques Modelo ccc.md` — COM-B (capacidades/motivaciones/oportunidades), modelo socioecológico feminista, sociología cultural, fases del cambio.
+
+**Estructura final del `.md` (10 secciones, ~3.5k palabras):**
+1. Fundamentos (qué es / qué no es / unidad de análisis / para qué sirve).
+2. Marco teórico (COM-B, socioecológico, sociología cultural, lentes transversales, fases del cambio).
+3. Glosario operativo (definiciones cortas y citables: barrera, habilitador, microcomportamiento, tensión, narrativa cultural, etc.).
+4. Schema del arquetipo (8 campos con definición + longitud + tono + ejemplos bueno/malo cada uno).
+5. Voz y tono (tabla evitar/priorizar literal, frases prohibidas/preferidas, convenciones de estilo).
+6. Checklist de calidad.
+7. Anti-patrones (errores típicos).
+8. Ejemplos canónicos (2 bien escritos + 1 anti-ejemplo comentado).
+9. Lo que queda fuera del alcance + cuándo frenar.
+10. Reglas duras para el LLM (TL;DR ejecutable, 10 puntos).
+
+**Estado:** el doc está completo desde nuestra perspectiva. **El usuario y parte del equipo de Plural van a revisarlo y regresar con ajustes.** No tocar prompts ni schema hasta tener feedback.
 
 ## Notas técnicas
 - Python 3.9 — usar `typing.Dict`, `typing.List`, `typing.Optional` (no `dict | None` syntax).

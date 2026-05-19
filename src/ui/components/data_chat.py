@@ -33,6 +33,18 @@ def _render_chart(chart: Dict[str, Any]) -> None:
             fig = px.box(data, x=x, y=y, color=color)
         elif chart_type == "scatter":
             fig = px.scatter(data, x=x, y=y, color=color)
+        elif chart_type == "line":
+            fig = px.line(data, x=x, y=y, color=color, markers=True)
+        elif chart_type == "heatmap":
+            # `data` aquí es la matriz de correlación (índice y columnas = variables)
+            fig = px.imshow(
+                data,
+                text_auto=".2f",
+                aspect="auto",
+                color_continuous_scale="RdBu_r",
+                zmin=-1,
+                zmax=1,
+            )
     except Exception:
         return
 
@@ -60,12 +72,17 @@ def _render_message(role: str, payload: Dict[str, Any]) -> None:
             st.markdown(payload["text"])
         if "narrative" in payload and payload["narrative"]:
             st.markdown(payload["narrative"])
-        chart = payload.get("chart")
-        if chart:
-            _render_chart(chart)
-        table = payload.get("table")
-        if table is not None and not table.empty:
-            st.dataframe(table, use_container_width=True, hide_index=True)
+        clarification = payload.get("clarification")
+        if clarification and clarification.get("question"):
+            st.markdown(f"**{clarification['question']}**")
+        # Cuando hay clarificación pendiente no hay datos que mostrar todavía.
+        if not clarification:
+            chart = payload.get("chart")
+            if chart:
+                _render_chart(chart)
+            table = payload.get("table")
+            if table is not None and not table.empty:
+                st.dataframe(table, use_container_width=True, hide_index=True)
         if payload.get("error"):
             st.caption(f"⚠️ {payload['error']}")
 
@@ -91,6 +108,17 @@ def render_data_chat(
         if history:
             for entry in history[-8:]:
                 _render_message(entry["role"], entry["payload"])
+            # Si la última respuesta del assistant pidió clarificación, mostramos
+            # chips activos para que el usuario elija sin volver a escribir.
+            last = history[-1]
+            if last["role"] == "assistant" and last["payload"].get("clarification"):
+                _render_clarification_chips(
+                    df,
+                    last["payload"],
+                    context=context,
+                    mode=mode,
+                    history_key=history_key,
+                )
         elif suggestions:
             # Empty state con sugerencias dentro del mismo box (mantiene altura)
             st.caption("Prueba con:")
@@ -130,10 +158,17 @@ def _process_question(
     history_key: str,
 ) -> None:
     history: List[Dict[str, Any]] = st.session_state[history_key]
+
+    # Normaliza el historial previo a {role, text} antes de añadir la pregunta nueva,
+    # para que el LLM tenga contexto de las últimas vueltas (follow-ups tipo "y de esos…").
+    qa_history = _history_for_llm(history)
+
     history.append({"role": "user", "payload": {"text": question}})
 
     with st.spinner("Pensando…"):
-        result: DataQAResult = answer_data_question(df, question, context=context, mode=mode)
+        result: DataQAResult = answer_data_question(
+            df, question, context=context, mode=mode, history=qa_history,
+        )
 
     history.append({
         "role": "assistant",
@@ -142,5 +177,44 @@ def _process_question(
             "table": result.table,
             "chart": result.chart,
             "error": result.error,
+            "clarification": result.clarification,
+            # Guardamos la pregunta original para reusarla cuando el usuario clickea un chip.
+            "original_question": question if result.clarification else None,
         },
     })
+
+
+def _render_clarification_chips(
+    df: pd.DataFrame,
+    payload: Dict[str, Any],
+    *,
+    context: str,
+    mode: str,
+    history_key: str,
+) -> None:
+    clarification = payload.get("clarification") or {}
+    options: List[str] = clarification.get("options") or []
+    if not options:
+        return
+    original = (payload.get("original_question") or "").strip()
+    cols = st.columns(len(options))
+    for i, (col, opt) in enumerate(zip(cols, options)):
+        with col:
+            if st.button(opt, key=f"{history_key}_clarify_{i}", use_container_width=True):
+                refined = f"{original} (en {opt.lower()})" if original else opt
+                _process_question(df, refined, context=context, mode=mode, history_key=history_key)
+                st.rerun()
+
+
+def _history_for_llm(history: List[Dict[str, Any]], max_turns: int = 3) -> List[Dict[str, str]]:
+    """Compact session history into {role, text} entries for the LLM prompt."""
+    flat: List[Dict[str, str]] = []
+    for entry in history:
+        payload = entry.get("payload") or {}
+        if entry["role"] == "user":
+            text = payload.get("text", "")
+        else:
+            text = payload.get("narrative", "") or ""
+        if text:
+            flat.append({"role": entry["role"], "text": text})
+    return flat[-(max_turns * 2):]
