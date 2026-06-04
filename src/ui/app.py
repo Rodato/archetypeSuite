@@ -6,9 +6,9 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Archetype Suite",
-    page_icon="🎯",
+    page_icon="◆",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 from src.ui.styles import inject as inject_styles
@@ -35,68 +35,99 @@ def _step_status(step: str) -> str:
     return "locked"
 
 
-def _step_icon(status: str) -> str:
-    return {"done": "✅", "current": "🔵", "locked": "⚪"}.get(status, "⚪")
+def _step_label(step: str, status: str) -> str:
+    if status == "done":
+        return f"{step} ✓"
+    return step
 
 
-def _render_sidebar() -> str:
-    st.sidebar.markdown(
-        "<div style='padding: 0.5rem 0 0.25rem 0;'>"
-        "<div style='font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em;'>Archetype Suite</div>"
-        "<div style='font-size: 0.75rem; color: #6B7280; margin-top: 0.15rem;'>"
-        "Segmentación por arquetipos"
-        "</div>"
-        "</div>",
-        unsafe_allow_html=True,
-    )
-    st.sidebar.divider()
-
-    labels = []
-    for i, step in enumerate(STEPS, start=1):
-        icon = _step_icon(_step_status(step))
-        labels.append(f"{icon} {i}. {step}")
-
-    default_index = 0
+def _resolve_step() -> str:
     forced = st.session_state.pop("_force_page", None)
     if forced and forced in STEPS:
-        default_index = STEPS.index(forced)
-    elif "pipeline_result" in st.session_state:
-        default_index = 2
-    elif "raw_df" in st.session_state:
-        default_index = 1
+        st.session_state["_current_step"] = forced
+        return forced
 
-    selected_label = st.sidebar.radio(
-        "Paso",
-        labels,
-        index=default_index,
-        label_visibility="collapsed",
-    )
-    selected_step = STEPS[labels.index(selected_label)]
+    current = st.session_state.get("_current_step")
+    if current is None:
+        if "pipeline_result" in st.session_state:
+            current = "Arquetipos"
+        elif "raw_df" in st.session_state:
+            current = "Analizar"
+        else:
+            current = "Datos"
+        st.session_state["_current_step"] = current
 
-    st.sidebar.divider()
+    return current
 
-    if "raw_df" in st.session_state:
-        df = st.session_state["raw_df"]
-        file_name = st.session_state.get("file_name", "dataset")
-        st.sidebar.markdown(
-            f"<div class='dataset-chip'>"
-            f"<div class='name'>{file_name}</div>"
-            f"<div class='meta'>{df.shape[0]} filas · {df.shape[1]} columnas</div>"
-            f"</div>",
+
+def _render_topbar() -> str:
+    L, C, R = st.columns([1.6, 4, 1.4])
+
+    with L:
+        st.markdown(
+            "<div class='topbar-brand'>"
+            "<span class='topbar-brand__mark'>◆</span>"
+            "<span class='topbar-brand__name'>"
+            "<strong>Archetype</strong> Suite"
+            "</span>"
+            "</div>",
             unsafe_allow_html=True,
         )
+        if "raw_df" in st.session_state:
+            df = st.session_state["raw_df"]
+            file_name = st.session_state.get("file_name", "dataset")
+            st.markdown(
+                f"<div class='dataset-chip'>"
+                f"<div class='name'>{file_name}</div>"
+                f"<div class='meta'>{df.shape[0]} filas · {df.shape[1]} columnas</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
 
-    st.session_state["advanced_mode"] = st.sidebar.toggle(
-        "⚙️ Modo avanzado",
-        value=st.session_state.get("advanced_mode", False),
-        help="Muestra métricas estadísticas, logs y razonamientos internos del sistema.",
-    )
+    statuses = {step: _step_status(step) for step in STEPS}
 
-    return selected_step
+    with C:
+        current_step = next((s for s in STEPS if statuses[s] == "current"), STEPS[0])
+        current_idx = STEPS.index(current_step) + 1
+        st.markdown(
+            f"<div class='wizard-progress__label'>Paso {current_idx} de {len(STEPS)}</div>"
+            f"<div class='wizard-progress__current-name'>{current_step}</div>"
+            "<div class='wizard-progress'>"
+            + "".join(
+                f"<div class='wizard-progress__step wizard-progress__step--{statuses[s]}'></div>"
+                for s in STEPS
+            )
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+        nav_cols = st.columns(len(STEPS))
+        for col, step in zip(nav_cols, STEPS):
+            status = statuses[step]
+            with col:
+                if st.button(
+                    _step_label(step, status),
+                    key=f"pill_{step}",
+                    use_container_width=True,
+                    disabled=(status == "locked"),
+                    type="primary" if status == "current" else "secondary",
+                ):
+                    st.session_state["_force_page"] = step
+                    st.session_state.pop("_just_finished", None)
+                    st.rerun()
+
+    with R:
+        st.session_state["advanced_mode"] = st.toggle(
+            "Avanzado",
+            value=st.session_state.get("advanced_mode", False),
+            help="Muestra métricas estadísticas, logs y razonamientos internos.",
+        )
+
+    st.markdown("<hr class='topbar-divider'>", unsafe_allow_html=True)
+    return _resolve_step()
 
 
 def main():
-    step = _render_sidebar()
+    step = _render_topbar()
 
     if step == "Datos":
         from src.ui.views.datos import render

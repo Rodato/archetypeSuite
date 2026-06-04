@@ -10,6 +10,13 @@ build/
 venv/
 .mypy_cache/
 .ruff_cache/
+.DS_Store
+**/.DS_Store
+
+# Knowledge database: solo versionamos el marco metodológico.
+# Los insumos crudos (pptx, xlsx, md de garaje) viven en local.
+knowledge_database/*
+!knowledge_database/methodology_v1.md
 
 
 #Ignore vscode AI rules

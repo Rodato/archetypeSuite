@@ -6,14 +6,16 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
+from src.config.settings import settings
+
 
 class KOptimizer:
     """Determina el número óptimo de clusters mediante Elbow Method y Silhouette Analysis."""
 
-    def __init__(self, k_min: int = 2, k_max: int = 10, random_state: int = 42):
-        self.k_min = k_min
-        self.k_max = k_max
-        self.random_state = random_state
+    def __init__(self, k_min: int = None, k_max: int = None, random_state: int = None):
+        self.k_min = k_min if k_min is not None else settings.k_optimizer_min
+        self.k_max = k_max if k_max is not None else settings.k_optimizer_max
+        self.random_state = random_state if random_state is not None else settings.random_seed
 
     def analyze(self, data: np.ndarray) -> Dict[str, Any]:
         n_samples = data.shape[0]
@@ -26,7 +28,7 @@ class KOptimizer:
         silhouette_scores: List[float] = []
 
         for k in k_range:
-            km = KMeans(n_clusters=k, n_init=10, random_state=self.random_state)
+            km = KMeans(n_clusters=k, n_init=settings.kmeans_n_init, random_state=self.random_state)
             labels = km.fit_predict(data)
             inertias.append(float(km.inertia_))
             silhouette_scores.append(float(silhouette_score(data, labels)))

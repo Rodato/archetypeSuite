@@ -1,6 +1,7 @@
 from langgraph.graph import END, StateGraph
 
 from src.agents.nodes.cluster_node import cluster_node
+from src.agents.nodes.column_selection_node import column_selection_node
 from src.agents.nodes.evaluate_node import evaluate_node
 from src.agents.nodes.ingest_node import ingest_node
 from src.agents.nodes.interpret_node import interpret_node
@@ -18,6 +19,7 @@ def build_graph() -> StateGraph:
 
     graph.add_node("ingest", ingest_node)
     graph.add_node("profile", profile_node)
+    graph.add_node("column_selection", column_selection_node)
     graph.add_node("preprocess", preprocess_node)
     graph.add_node("optimize_k", optimize_k_node)
     graph.add_node("select", select_node)
@@ -28,7 +30,8 @@ def build_graph() -> StateGraph:
 
     graph.set_entry_point("ingest")
     graph.add_edge("ingest", "profile")
-    graph.add_edge("profile", "preprocess")
+    graph.add_edge("profile", "column_selection")
+    graph.add_edge("column_selection", "preprocess")
     graph.add_edge("preprocess", "optimize_k")
     graph.add_edge("optimize_k", "select")
     graph.add_edge("select", "cluster")

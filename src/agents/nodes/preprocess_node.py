@@ -31,7 +31,7 @@ def preprocess_node(state: PipelineState) -> dict:
     df = pd.DataFrame(state["raw_data"])
     original_cols = df.columns.tolist()
     preprocessor = DataPreprocessor()
-    processed_df, metadata = preprocessor.preprocess(df, strategy)
+    processed_df, _ = preprocessor.preprocess(df, strategy)
 
     logs = [
         f"[preprocess] LLM strategy: scaling={decision.scaling}, "
@@ -44,7 +44,6 @@ def preprocess_node(state: PipelineState) -> dict:
     return {
         "preprocess_strategy": strategy,
         "processed_data": processed_df.to_dict(orient="list"),
-        "preprocessing_metadata": metadata,
         "original_columns": original_cols,
         "log_messages": logs,
     }
