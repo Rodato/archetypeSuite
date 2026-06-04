@@ -5,7 +5,7 @@ Notas en: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Documentició
 Actualizar cuando cambien: nodos del pipeline, PipelineState, algoritmos de clustering, modelos LLM, prompts, páginas UI.
 No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 
-## Estado del Proyecto (May 7, 2026)
+## Estado del Proyecto (May 19, 2026)
 
 ### Pipeline (sin cambios estructurales recientes)
 - **10 nodos** LangGraph: ingest → profile → column_selection(LLM) → preprocess(LLM) → optimize_k → select(determinístico, KMeans) → cluster → evaluate → interpret(LLM) → refinement(LLM)
@@ -48,16 +48,41 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 
 **Tests: 80/80** (74 originales + 6 nuevos en `tests/test_robustez.py` cubriendo guards de optimize_k_node y `_ensure_api_key`).
 
+### Round de chat conversacional (May 19, 2026) — commit `89f1d02`
+Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como hablar con alguien que recuerda y entiende matices, no como una calculadora one-shot.
+
+**Memoria de conversación:**
+- `answer_data_question` ahora recibe `history` (lista `[{role, text}, ...]`) y lo pasa al prompt como "Historial reciente de la conversación".
+- `_format_history` recorta a las últimas 3 vueltas (6 entradas), trunca cada mensaje a 280 chars y devuelve placeholder explícito cuando está vacío.
+- El prompt enseña al LLM a reconstruir filtros previos cuando aparece "y de esos", "ese grupo", "y ahora por…", a reusar la métrica si la pregunta nueva la omite, y a priorizar la pregunta nueva si contradice el historial.
+- La UI (`data_chat.py`) compacta el `st.session_state` del historial a `{role, text}` antes de pasarlo al LLM vía `_history_for_llm`.
+
+**Absoluto vs relativo (clarificación con chips):**
+- `DataQuery` gana 4 campos: `normalize: "none" | "row_pct" | "total_pct"`, `needs_clarification: bool`, `clarification_question`, `clarification_options`.
+- Cuando la pregunta es ambigua ("cuántos hombres por arquetipo", "distribución de género en cada cluster"), el LLM responde con `needs_clarification=true` + 3 chips fijos: **["Conteo absoluto", "% dentro de cada grupo", "% del total"]**. `answer_data_question` cortocircuita la ejecución y devuelve `DataQAResult.clarification`.
+- La UI renderiza los 3 chips bajo el último mensaje con `_render_clarification_chips`; al click, se relanza la pregunta original concatenando "(en {opción})" como hint para el LLM.
+- Si el LLM detecta que la pregunta YA es explícita ("en porcentaje", "% del total", "absoluto") elige el `normalize` correcto y NO pide clarificación.
+- `_apply_normalize` en `data_qa.py` aplica el porcentaje a `value_counts` y `groupby_count`, renombra la columna `conteo` → `porcentaje` y actualiza el `y` del chart para que Plotly lo pinte correctamente.
+
+**Más tipos de gráfica + reglas duras de elección:**
+- `ChartType` ahora incluye `"line"` (eje X ordinal: rangos binned, fechas, deciles) y `"heatmap"` (matriz de correlación con 3+ variables).
+- `_render_chart` añade `px.line(markers=True)` y `px.imshow(text_auto=".2f", color_continuous_scale="RdBu_r", zmin=-1, zmax=1)` para el heatmap (se pasa la matriz cuadrada, no la versión reset_index).
+- El prompt incluye un bloque "Reglas duras de elección" para que el LLM no use "bar" por inercia: `correlation` con 3+ cols → siempre heatmap; eje X ordinal → preferir line; `pie` solo con ≤5 segmentos, etc.
+
+**Tests:** `tests/test_data_qa.py` pasa de 11 a 23 tests (12 nuevos cubriendo heatmap, normalize row_pct/total_pct, clarificación, line, format_history vacío/truncado/3-vueltas, prompt-receives-history).
+
+**Total tests: 92/92.**
+
 ### Pendiente (acordado con usuario, May 2026)
 - **Marco Metodológico v1 — escrito, en revisión del equipo (May 12, 2026).** Archivo: `knowledge_database/methodology_v1.md` (~3.5k palabras, 10 secciones). Construido a partir de `knowledge_database/Plural Ai - Enfoque narrativo.md`, `garaje/Ficha para Construcción de Arquetipos.md`, `garaje/Comunicación en [Plural].md` y `garaje/Modelo ccc Plural .md`. El doc redefine arquetipo como **hipótesis comportamental** (no retrato de persona), introduce schema de 8 campos (nombre · descripción patrón · comportamiento principal · microcomportamientos · barreras · habilitadores · oportunidades · nivel de cautela), marco teórico COM-B + socioecológico + sociología cultural + lentes (género/interseccionalidad/acción sin daño), tabla evitar/priorizar de voz Plural, ejemplos canónicos y 10 "reglas duras para el LLM" como TL;DR. **Próximos pasos cuando el equipo termine la revisión:** (1) aplicar ajustes al `.md`; (2) decidir si ampliar `ArchetypeDescription` (4 campos actuales) con los 8 campos del schema o conservar 4 y enriquecer narrativa por dentro; (3) actualizar `INTERPRETATION_PROMPT` y `REFINEMENT_PROMPT` para inyectar el `.md` como bloque de sistema (cargar desde disco al iniciar el nodo); (4) actualizar `archetype_cards.py` si cambia el schema; (5) actualizar tests del nodo interpret (fixture `_interpret_response()` en `tests/test_pipeline_e2e.py`).
 - Memoria entre corridas (persistencia + comparación) — diferido, nivel 2 del plan.
 - Pulido equivalente al paso 1 para los pasos 2 y 3 (próxima sesión — la base ya está sólida).
-- Mejoras de chat (`chat_pendientes.md` en memoria): memoria de conversación (prioridad alta), más tipos de gráficas, absolutos vs relativos como follow-up.
+- Mejoras de chat ya entregadas (memoria de conversación, absoluto vs relativo, line + heatmap). Quedan pendientes en `chat_pendientes.md`: comparar dos grupos con tablas lado a lado y exportar resultado del chat a PDF/CSV.
 - Eventualmente nivel 3: SaaS multi-tenant (auth, persistencia DB, deployment, CI/CD) — fuera de scope ahora.
 
 ## Como ejecutar
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests:** `python3 -m pytest tests/ -v` → 80/80
+- **Tests:** `python3 -m pytest tests/ -v` → 92/92
 - **UI Streamlit:** `streamlit run src/ui/app.py`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
@@ -84,14 +109,14 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 - `views/datos.py` — paso 1 single-page (donut tipos + contexto + variables; preview 5 filas + chat). `LOAD_ERROR_MAP` para errores de upload.
 - `views/analizar.py` — paso 2: checklist en vivo de 8 pasos + try/except con retry + validación API key + panel ✨.
 - `views/arquetipos.py` — paso 3: quality card + cluster sizes + cards compactas (con "Ver detalles") + tabs Mapa/Comparar/Por variable/**Conversar** + popover descargas + expander metodología.
-- `components/` — `archetype_cards.py` (cards compactas con expander), `cluster_plots.py` (incluye `render_silhouette_curve`), `column_selector.py` (con tooltips importance + expander Recomendadas), `data_chat.py` (con scroll interno), `data_preview.py` (5 filas + `render_type_donut`), `profile_cards.py`.
+- `components/` — `archetype_cards.py` (cards compactas con expander), `cluster_plots.py` (incluye `render_silhouette_curve`), `column_selector.py` (con tooltips importance + expander Recomendadas), `data_chat.py` (scroll interno + chips de clarificación absoluto/relativo + renderers de line y heatmap + memoria de 3 vueltas vía `_history_for_llm`), `data_preview.py` (5 filas + `render_type_donut`), `profile_cards.py`.
 
 ## Marco Metodológico (v1 escrito — en revisión del equipo)
 Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plural (cambio comportamental con lentes críticos), no en clave marketing.
 
 **Archivo:** `knowledge_database/methodology_v1.md` (May 12, 2026).
 
-**Insumos consolidados:** todos los docs en `knowledge_database/`:
+**Insumos consolidados (en local — NO versionados):** los docs de `knowledge_database/` distintos a `methodology_v1.md` quedan fuera de git vía `.gitignore` (pptx/xlsx pesados + originales). Para referencia, los insumos textuales que se usaron son:
 - `Plural Ai - Enfoque narrativo.md` — insumo central (definición de arquetipo como hipótesis comportamental, schema de 8 campos, tabla evitar/priorizar, frases prohibidas/preferidas).
 - `garaje/Ficha para Construcción de Arquetipos.md` — 12 dimensiones de la ficha (contexto, identidades, condiciones, tensiones, habilitadores, relatos, emociones, canales, acción sin daño).
 - `garaje/Comunicación en [Plural].md` — voz Plural literal (clara, crítica, cuidadora, inclusiva, situada).
