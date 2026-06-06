@@ -36,9 +36,18 @@ class AlgorithmSelection(BaseModel):
 
 
 class ArchetypeDescription(BaseModel):
+    """Arquetipo como hipótesis comportamental (8 campos del marco metodológico Plural)."""
     cluster_id: int
-    label: str
-    description: str
+    label: str  # 4.1 Nombre provisional (descriptivo, no moralizante)
+    description: str  # 4.2 Descripción breve del patrón (2-3 oraciones)
+    comportamiento_principal: str = ""  # 4.3 Comportamiento observado / patrón principal
+    microcomportamientos: List[str] = Field(default_factory=list)  # 4.4
+    barreras: List[str] = Field(default_factory=list)  # 4.5 (idealmente con sub-nivel COM-B)
+    habilitadores: List[str] = Field(default_factory=list)  # 4.6
+    oportunidades_accion: List[str] = Field(default_factory=list)  # 4.7 (pistas, no soluciones)
+    nivel_cautela: Literal["baja", "media", "alta"] = "media"  # 4.8
+    cautela_reason: str = ""
+    # Legacy (esquema de 4 campos) — se conservan para compat con runs persistidos antiguos.
     key_characteristics: List[str] = Field(default_factory=list)
     differentiators: List[str] = Field(default_factory=list)
 
@@ -51,7 +60,6 @@ class InterpretationResult(BaseModel):
 class RefinementDecision(BaseModel):
     should_refine: bool = False
     reason: str = ""
-    suggested_algorithm: Optional[str] = None
     suggested_params: Optional[dict] = None
 
 
@@ -73,6 +81,7 @@ DataOperation = Literal[
     "correlation",
     "top_n",
     "value_counts",
+    "missing_values",
 ]
 ChartType = Literal["bar", "pie", "histogram", "box", "scatter", "line", "heatmap", "table", "none"]
 AggFunc = Literal["mean", "median", "sum", "min", "max", "count"]

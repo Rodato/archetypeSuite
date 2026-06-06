@@ -72,6 +72,13 @@ def _apply_filters(df: pd.DataFrame, query: DataQuery) -> pd.DataFrame:
         val = cond.value
         s = df[col]
         is_str = s.dtype == object or pd.api.types.is_string_dtype(s)
+        # Numeric column compared against a string-typed value → coerce, else the
+        # comparison raises an opaque TypeError. Skip the condition if uncoercible.
+        if pd.api.types.is_numeric_dtype(s) and cond.op in ("gt", "lt", "gte", "lte", "eq", "ne"):
+            coerced = pd.to_numeric(val, errors="coerce")
+            if pd.isna(coerced):
+                continue
+            val = coerced
         if cond.op == "eq":
             mask = s.str.lower() == str(val).lower() if is_str else s == val
         elif cond.op == "ne":
@@ -253,6 +260,23 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         chart = {"type": query.chart_type, "data": top, "x": col, "y": chart_y, "color": None}
         return {"table": top, "chart": chart}
 
+    if op == "missing_values":
+        n_rows = len(df)
+        miss = df.isna().sum()
+        per_col = pd.DataFrame({
+            "columna": list(miss.index),
+            "faltantes": [int(v) for v in miss.values],
+            "% faltantes": [round(float(v) / n_rows * 100, 1) if n_rows else 0.0 for v in miss.values],
+        })
+        per_col = per_col[per_col["faltantes"] > 0].sort_values("faltantes", ascending=False).reset_index(drop=True)
+        if per_col.empty:
+            table = pd.DataFrame({"métrica": ["valores faltantes"], "valor": [0]})
+            return {"table": table, "chart": None}
+        # A bar of missing-per-column is the useful default (ignore "table"/other inertia).
+        chart_type = "none" if query.chart_type == "none" else "bar"
+        chart = {"type": chart_type, "data": per_col, "x": "columna", "y": "faltantes", "color": None}
+        return {"table": per_col, "chart": chart}
+
     raise ValueError(f"Operación no soportada: {op}")
 
 
@@ -288,11 +312,12 @@ def _format_history(history: Optional[List[Dict[str, str]]], max_turns: int = 3)
     return "\n".join(lines)
 
 
-def _generate_natural_narrative(question: str, table: pd.DataFrame) -> Optional[str]:
+def _generate_natural_narrative(question: str, table: pd.DataFrame, operation: str = "") -> Optional[str]:
     """Second LLM call: turn a structured result into a conversational answer."""
     try:
         prompt = NATURAL_ANSWER_PROMPT.format(
             question=question,
+            operation=operation or "(desconocida)",
             result=_summarize_table_for_prompt(table),
         )
         llm = get_fast_text_llm()
@@ -366,7 +391,7 @@ def answer_data_question(
         )
 
     table = execution.get("table")
-    natural = _generate_natural_narrative(question, table)
+    natural = _generate_natural_narrative(question, table, query.operation)
     return DataQAResult(
         narrative=natural or query.narrative,
         operation=query.operation,

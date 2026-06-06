@@ -1,89 +1,102 @@
 # Archetype Suite
 
-Pipeline agéntico de clustering que descubre arquetipos de comportamiento a partir de datos tabulares (CSV / Excel) y los describe en lenguaje natural.
+Pipeline agéntico de clustering que descubre **arquetipos de comportamiento** a partir de datos
+tabulares (CSV / Excel) y los describe en lenguaje natural — empaquetado como una app SaaS.
 
-Wizard de 3 pasos: **Datos → Analizar → Arquetipos**.
+Wizard de 3 pasos: **Datos → Analizar → Arquetipos**, con dashboard, historial de análisis,
+charts interactivos y un chat que entiende tus datos.
 
 ## Stack
 
-- **LangGraph** — orquesta un pipeline de 10 nodos (ingest, profile, column_selection, preprocess, optimize_k, select, cluster, evaluate, interpret, refinement).
-- **scikit-learn** — clustering (KMeans / Agglomerative).
-- **Streamlit** — UI.
-- **Claude Sonnet 4.5** + **Grok 4.1 Fast** vía OpenRouter — selección de columnas, preprocesamiento, interpretación y refinamiento.
+| Capa | Tecnología |
+|------|-----------|
+| **Frontend** | Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · shadcn/ui · Recharts · framer-motion · TanStack Query |
+| **Backend API** | FastAPI (JSON + SSE) envolviendo el pipeline existente |
+| **Pipeline** | LangGraph (10 nodos) · scikit-learn (KMeans) |
+| **LLM** | Claude Sonnet 4.5 (selección/preproceso/refinamiento/chat) + Grok 4.3 (narrativa) vía OpenRouter |
 
-El pipeline es determinístico (`temperature=0`, `random_state=42`, KMeans fijo), así que la misma entrada produce el mismo arquetipo.
+El pipeline es **determinístico** (`temperature=0`, `random_state=42`, KMeans fijo): la misma
+entrada produce el mismo arquetipo.
 
-## Setup
+> El frontend Streamlit original sigue disponible (`streamlit run src/ui/app.py`), pero la UI
+> principal es la app Next.js en `web/`.
+
+## Arquitectura
+
+```
+Next.js (web/)  ──fetch + SSE──►  FastAPI (api/)  ──►  LangGraph pipeline (src/)
+  app/ · components/                routers/ · transform.py        nodes/ · clustering/
+  Tailwind + shadcn + Recharts      serialization · store          (lógica intacta)
+```
+
+- `api/` reutiliza `src/` sin tocar la lógica del pipeline; solo añade transporte HTTP,
+  serialización JSON-safe (numpy/NaN → null) y un store de sesiones (memoria) + runs (disco).
+- Los análisis se persisten como JSON en `api/_data/runs/` → la pantalla **"Mis análisis"**
+  sobrevive a reinicios sin necesidad de base de datos.
+
+## Cómo correr (local)
+
+Requisito: `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla).
+
+### Opción A — un comando con Docker
 
 ```bash
-# 1. Clonar y entrar
-git clone <repo>
-cd archetypeSuite
+cp .env.example .env   # y pon tu OPENROUTER_API_KEY
+docker compose up --build
+# Frontend → http://localhost:3000   ·   API docs → http://localhost:8000/docs
+```
 
-# 2. Crear venv (Python 3.11+ recomendado)
-python3 -m venv .venv
+### Opción B — make (dos procesos en local)
+
+```bash
+# 1. venv + deps (Python 3.11+) y deps del frontend
+python3 -m venv .venv && source .venv/bin/activate
+make install            # pip install -e ".[dev]"  +  cd web && pnpm install
+
+# 2. levantar API + Web juntos (Ctrl-C detiene ambos)
+make dev
+```
+
+### Opción C — manual
+
+```bash
+# Terminal 1 — backend
 source .venv/bin/activate
+uvicorn api.main:app --reload --port 8000
 
-# 3. Instalar dependencias
-pip install -e .
-# para desarrollo (incluye pytest y pytest-cov):
-pip install -e ".[dev]"
-# o si vas a desplegar en Streamlit Cloud:
-pip install -r requirements.txt
-
-# 4. Configurar API key
-cp .env.example .env
-# Editar .env y poner tu OPENROUTER_API_KEY (https://openrouter.ai/keys)
+# Terminal 2 — frontend
+cd web && pnpm install && pnpm dev
 ```
 
-## Cómo correr
+Abre **http://localhost:3000** y pulsa *"Probar con datos de ejemplo"* para el flujo completo.
 
-```bash
-# UI en localhost:8501
-streamlit run src/ui/app.py
-```
+## Deploy
 
-Hay un dataset de ejemplo en `sample_data/customers.csv`: arrastralo al paso 1 para probar el flujo completo.
+- **Frontend → Vercel.** Apunta el proyecto a `web/`. Define la env var
+  `NEXT_PUBLIC_API_URL` con la URL pública de tu backend. `pnpm build` ya emite `standalone`.
+- **Backend → cualquier host de contenedores** (Render, Railway, Fly, Cloud Run):
+  `docker build -f Dockerfile.api -t archetype-api .`. Define `OPENROUTER_API_KEY` y
+  `ARCHETYPE_CORS_ORIGINS` (la URL de tu frontend). Monta un volumen en `/data` para conservar
+  el historial.
 
 ## Tests
 
-Requieren los extras de dev (`pip install -e ".[dev]"`). No necesitan `OPENROUTER_API_KEY`: las respuestas LLM están mockeadas.
-
 ```bash
-# Suite completa (92 tests)
-python3 -m pytest tests/ -v
-
-# Rápido (sin -v)
-python3 -m pytest tests/ -q
-
-# Un archivo o un test concreto
-python3 -m pytest tests/test_data_qa.py -v
-python3 -m pytest tests/test_data_qa.py::test_correlation_heatmap_builds_chart_with_matrix -v
-
-# Con cobertura
-python3 -m pytest tests/ --cov=src --cov-report=term-missing
+make test            # o: python3 -m pytest tests/ -q   → 92 passed
+cd web && pnpm exec tsc --noEmit   # typecheck del frontend
 ```
 
-La config de pytest (`testpaths`, `pythonpath`) vive en `[tool.pytest.ini_options]` de `pyproject.toml`, así que los comandos funcionan desde la raíz del repo sin flags extra.
+Los tests del pipeline están mockeados — no necesitan `OPENROUTER_API_KEY`.
 
 ## Estructura
 
 ```
-src/
-  agents/        # Pipeline LangGraph (graph, routing, nodes/)
-  clustering/    # Algoritmos (registry, executor, evaluator)
-  config/        # Settings (pydantic-settings desde .env)
-  data/          # Ingesta, profiling, preprocesado, k-optimizer
-  llm/           # Provider OpenRouter, prompts, helpers JSON
-  models/        # Schemas Pydantic + PipelineState (TypedDict)
-  ui/            # Streamlit (app.py + views/ + components/ + styles.py)
-tests/           # 92 tests (pytest)
-sample_data/     # Datasets de demo
+src/        # Pipeline LangGraph (graph, nodes, clustering, data, llm, models) — sin cambios de lógica
+api/        # FastAPI: main, routers/, transform.py, serialization.py, store.py
+web/        # Next.js: app/ (rutas) · components/ (ui, charts, wizard, chat, results) · lib/
+tests/      # 92 tests (pytest)
+sample_data/  customers.csv (demo, 50×8)
+Dockerfile.api · web/Dockerfile · docker-compose.yml · Makefile
 ```
 
-## Notas para devs
-
-- El proyecto usa `requires-python>=3.9` (`typing.Dict/List/Optional` en lugar de syntax `|`).
-- No usar `from __future__ import annotations` en `state.py` ni `schemas.py` (LangGraph y Pydantic v2 evalúan hints en runtime).
-- Los modelos LLM a veces envuelven JSON en markdown — usar siempre `extract_json()` (`src/llm/provider.py`) al parsear.
-- Documentación interna detallada en `CLAUDE.md`.
+Documentación interna detallada en `CLAUDE.md`.

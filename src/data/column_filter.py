@@ -10,12 +10,15 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from src.config.settings import settings
+
 ID_NAME_PATTERN = re.compile(r"^(id|uuid|.*_id|.*_uuid|.*id\d*)$", re.IGNORECASE)
 
 FREE_TEXT_MEAN_LEN = 50
 FREE_TEXT_UNIQUE_RATIO = 0.5
 HIGH_MISSING_THRESHOLD = 0.7
 NEAR_ZERO_NUMERIC_CV = 0.01
+MIN_ROWS_FOR_VARIANCE = 4  # below this, a tiny sample can look spuriously constant
 
 
 def detect_id_column(df: pd.DataFrame, col: str) -> bool:
@@ -40,14 +43,36 @@ def detect_id_column(df: pd.DataFrame, col: str) -> bool:
 
 def detect_near_zero_variance(df: pd.DataFrame, col: str) -> bool:
     series = df[col]
+    # Tiny samples look spuriously constant; don't drop everything on a 2-3 row tab.
+    if len(df) < MIN_ROWS_FOR_VARIANCE:
+        return False
     if series.nunique(dropna=True) <= 1:
         return True
     if pd.api.types.is_numeric_dtype(series):
         std = float(series.std()) if len(series) > 1 else 0.0
         mean = float(series.mean())
+        # Coefficient-of-variation check (relative to mean)…
         if mean != 0 and abs(std / mean) < NEAR_ZERO_NUMERIC_CV:
             return True
+        # …and a scale-robust fallback for mean≈0: effectively-constant vs its own range.
+        rng = float(series.max() - series.min())
+        if rng > 0 and std / rng < NEAR_ZERO_NUMERIC_CV:
+            return True
     return False
+
+
+def detect_high_cardinality_categorical(df: pd.DataFrame, col: str, cap: Optional[int] = None) -> bool:
+    """Categorical with too many distinct short-label values — would explode one-hot."""
+    cap = cap if cap is not None else settings.max_categorical_cardinality
+    series = df[col]
+    is_cat = (
+        pd.api.types.is_object_dtype(series)
+        or pd.api.types.is_string_dtype(series)
+        or isinstance(series.dtype, pd.CategoricalDtype)
+    )
+    if not is_cat:
+        return False
+    return series.nunique(dropna=True) > cap
 
 
 def detect_free_text(df: pd.DataFrame, col: str) -> bool:
@@ -159,6 +184,14 @@ def apply_static_filters(
 
         if detect_free_text(out, col):
             dropped.append({"column": col, "reason": "Texto libre de alta cardinalidad"})
+            out.drop(columns=[col], inplace=True)
+            continue
+
+        if detect_high_cardinality_categorical(out, col):
+            dropped.append({
+                "column": col,
+                "reason": "Categórica de cardinalidad muy alta (fragmentaría la segmentación)",
+            })
             out.drop(columns=[col], inplace=True)
             continue
 

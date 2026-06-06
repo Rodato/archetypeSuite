@@ -44,16 +44,21 @@ def _interpret_response(n_clusters: int) -> str:
     archetypes = [
         {
             "cluster_id": i,
-            "label": f"Arquetipo {i}",
-            "description": f"Descripción del cluster {i}",
-            "key_characteristics": [f"rasgo{j}" for j in range(3)],
-            "differentiators": [f"dif{j}" for j in range(2)],
+            "label": f"Patrón {i}",
+            "description": f"En este grupo aparece un patrón de prueba {i}.",
+            "comportamiento_principal": f"Conducta distintiva {i}.",
+            "microcomportamientos": [f"micro{j}" for j in range(3)],
+            "barreras": [f"barrera{j} (motivación automática)" for j in range(2)],
+            "habilitadores": [f"habilitador{j}" for j in range(2)],
+            "oportunidades_accion": [f"Explorar {j}" for j in range(2)],
+            "nivel_cautela": "baja",  # claimed low — the deterministic floor may raise it
+            "cautela_reason": "Lectura de prueba.",
         }
         for i in range(n_clusters)
     ]
     return json.dumps({
         "archetypes": archetypes,
-        "summary": "Resumen de prueba de la segmentación",
+        "summary": "Resumen de prueba de la segmentación en clave de patrones.",
     })
 
 
@@ -98,6 +103,18 @@ class TestPipelineEndToEnd:
         assert len(final_state["archetypes"]) >= 2
         assert "metrics" in final_state
         assert "silhouette_score" in final_state["metrics"]
+
+        # Behavioral layer flows through + summary is captured.
+        assert "interpretation_summary" in final_state
+        archs = final_state["archetypes"]
+        assert all("nivel_cautela" in a for a in archs)
+        assert all(a["nivel_cautela"] in ("baja", "media", "alta") for a in archs)
+        assert all("barreras" in a for a in archs)
+
+        # Deterministic caution floor (§9): no archetype may sit below the silhouette-derived floor.
+        from src.ui.quality import CAUTION_ORDER, caution_from_silhouette
+        floor = caution_from_silhouette(final_state["metrics"]["silhouette_score"])
+        assert all(CAUTION_ORDER[a["nivel_cautela"]] >= CAUTION_ORDER[floor] for a in archs)
 
     def test_refinement_respects_max_iterations(self, sample_df):
         graph = compile_graph()

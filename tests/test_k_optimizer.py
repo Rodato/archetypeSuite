@@ -49,8 +49,8 @@ class TestKOptimizer:
         small_data = np.random.randn(30, 2)
         optimizer = KOptimizer(k_min=2, k_max=10)
         result = optimizer.analyze(small_data)
-        # k_max efectivo = min(10, 30//10) = 3
-        assert max(result["k_range"]) <= 3
+        # k_max efectivo = min(10, max(2, 30//5), 29) = 6  (≈5 muestras por cluster)
+        assert max(result["k_range"]) <= 6
 
     def test_optimal_k_equals_best_silhouette_k(self, numeric_df):
         optimizer = KOptimizer(k_min=2, k_max=5)

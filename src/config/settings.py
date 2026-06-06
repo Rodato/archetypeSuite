@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     # LLM
     openrouter_api_key: str = ""
     llm_model: str = "anthropic/claude-sonnet-4.5"
-    llm_narrative_model: str = "x-ai/grok-4.1-fast"
+    llm_narrative_model: str = "x-ai/grok-4.3"
     llm_temperature: float = 0.0
     llm_request_timeout: int = 60
     llm_fast_request_timeout: int = 30
@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     kmeans_n_init: int = 10
     k_optimizer_min: int = 2
     k_optimizer_max: int = 10
+
+    # Preprocessing guards
+    enable_pca: bool = False           # PCA off by default — avoids the 1-D collapse that inflates silhouette
+    max_onehot_levels: int = 12        # cap one-hot categories per column (rare grouped into "infrequent")
+    max_categorical_cardinality: int = 25  # drop categoricals with more unique values than this (explode one-hot)
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

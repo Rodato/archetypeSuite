@@ -19,11 +19,12 @@ class KOptimizer:
 
     def analyze(self, data: np.ndarray) -> Dict[str, Any]:
         n_samples = data.shape[0]
-        # No tiene sentido buscar más clusters que muestras/10
-        effective_k_max = min(self.k_max, n_samples // 10)
+        # Aim for at least ~5 samples per cluster, but never below k_min and never k >= n.
+        effective_k_max = min(self.k_max, max(self.k_min, n_samples // 5), n_samples - 1)
         effective_k_max = max(effective_k_max, self.k_min)
 
         k_range: List[int] = list(range(self.k_min, effective_k_max + 1))
+        forced_k_min = len(k_range) <= 1
         inertias: List[float] = []
         silhouette_scores: List[float] = []
 
@@ -47,6 +48,7 @@ class KOptimizer:
             "best_silhouette_score": best_silhouette_score,
             "elbow_k": elbow_k,
             "optimal_k": best_silhouette_k,
+            "forced_k_min": forced_k_min,
         }
 
     def _find_elbow(self, k_range: List[int], inertias: List[float]) -> int:

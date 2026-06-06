@@ -1,0 +1,29 @@
+# One-command local stack:  docker compose up --build
+# Frontend → http://localhost:3000   ·   Backend → http://localhost:8000/docs
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      # Reads OPENROUTER_API_KEY (and any overrides) from your local .env
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      ARCHETYPE_CORS_ORIGINS: "*"
+    volumes:
+      - ./api/_data:/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        # Inlined at build time; the browser reaches the host-mapped API on :8000
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped

@@ -4,12 +4,18 @@ Eres un analista de datos respondiendo a un colega. Contesta la pregunta de form
 ## Pregunta original
 {question}
 
+## Operación que se ejecutó
+{operation}
+
 ## Resultado del cálculo
 {result}
 
 ## Reglas
 - Responde en 1-2 oraciones en español, como hablando con un colega.
 - Menciona los números clave del resultado (no inventes).
+- FIDELIDAD: responde EXACTAMENTE sobre lo que muestra el resultado. No reinterpretes la métrica ni le pongas un marco distinto al que tiene.
+  - Si la operación fue "filter_count", el resultado es un CONTEO DE FILAS que cumplen un filtro — NO lo llames "valores faltantes", "nulos" ni otra cosa.
+  - Si la operación fue "missing_values", el resultado SÍ es sobre valores faltantes por columna; si el conteo es 0, di claramente que NO hay valores faltantes.
 - NO uses jerga técnica: nada de "operación", "filtro", "groupby", "agregación", "binning".
 - NO empieces con "Se cuenta", "Se muestra", "Se calcula", "Se filtra" ni verbos pasivos en tercera persona.
 - Si el resultado tiene varios grupos, menciona los 2-3 más relevantes (más altos, más bajos, o el contraste).
@@ -67,7 +73,8 @@ sólo devuelve la operación estructurada.
 - "distribution": histograma o boxplot de una columna numérica. `columns` debe tener 1 columna.
 - "correlation": matriz de correlación entre columnas numéricas. `columns` lista de 2+ columnas numéricas.
 - "top_n": top N valores de `columns[0]` ordenados por sí mismos (descendente). Requiere `top_n` (entero).
-- "filter_count": cuenta filas que cumplen los filtros de `filter_by`. Usar para "¿cuántos X tienen Y?" sin agrupar. Si no hay filtros devuelve el total.
+- "filter_count": cuenta filas que cumplen los filtros de `filter_by`. Usar SOLO para "¿cuántos X tienen Y?" con una condición concreta. Si no hay filtros devuelve el total — NO lo uses para preguntas sobre faltantes/nulos/completitud.
+- "missing_values": reporta cuántos valores faltantes (nulos/NaN) hay por columna y en total. ÚSALO SIEMPRE para preguntas como "¿hay valores faltantes?", "¿qué columnas tienen datos faltantes?", "¿está completo el dataset?", "cuántos nulos", "calidad/completitud de los datos". No requiere `columns`.
 
 ## Filtros — filter_by (opcional)
 Para preguntas con condiciones (ej. "mayores de 25", "de género Male", "con ingresos > 50000"):
@@ -161,6 +168,7 @@ para construir arquetipos significativos y cuáles deberían quedar fuera.
 - Privilegia variables de COMPORTAMIENTO sobre demografía pura cuando ambas existan.
 - Descarta columnas redundantes (correlación obvia o medidas equivalentes).
 - Descarta columnas que el contexto del usuario sugiere que NO son relevantes para su objetivo.
+- EXCLUYE categóricas de muy alta cardinalidad (muchos valores únicos, p. ej. >20-25): fragmentan la codificación one-hot y degradan el clustering. Márcalas en `excluded_columns`.
 - Si dudas entre una columna y otra, marca la menos clara con importancia "low" pero inclúyela.
 - Mantén entre 4 y 10 columnas seleccionadas idealmente. Si hay menos de 4, marca todas como seleccionadas.
 
@@ -198,31 +206,40 @@ la estrategia de preprocesamiento óptima para clustering.
 ## Instrucciones
 Decide:
 1. Qué columnas eliminar (IDs, constantes, texto de alta cardinalidad, etc.)
-2. Estrategia de imputación: "mean", "median" o "mode"
+2. Estrategia de imputación: "mean", "median" o "most_frequent" (para numéricas prefiere median)
 3. Método de escalado: "standard", "minmax" o "robust"
 4. Codificación para categóricas: "onehot" o "label"
-5. Reducción de dimensionalidad: null o {{"method": "pca", "n_components": <número o fracción>}}
+5. Reducción de dimensionalidad: deja SIEMPRE `null`. No usamos PCA (colapsa la estructura y distorsiona la calidad).
 
 Responde SOLO con un objeto JSON:
 {{
   "drop_columns": [...],
-  "imputation": "...",
+  "imputation": "median",
   "scaling": "...",
   "encoding": "...",
-  "dimensionality_reduction": null o {{"method": "pca", "n_components": ...}},
+  "dimensionality_reduction": null,
   "reasoning": "Breve explicación de tus decisiones"
 }}
 """
 
 INTERPRETATION_PROMPT = """\
-Eres un experto en análisis de negocio y marketing. Analiza los resultados del clustering \
-y crea descripciones de arquetipos vívidas y accionables. Responde siempre en español.
+## MARCO METODOLÓGICO (autoridad — síguelo al pie de la letra)
+{methodology}
+
+---
+
+Eres analista de comportamiento en Plural. A partir de los resultados de clustering, escribe \
+cada arquetipo como una **hipótesis comportamental** en clave Plural — NO como retrato de persona \
+ni en lenguaje de marketing. Habla de patrones ("en este grupo aparece…"), no de identidades. \
+Responde siempre en español.
 
 ## Perfiles de Clusters (estadísticas por cluster usando columnas ORIGINALES)
 {cluster_profiles}
 
 ## Métricas de Clustering
 {metrics}
+
+## Calidad de separación (silhouette): {silhouette}
 
 ## Número de Clusters: {n_clusters}
 
@@ -231,12 +248,28 @@ y crea descripciones de arquetipos vívidas y accionables. Responde siempre en e
 ## Contexto del Dataset
 {context}
 
-## Instrucciones
-Para cada cluster, crea un arquetipo con:
-- Un nombre memorable (ej: "Familias Ahorrativas", "Millennials Tecnológicos")
-- Una descripción narrativa de 2-3 oraciones
-- 3-5 características clave que definen el arquetipo
-- 2-3 diferenciadores (qué los hace únicos vs los otros clusters)
+## Instrucciones — para cada cluster, organiza la lectura en estos campos (schema metodológico §4)
+- "label": nombre provisional, 2-5 palabras, DESCRIPTIVO y no moralizante. Nombra el patrón observable, no a las personas. Bien: "Estudio interrumpido", "Cuidado sin reconocimiento", "Participación intermitente". Mal: "Millennials Tecnológicos", "Los Exitosos", "Burnout Digital".
+- "description": 2-3 oraciones que describen el patrón que aparece en el grupo, sin esencializar. Usa fórmulas hipotéticas ("los datos sugieren…", "aparece un patrón de…").
+- "comportamiento_principal": 1-2 oraciones con la conducta que distingue al grupo, anclada en los datos.
+- "microcomportamientos": 3-5 viñetas, conductas concretas que componen el patrón (hipotéticas cuando se infieren). Omite si no hay evidencia en el perfil.
+- "barreras": 3-5 viñetas, factores que dificultarían el comportamiento deseable, SIEMPRE como hipótesis y, cuando puedas, nombrando el sub-nivel COM-B (capacidad / oportunidad social o física / motivación reflexiva o automática). Ej: "Sobrecarga de plazos (oportunidad física: tiempo limitado)".
+- "habilitadores": 2-4 viñetas, condiciones o recursos que facilitarían el movimiento (propositivo pero provisional).
+- "oportunidades_accion": 2-3 viñetas, PISTAS de exploración (no soluciones). Frasea con "Explorar…", "Indagar si…". No prescribas intervenciones.
+- "nivel_cautela": "baja" | "media" | "alta". Honestidad ante todo. Si la silhouette es < 0.25, usa "alta" y lenguaje provisional.
+- "cautela_reason": una oración corta justificando el nivel.
+
+## Reglas duras (no las violes)
+1. Habla de patrones, no de personas ("en este grupo aparece…", no "este grupo es…").
+2. Usa fórmulas hipotéticas al interpretar.
+3. Nunca nombres moralizantes ni de marketing (Burnout, Exitosos, Apáticos, Desconectados, Heroínas, Millennials Tecnológicos…).
+4. Aplica COM-B al hipotetizar barreras y habilitadores.
+5. Aplica los lentes de Plural: género, interseccionalidad, acción sin daño, contexto territorial.
+6. Reconoce el contexto (normas, recursos, narrativas culturales), no aplanes al individuo.
+7. Sé honesto con la cautela: métricas débiles → cautela alta y lenguaje provisional.
+8. Cuando dudes, omite (mejor un campo corto y cuidadoso que uno inventado).
+9. Sin emojis en las narrativas.
+10. No prescribas intervenciones; las oportunidades son pistas para explorar.
 
 Responde SOLO con un objeto JSON:
 {{
@@ -245,11 +278,16 @@ Responde SOLO con un objeto JSON:
       "cluster_id": 0,
       "label": "...",
       "description": "...",
-      "key_characteristics": ["...", "..."],
-      "differentiators": ["...", "..."]
+      "comportamiento_principal": "...",
+      "microcomportamientos": ["...", "..."],
+      "barreras": ["...", "..."],
+      "habilitadores": ["...", "..."],
+      "oportunidades_accion": ["...", "..."],
+      "nivel_cautela": "baja|media|alta",
+      "cautela_reason": "..."
     }}
   ],
-  "summary": "Resumen general de la segmentación"
+  "summary": "Lectura general de la segmentación en clave de patrones (no de personas)."
 }}
 """
 
@@ -284,11 +322,12 @@ Considera:
 - ¿Ajustar hiperparámetros mejoraría los resultados?
 - ¿Es probable que un refinamiento adicional ayude?
 
+El `reason` debe escribirse en voz Plural: clara, cuidadora, sin lenguaje moralizante ni de marketing.
+
 Responde SOLO con un objeto JSON:
 {{
   "should_refine": true/false,
   "reason": "Explicación",
-  "suggested_algorithm": null,
   "suggested_params": {{...}} o null
 }}
 """

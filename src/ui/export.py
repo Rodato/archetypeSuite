@@ -4,6 +4,10 @@ from typing import Any, Dict, List
 import pandas as pd
 
 
+def _join(items) -> str:
+    return " | ".join(items or [])
+
+
 def archetypes_to_csv(archetypes: List[Dict[str, Any]]) -> bytes:
     rows = []
     for a in archetypes:
@@ -11,9 +15,17 @@ def archetypes_to_csv(archetypes: List[Dict[str, Any]]) -> bytes:
             {
                 "cluster_id": a.get("cluster_id"),
                 "label": a.get("label", ""),
+                "nivel_cautela": a.get("nivel_cautela", ""),
                 "description": a.get("description", ""),
-                "key_characteristics": " | ".join(a.get("key_characteristics", []) or []),
-                "differentiators": " | ".join(a.get("differentiators", []) or []),
+                "comportamiento_principal": a.get("comportamiento_principal", ""),
+                "microcomportamientos": _join(a.get("microcomportamientos")),
+                "barreras": _join(a.get("barreras")),
+                "habilitadores": _join(a.get("habilitadores")),
+                "oportunidades_accion": _join(a.get("oportunidades_accion")),
+                "cautela_reason": a.get("cautela_reason", ""),
+                # Legacy (runs anteriores al marco comportamental)
+                "key_characteristics": _join(a.get("key_characteristics")),
+                "differentiators": _join(a.get("differentiators")),
             }
         )
     df = pd.DataFrame(rows)
@@ -67,19 +79,28 @@ def build_markdown_report(result: Dict[str, Any]) -> str:
         buf.write("## Arquetipos\n\n")
         for a in archetypes:
             buf.write(f"### Cluster {a.get('cluster_id')}: {a.get('label', '')}\n\n")
+            if a.get("nivel_cautela"):
+                reason = a.get("cautela_reason", "")
+                buf.write(f"*Nivel de cautela: **{a['nivel_cautela']}***{' — ' + reason if reason else ''}\n\n")
             if a.get("description"):
                 buf.write(f"{a['description']}\n\n")
-            chars = a.get("key_characteristics", []) or []
-            if chars:
-                buf.write("**Características clave:**\n\n")
-                for c in chars:
-                    buf.write(f"- {c}\n")
-                buf.write("\n")
-            diffs = a.get("differentiators", []) or []
-            if diffs:
-                buf.write("**Diferenciadores:**\n\n")
-                for d in diffs:
-                    buf.write(f"- {d}\n")
-                buf.write("\n")
+            if a.get("comportamiento_principal"):
+                buf.write(f"**Comportamiento principal:** {a['comportamiento_principal']}\n\n")
+
+            def _section(title: str, key: str):
+                items = a.get(key, []) or []
+                if items:
+                    buf.write(f"**{title}:**\n\n")
+                    for it in items:
+                        buf.write(f"- {it}\n")
+                    buf.write("\n")
+
+            _section("Microcomportamientos", "microcomportamientos")
+            _section("Barreras probables", "barreras")
+            _section("Habilitadores", "habilitadores")
+            _section("Oportunidades de acción", "oportunidades_accion")
+            # Legacy
+            _section("Características clave", "key_characteristics")
+            _section("Diferenciadores", "differentiators")
 
     return buf.getvalue()

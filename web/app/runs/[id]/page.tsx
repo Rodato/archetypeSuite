@@ -1,0 +1,349 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  BarChart3,
+  Download,
+  FileText,
+  HelpCircle,
+  Info,
+  MessagesSquare,
+  Sparkles,
+  Table2,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
+import { formatDate } from "@/lib/palette";
+import { AppShell } from "@/components/app-shell";
+import { WizardProgress } from "@/components/wizard/wizard-progress";
+import { ArchetypeCard } from "@/components/results/archetype-card";
+import { QualityHero } from "@/components/results/quality-hero";
+import { ClusterBar } from "@/components/charts/cluster-bar";
+import { ScatterMap } from "@/components/charts/scatter-map";
+import { RadarCompare } from "@/components/charts/radar";
+import { BoxPlot } from "@/components/charts/box-plot";
+import { SilhouetteCurve } from "@/components/charts/silhouette-curve";
+import { DataChat } from "@/components/chat/data-chat";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>;
+}
+
+export default function RunPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const qc = useQueryClient();
+  const { data: run, isLoading, isError } = useQuery({ queryKey: ["run", id], queryFn: () => api.getRun(id) });
+
+  const del = useMutation({
+    mutationFn: () => api.deleteRun(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["runs"] });
+      toast.success("Análisis eliminado");
+      router.push("/");
+    },
+  });
+
+  const boxCols = run ? Object.keys(run.charts.box) : [];
+  const [boxCol, setBoxCol] = useState<string | null>(null);
+  const activeBoxCol = boxCol ?? boxCols[0] ?? null;
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="space-y-4">
+          <Skeleton className="h-28 rounded-2xl" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-44 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (isError || !run) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center gap-3 py-24 text-center">
+          <div className="font-semibold">No encontramos este análisis.</div>
+          <Link href="/" className={buttonVariants()}>
+            Volver al inicio
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const chatSuggestions = (() => {
+    const out: string[] = [];
+    if (run.archetypes.length >= 2) out.push(`Diferencias clave entre ${run.archetypes[0].label} y ${run.archetypes[1].label}`);
+    if (run.columns.numeric[0]) out.push(`¿Qué arquetipo tiene mayor ${run.columns.numeric[0]} promedio?`);
+    if (run.columns.categorical[0]) out.push(`Distribución de ${run.columns.categorical[0]} por arquetipo`);
+    return out;
+  })();
+
+  return (
+    <AppShell>
+      <WizardProgress current={3} />
+
+      {/* Header */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Link href="/" aria-label="Volver" className={buttonVariants({ variant: "ghost", size: "icon" })}>
+            <ArrowLeft className="size-4" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">{run.file_name}</h1>
+            <p className="text-xs text-muted-foreground">
+              {formatDate(run.created_at)} · {run.n_rows} filas · {run.archetypes.length} arquetipos
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5")}>
+              <Download className="size-4" /> Descargar
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-60">
+              <div className="grid gap-1">
+                <DownloadLink href={api.exportUrl(run.id, "archetypes.csv")} icon={<Table2 className="size-4" />} label="Arquetipos (CSV)" />
+                <DownloadLink href={api.exportUrl(run.id, "labeled.csv")} icon={<Table2 className="size-4" />} label="Datos etiquetados (CSV)" />
+                <DownloadLink href={api.exportUrl(run.id, "report.md")} icon={<FileText className="size-4" />} label="Reporte (Markdown)" />
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Button variant="ghost" size="icon" aria-label="Eliminar" onClick={() => del.mutate()} disabled={del.isPending}>
+            <Trash2 className="size-4 text-muted-foreground" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Quality + sizes */}
+      <Card className="p-5">
+        <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">
+          <div className="flex flex-col justify-center">
+            <QualityHero quality={run.quality} />
+          </div>
+          <div>
+            <Eyebrow>Tamaño de cada arquetipo</Eyebrow>
+            <ClusterBar sizes={run.cluster_sizes} />
+          </div>
+        </div>
+      </Card>
+
+      {/* Archetype cards */}
+      <section className="mt-6">
+        <div className="mb-3 flex items-center gap-2">
+          <h2 className="text-lg font-semibold tracking-tight">Arquetipos</h2>
+          <Popover>
+            <PopoverTrigger
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Qué es un arquetipo"
+            >
+              <HelpCircle className="size-4" />
+            </PopoverTrigger>
+            <PopoverContent className="w-80 text-sm text-muted-foreground">
+              Un <strong className="text-foreground">arquetipo</strong> es una{" "}
+              <strong className="text-foreground">hipótesis comportamental</strong>: un patrón de conductas, tensiones y
+              barreras que aparece en un grupo — no un retrato de persona. Sirve para leer comportamientos y abrir mejores
+              preguntas de diseño, no para etiquetar a nadie.
+            </PopoverContent>
+          </Popover>
+        </div>
+        {run.summary && (
+          <p className="mb-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">{run.summary}</p>
+        )}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {run.archetypes.map((a, i) => (
+            <ArchetypeCard key={a.cluster_id} archetype={a} index={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* Explore */}
+      <section className="mt-6 grid gap-4 lg:grid-cols-[3fr_1.1fr]">
+        <Card className="p-5">
+          <Eyebrow>Explorar</Eyebrow>
+          <Tabs defaultValue="map">
+            <TabsList className="mb-4">
+              <TabsTrigger value="map" className="gap-1.5">
+                <Sparkles className="size-3.5" /> Mapa
+              </TabsTrigger>
+              <TabsTrigger value="compare" className="gap-1.5">
+                <BarChart3 className="size-3.5" /> Comparar
+              </TabsTrigger>
+              <TabsTrigger value="variable" className="gap-1.5">
+                <Table2 className="size-3.5" /> Por variable
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="gap-1.5">
+                <MessagesSquare className="size-3.5" /> Conversar
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="map">
+              <p className="mb-2 text-xs text-muted-foreground">
+                Cada punto es una fila de tu dataset, coloreada por arquetipo. Las filas parecidas aparecen cerca.
+              </p>
+              <ScatterMap points={run.charts.scatter} />
+            </TabsContent>
+
+            <TabsContent value="compare">
+              <p className="mb-2 text-xs text-muted-foreground">
+                Compara los arquetipos en varias variables a la vez. Valores normalizados de 0 a 1 para poder compararse.
+              </p>
+              <RadarCompare radar={run.charts.radar} />
+            </TabsContent>
+
+            <TabsContent value="variable">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">Cómo se distribuye una variable entre los arquetipos.</p>
+                {boxCols.length > 0 && (
+                  <Select value={activeBoxCol ?? undefined} onValueChange={setBoxCol}>
+                    <SelectTrigger className="w-44" size="sm">
+                      <SelectValue placeholder="Variable" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {boxCols.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              {activeBoxCol ? (
+                <BoxPlot groups={run.charts.box[activeBoxCol]} />
+              ) : (
+                <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+                  No hay variables numéricas para mostrar.
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="chat">
+              <div className="flex h-[440px] flex-col">
+                <DataChat
+                  ask={(q, history) => api.chatRun(run.id, { question: q, context: run.dataset_context, history })}
+                  suggestions={chatSuggestions}
+                  placeholder="Pregunta sobre los arquetipos…"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Card>
+
+        {/* Methodology */}
+        <Card className="h-fit p-5">
+          <Eyebrow>Metodología</Eyebrow>
+          <div className="text-sm font-semibold">¿Por qué {run.optimal_k} arquetipos?</div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Probamos dividir tus datos en distintos números de grupos y medimos qué tan bien separados quedan.{" "}
+            <strong className="text-foreground">{run.optimal_k}</strong> es el punto donde cada grupo es distintivo y
+            suficientemente grande para nombrarlo.
+          </p>
+          <div className="mt-3">
+            <SilhouetteCurve
+              kRange={run.k_analysis.k_range}
+              scores={run.k_analysis.silhouette_scores}
+              optimalK={run.k_analysis.optimal_k}
+            />
+          </div>
+        </Card>
+      </section>
+
+      {/* Advanced */}
+      <section className="mt-6">
+        <Accordion>
+          <AccordionItem value="adv" className="rounded-2xl border bg-card px-5">
+            <AccordionTrigger className="text-sm">
+              <span className="inline-flex items-center gap-2">
+                <Info className="size-4 text-muted-foreground" /> Detalles técnicos
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid gap-4 pb-2 sm:grid-cols-2">
+                <div>
+                  <div className="mb-2 text-xs font-semibold">Métricas</div>
+                  <dl className="space-y-1 text-sm">
+                    <Metric label="Silhouette" value={run.metrics.silhouette_score} digits={3} />
+                    <Metric label="Calinski–Harabasz" value={run.metrics.calinski_harabasz_score} digits={1} />
+                    <Metric label="Davies–Bouldin" value={run.metrics.davies_bouldin_score} digits={3} />
+                    <Metric label="Algoritmo" value={run.advanced.selected_algorithm} />
+                    <Metric label="Iteraciones de refinamiento" value={run.advanced.refinement_count} />
+                  </dl>
+                </div>
+                <div>
+                  {run.advanced.selection_reasoning && (
+                    <>
+                      <div className="mb-2 text-xs font-semibold">Selección de algoritmo</div>
+                      <p className="mb-3 text-sm text-muted-foreground">{run.advanced.selection_reasoning}</p>
+                    </>
+                  )}
+                  {run.advanced.refinement_reason && (
+                    <>
+                      <div className="mb-2 text-xs font-semibold">Decisión de refinamiento</div>
+                      <p className="text-sm text-muted-foreground">{run.advanced.refinement_reason}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
+    </AppShell>
+  );
+}
+
+function DownloadLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <a
+      href={href}
+      className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-muted"
+    >
+      {icon} {label}
+    </a>
+  );
+}
+
+function Metric({ label, value, digits }: { label: string; value: number | string | null; digits?: number }) {
+  const display =
+    value === null || value === undefined
+      ? "—"
+      : typeof value === "number" && digits !== undefined
+        ? value.toFixed(digits)
+        : String(value);
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium tabular-nums">{display}</dd>
+    </div>
+  );
+}

@@ -3,6 +3,18 @@ from typing import Dict, Optional
 
 import streamlit as st
 
+from src.ui.quality import CAUTION_META
+
+_CAUTION_CLASS = {"green": "qh-grade--green", "orange": "qh-grade--orange", "red": "qh-grade--red"}
+
+
+def _bullets(title: str, items: list) -> None:
+    if not items:
+        return
+    st.markdown(f"**{title}**")
+    for it in items:
+        st.markdown(f"- {it}")
+
 
 def render_archetype_cards(
     archetypes: list,
@@ -39,9 +51,19 @@ def render_archetype_cards(
                             f"{pct:.1f}% del total</div>"
                         )
 
+                caution = archetype.get("nivel_cautela")
+                caution_html = ""
+                if caution in CAUTION_META:
+                    cls = _CAUTION_CLASS.get(CAUTION_META[caution]["color"], "qh-grade--gray")
+                    caution_html = (
+                        f"<span class='importance-badge {cls}' "
+                        f"title='{html.escape(str(archetype.get('cautela_reason', '')))}'>"
+                        f"Cautela {html.escape(str(caution))}</span>"
+                    )
+
                 card_html = [
                     "<div class='archetype-card'>",
-                    f"<div class='tag'>Arquetipo {cluster_id}</div>",
+                    f"<div class='tag'>Arquetipo {cluster_id} {caution_html}</div>",
                     f"<h3>{label}</h3>",
                     prevalence_html,
                     f"<div class='description'>{description}</div>",
@@ -49,24 +71,29 @@ def render_archetype_cards(
                 ]
                 st.markdown("\n".join(card_html), unsafe_allow_html=True)
 
+                comportamiento = archetype.get("comportamiento_principal", "")
+                micro = archetype.get("microcomportamientos", []) or []
+                barreras = archetype.get("barreras", []) or []
+                habilitadores = archetype.get("habilitadores", []) or []
+                oportunidades = archetype.get("oportunidades_accion", []) or []
+                has_behavioral = bool(comportamiento or micro or barreras or habilitadores or oportunidades)
+
                 characteristics = archetype.get("key_characteristics", []) or []
                 differentiators = archetype.get("differentiators", []) or []
-                if characteristics or differentiators:
+
+                if has_behavioral or characteristics or differentiators:
                     with st.expander("Ver detalles"):
-                        char_col, diff_col = st.columns(2)
-                        with char_col:
-                            st.markdown("**Características clave**")
-                            if characteristics:
-                                for char in characteristics:
-                                    st.markdown(f"- {char}")
-                            else:
-                                st.caption("—")
-                        with diff_col:
-                            st.markdown("**Diferenciadores**")
-                            if differentiators:
-                                for diff in differentiators:
-                                    st.markdown(f"- {diff}")
-                            else:
-                                st.caption("—")
+                        if has_behavioral:
+                            if comportamiento:
+                                st.markdown(f"**Comportamiento principal:** {comportamiento}")
+                            _bullets("Microcomportamientos", micro)
+                            _bullets("Barreras probables", barreras)
+                            _bullets("Habilitadores", habilitadores)
+                            _bullets("Oportunidades de acción", oportunidades)
+                        else:
+                            _bullets("Características clave", characteristics)
+                            _bullets("Diferenciadores", differentiators)
+                        if archetype.get("cautela_reason"):
+                            st.caption(archetype["cautela_reason"])
 
         st.markdown("<div class='space-sm'></div>", unsafe_allow_html=True)

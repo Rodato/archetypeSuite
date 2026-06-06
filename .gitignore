@@ -13,6 +13,11 @@ venv/
 .DS_Store
 **/.DS_Store
 
+# API: persisted runs ("Mis análisis") + screenshot scratch
+api/_data/
+web/_shots*.mjs
+/tmp/shots/
+
 # Knowledge database: solo versionamos el marco metodológico.
 # Los insumos crudos (pptx, xlsx, md de garaje) viven en local.
 knowledge_database/*

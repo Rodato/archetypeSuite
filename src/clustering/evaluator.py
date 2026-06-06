@@ -101,10 +101,13 @@ class ClusteringEvaluator:
 
             for col in numeric_cols:
                 col_data = cluster_data[col]
+                # std of a single value is NaN — emit None (mirrors mean/median) so it
+                # never leaks NaN into JSON or the interpret prompt.
+                std_val = float(col_data.std()) if col_data.count() >= 2 else None
                 profiles[label_key][col] = {
                     "mean": float(col_data.mean()) if not col_data.isna().all() else None,
                     "median": float(col_data.median()) if not col_data.isna().all() else None,
-                    "std": float(col_data.std()) if not col_data.isna().all() else None,
+                    "std": std_val,
                 }
 
             for col in categorical_cols:

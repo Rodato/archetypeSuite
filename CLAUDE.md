@@ -81,16 +81,38 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 - Eventualmente nivel 3: SaaS multi-tenant (auth, persistencia DB, deployment, CI/CD) — fuera de scope ahora.
 
 ## Como ejecutar
+- **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests:** `python3 -m pytest tests/ -v` → 92/92
-- **UI Streamlit:** `streamlit run src/ui/app.py`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 92/92 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **UI Streamlit (legacy, sigue funcionando):** `streamlit run src/ui/app.py`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
+
+## Capa comportamental integrada + auditoría del sistema (Jun 5, 2026)
+Round dirigido por el usuario: se **integró `methodology_v1.md`** al pipeline (esto **levanta** la antigua restricción "no tocar prompts ni schema") y se arregló una **auditoría de 38 hallazgos** (parte por parte: ingesta, coherencia, clustering).
+
+**Capa comportamental (Plural):**
+- `src/llm/methodology.py`: `load_methodology()` cacheado (lru_cache) y fail-soft, lee `knowledge_database/methodology_v1.md`.
+- `ArchetypeDescription` ampliado a **8 campos**: `label` (nombre provisional), `description` (patrón), `comportamiento_principal`, `microcomportamientos[]`, `barreras[]` (con sub-nivel COM-B), `habilitadores[]`, `oportunidades_accion[]`, `nivel_cautela` (baja/media/alta) + `cautela_reason`. Se conservan `key_characteristics`/`differentiators` como **legacy** (compat con runs viejos).
+- `INTERPRETATION_PROMPT` reescrito: inyecta el `.md` como bloque de sistema + las 10 reglas duras + voz Plural (patrones, no personas; lenguaje hipotético; nada de marketing). Recibe `{silhouette}`.
+- **Cautela determinística**: `interpret_node` fuerza `nivel_cautela` al piso de `caution_from_silhouette()` (en `quality.py`): silhouette<0.25→alta, <0.5→media, resto baja. Solo SUBE, nunca baja la del LLM.
+- UI: badge de cautela + 4 secciones comportamentales en las cards (Next.js `archetype-card.tsx` y Streamlit `archetype_cards.py`), fallback a legacy. Exports (CSV/markdown) incluyen los campos nuevos.
+
+**Fixes del audit (38):** ingesta (NA sentinels extendidos, coerción object→numérico con miles/moneda, multi-hoja Excel, fallback de encoding) · coherencia (operación `missing_values` — antes el chat inventaba "N filas con valores faltantes"; narrativa fiel a la tabla; coerción de filtros numéricos; donut con `has_missing` booleano) · clustering (**PCA desactivado por defecto** `settings.enable_pca=False` — causaba colapso 1-D que inflaba el silhouette; alias `mode→most_frequent`; one-hot con `max_categories`; escalar solo numéricas continuas no dummies; `k_max` ~n/5; try/except en preprocess_node; std=None en clusters de 1 fila; high-cardinality en column_filter).
+- **Tests: 108/108** (94 previos + test_methodology + test_ingest_robustness + tests de preprocesamiento nuevos).
+
+## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
+Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, manteniendo el pipeline `src/` intacto. Streamlit queda como legacy.
+- **`api/` (FastAPI):** envuelve el pipeline. `main.py` (app+CORS+health), `routers/` (datasets: upload/sample/suggest-columns/chat · analyze: SSE streaming de `graph.stream` · runs: list/get/chat/export/delete), `transform.py` (donut, PCA scatter, radar normalizado, box quartiles, build_run_record, serialización de chat), `serialization.py` (`to_jsonable`: numpy/NaN→null), `store.py` (datasets en memoria + runs persistidos en `api/_data/runs/*.json`). NO toca la lógica del pipeline; reutiliza `quality.py`/`export.py`/`data_qa.py` (son puros, sin Streamlit).
+- **`web/` (Next.js 16, App Router, TS):** Tailwind v4 + shadcn/ui (estilo base-nova → **Base UI**, usa `render` no `asChild`; Accordion usa `multiple` no `type`) + Recharts + framer-motion + TanStack Query + Zustand (wizard) + next-themes (dark). Tokens de marca portados (slate+indigo→violeta, `--chart-1..8` = BRAND_PALETTE) en `app/globals.css`. Rutas: `/` (dashboard + Mis análisis), `/new` (wizard 2 pasos con SSE), `/runs/[id]` (resultados). Charts custom: heatmap (grid CSS) y box-plot (SVG); el resto Recharts. Cliente API + SSE en `lib/api.ts`, tipos en `lib/types.ts`.
+- **Deploy:** `Dockerfile.api` (backend) + `web/Dockerfile` (Next standalone) + `docker-compose.yml`. Front → Vercel (`web/`, env `NEXT_PUBLIC_API_URL`); backend → host de contenedores (volumen en `/data`).
+- **Fix de modelo:** `x-ai/grok-4.1-fast` quedó **deprecado (404)** en OpenRouter → `settings.llm_narrative_model` ahora es **`x-ai/grok-4.3`** (cambio de config, no de prompt). Sin esto, interpret y la narrativa del chat caían al fallback determinista.
+- **Scatter robusto:** si el preprocess reduce a <2 dims (PCA-1), el mapa se calcula desde las numéricas crudas estandarizadas (PCA-2). Antes (Streamlit) el mapa quedaba vacío en ese caso.
 
 ## Arquitectura
 - Pipeline LangGraph: ingest → profile → **column_selection(LLM)** → preprocess(LLM) → optimize_k → select (determinístico, KMeans) → cluster → evaluate → interpret(LLM) → refinement(LLM)
 - column_selection, preprocess, refinement, data_qa usan Claude Sonnet 4.5 vía OpenRouter
-- interpret usa x-ai/grok-4.1-fast vía OpenRouter (modelo narrativo separado)
-- UI Streamlit — 3 pasos (en español): Datos, Analizar, Arquetipos. Archivos en `src/ui/views/` (no `pages/` para evitar auto-multipage de Streamlit).
+- interpret usa x-ai/grok-4.3 vía OpenRouter (modelo narrativo separado)
+- UI principal: Next.js + FastAPI (ver sección SaaS rewrite). UI Streamlit legacy en `src/ui/views/`.
 - Clustering: KMeans, AgglomerativeClustering (DBSCAN y GaussianMixture eliminados). Select fija KMeans.
 
 ## Notas técnicas de ingesta y preprocesamiento
@@ -134,7 +156,7 @@ Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plu
 9. Lo que queda fuera del alcance + cuándo frenar.
 10. Reglas duras para el LLM (TL;DR ejecutable, 10 puntos).
 
-**Estado:** el doc está completo desde nuestra perspectiva. **El usuario y parte del equipo de Plural van a revisarlo y regresar con ajustes.** No tocar prompts ni schema hasta tener feedback.
+**Estado (Jun 5, 2026): INTEGRADO al pipeline** por decisión del usuario — ver la sección "Capa comportamental integrada" arriba. La restricción "no tocar prompts ni schema" quedó levantada. El `.md` se inyecta en `INTERPRETATION_PROMPT` vía `src/llm/methodology.py` (carga desde disco), `ArchetypeDescription` tiene los 8 campos, y la UI los renderiza con badge de cautela. Como el doc se carga desde disco, ajustes de copy del equipo son **cero-código** (editar el `.md` y listo).
 
 ## Notas técnicas
 - Python 3.9 — usar `typing.Dict`, `typing.List`, `typing.Optional` (no `dict | None` syntax).

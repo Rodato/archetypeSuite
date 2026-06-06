@@ -31,13 +31,27 @@ def preprocess_node(state: PipelineState) -> dict:
     df = pd.DataFrame(state["raw_data"])
     original_cols = df.columns.tolist()
     preprocessor = DataPreprocessor()
-    processed_df, _ = preprocessor.preprocess(df, strategy)
 
-    logs = [
-        f"[preprocess] LLM strategy: scaling={decision.scaling}, "
-        f"encoding={decision.encoding}, dropped={decision.drop_columns}",
-        f"[preprocess] Result shape: {processed_df.shape}",
-    ]
+    logs: list = []
+    try:
+        processed_df, _ = preprocessor.preprocess(df, strategy)
+        logs.append(
+            f"[preprocess] LLM strategy: scaling={decision.scaling}, "
+            f"encoding={decision.encoding}, dropped={decision.drop_columns}"
+        )
+    except Exception as exc:  # noqa: BLE001 — fall back to a known-safe strategy
+        safe_strategy = {
+            "drop_columns": [],
+            "imputation": "median",
+            "scaling": "standard",
+            "encoding": "onehot",
+            "dimensionality_reduction": None,
+        }
+        processed_df, _ = preprocessor.preprocess(df, safe_strategy)
+        strategy = safe_strategy
+        logs.append(f"[preprocess] Estrategia del LLM falló ({exc}); se usó una estrategia segura por defecto.")
+
+    logs.append(f"[preprocess] Result shape: {processed_df.shape}")
     if error:
         logs.insert(0, f"[preprocess] LLM falló, usando defaults. Error: {error}")
 

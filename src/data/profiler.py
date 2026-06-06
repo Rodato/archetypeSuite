@@ -20,7 +20,9 @@ class DataProfiler:
 
     def profile(self, df: pd.DataFrame) -> dict:
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        categorical_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+        # Treat bool as categorical (a 2-level variable) so it doesn't vanish from both
+        # lists and stays consistent with the donut classification.
+        categorical_cols = df.select_dtypes(include=["object", "category", "bool"]).columns.tolist()
 
         columns_info: list[dict] = []
         for col in df.columns:

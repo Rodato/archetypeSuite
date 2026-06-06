@@ -41,6 +41,7 @@ class PipelineState(TypedDict, total=False):
 
     # Interpretation
     archetypes: List[Dict[str, Any]]
+    interpretation_summary: str
 
     # Refinement control
     should_refine: bool

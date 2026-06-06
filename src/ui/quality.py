@@ -1,6 +1,25 @@
 from typing import Dict, Optional
 
 
+# Nivel de cautela interpretativa atado a la métrica (marco metodológico, sección 9).
+CAUTION_ORDER = {"baja": 0, "media": 1, "alta": 2}
+
+CAUTION_META = {
+    "baja": {"label": "Cautela baja", "color": "green", "description": "Lectura sólida: métricas buenas y grupos bien separados."},
+    "media": {"label": "Cautela media", "color": "orange", "description": "Lectura razonable, pero con vacíos: trátala como hipótesis."},
+    "alta": {"label": "Cautela alta", "color": "red", "description": "Lectura exploratoria: métricas débiles o datos escasos."},
+}
+
+
+def caution_from_silhouette(score: Optional[float]) -> str:
+    """Piso de cautela derivado del silhouette. None o <0.25 → 'alta'; <0.5 → 'media'; resto 'baja'."""
+    if score is None or score < 0.25:
+        return "alta"
+    if score < 0.5:
+        return "media"
+    return "baja"
+
+
 def silhouette_to_quality(score: Optional[float]) -> Dict[str, str]:
     if score is None:
         return {
