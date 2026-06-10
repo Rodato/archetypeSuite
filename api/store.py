@@ -7,6 +7,7 @@
 """
 import json
 import os
+import re
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -26,6 +27,17 @@ def now_iso() -> str:
 
 def new_id() -> str:
     return uuid.uuid4().hex[:12]
+
+
+# Los IDs son siempre 12 hex (new_id). Validar antes de construir paths bloquea
+# cualquier intento de traversal vía el path param, hoy y ante futuros cambios de routing.
+_RUN_ID_RE = re.compile(r"^[0-9a-f]{12}$")
+
+
+def _run_path(run_id: str) -> Optional[Path]:
+    if not _RUN_ID_RE.fullmatch(run_id):
+        return None
+    return RUNS_DIR / f"{run_id}.json"
 
 
 # --------------------------------------------------------------------------- #
@@ -67,8 +79,8 @@ def save_run(record: Dict[str, Any]) -> None:
 
 
 def get_run(run_id: str) -> Optional[Dict[str, Any]]:
-    path = RUNS_DIR / f"{run_id}.json"
-    if not path.exists():
+    path = _run_path(run_id)
+    if path is None or not path.exists():
         return None
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -88,8 +100,8 @@ def list_runs() -> List[Dict[str, Any]]:
 
 
 def delete_run(run_id: str) -> bool:
-    path = RUNS_DIR / f"{run_id}.json"
-    if path.exists():
+    path = _run_path(run_id)
+    if path is not None and path.exists():
         path.unlink()
         return True
     return False

@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "archetype-suite"
 version = "0.1.0"
 description = "Agentic clustering pipeline for generating archetypes from tabular data"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
     "langgraph>=0.2.0",
     "langchain-openai>=0.1.0",

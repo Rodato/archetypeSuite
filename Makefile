@@ -21,7 +21,7 @@ dev:
 	( cd web && pnpm dev --port 3000 ) & \
 	wait
 
-# Backend test suite (92 tests)
+# Backend test suite (137 tests)
 test:
 	. .venv/bin/activate && python3 -m pytest tests/ -q
 

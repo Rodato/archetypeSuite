@@ -5,6 +5,25 @@ from src.llm.provider import get_llm_json, invoke_json_with_retry
 from src.models.schemas import RefinementDecision
 from src.models.state import PipelineState
 
+# Solo hiperparámetros seguros de KMeans pueden venir del LLM. Sin whitelist, una
+# sugerencia como {"algorithm": "DBSCAN"} (kwarg válido de KMeans, valor inválido) o
+# {"random_state": null} crashea la segunda pasada de cluster o rompe el determinismo.
+_ALLOWED_PARAMS = {"init", "n_init", "max_iter"}
+_VALID_INIT = {"k-means++", "random"}
+
+
+def _sanitize_suggested_params(suggested: dict) -> dict:
+    safe: dict = {}
+    for key, value in suggested.items():
+        if key not in _ALLOWED_PARAMS:
+            continue
+        if key == "init":
+            if value in _VALID_INIT:
+                safe[key] = value
+        elif isinstance(value, int) and not isinstance(value, bool) and value > 0:
+            safe[key] = value
+    return safe
+
 
 def refinement_node(state: PipelineState) -> dict:
     llm = get_llm_json()
@@ -41,8 +60,10 @@ def refinement_node(state: PipelineState) -> dict:
     }
 
     if decision.should_refine and decision.suggested_params:
-        params = dict(decision.suggested_params)
-        params.pop("n_clusters", None)
+        params = _sanitize_suggested_params(decision.suggested_params)
+        dropped = set(decision.suggested_params) - set(params)
+        if dropped:
+            logs.append(f"[refinement] Parámetros descartados por whitelist: {sorted(dropped)}")
         if params:
             result["algorithm_params"] = {**state.get("algorithm_params", {}), **params}
 

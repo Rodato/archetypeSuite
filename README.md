@@ -82,7 +82,7 @@ Abre **http://localhost:3000** y pulsa *"Probar con datos de ejemplo"* para el f
 ## Tests
 
 ```bash
-make test            # o: python3 -m pytest tests/ -q   → 92 passed
+make test            # o: python3 -m pytest tests/ -q   → 137 passed
 cd web && pnpm exec tsc --noEmit   # typecheck del frontend
 ```
 
@@ -94,7 +94,7 @@ Los tests del pipeline están mockeados — no necesitan `OPENROUTER_API_KEY`.
 src/        # Pipeline LangGraph (graph, nodes, clustering, data, llm, models) — sin cambios de lógica
 api/        # FastAPI: main, routers/, transform.py, serialization.py, store.py
 web/        # Next.js: app/ (rutas) · components/ (ui, charts, wizard, chat, results) · lib/
-tests/      # 92 tests (pytest)
+tests/      # 137 tests (pytest — pipeline + capa API)
 sample_data/  customers.csv (demo, 50×8)
 Dockerfile.api · web/Dockerfile · docker-compose.yml · Makefile
 ```

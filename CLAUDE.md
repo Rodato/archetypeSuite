@@ -83,7 +83,7 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 ## Como ejecutar
 - **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests backend:** `python3 -m pytest tests/ -v` → 92/92 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 137/137 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **UI Streamlit (legacy, sigue funcionando):** `streamlit run src/ui/app.py`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
@@ -99,6 +99,24 @@ Round dirigido por el usuario: se **integró `methodology_v1.md`** al pipeline (
 
 **Fixes del audit (38):** ingesta (NA sentinels extendidos, coerción object→numérico con miles/moneda, multi-hoja Excel, fallback de encoding) · coherencia (operación `missing_values` — antes el chat inventaba "N filas con valores faltantes"; narrativa fiel a la tabla; coerción de filtros numéricos; donut con `has_missing` booleano) · clustering (**PCA desactivado por defecto** `settings.enable_pca=False` — causaba colapso 1-D que inflaba el silhouette; alias `mode→most_frequent`; one-hot con `max_categories`; escalar solo numéricas continuas no dummies; `k_max` ~n/5; try/except en preprocess_node; std=None en clusters de 1 fila; high-cardinality en column_filter).
 - **Tests: 108/108** (94 previos + test_methodology + test_ingest_robustness + tests de preprocesamiento nuevos).
+
+## Auditoría 4 capas + Fase 0/1 del plan de lanzamiento (Jun 10, 2026)
+Auditoría completa (pipeline/API/front/infra, ~45 hallazgos) consolidada en `PLAN-LANZAMIENTO.md`
+(plan por fases con checkboxes — Fase 0 y Fase 1 completadas; Fase 2 = demo, Fase 3 = beta).
+- **Fase 0 (quick wins):** `keepMounted` en tabs de `/runs/[id]` (el chat ya no se borra al cambiar
+  de tab) · `regex=False` en filtro `contains` del chat (ReDoS) · `methodology_v1.md` ahora SÍ entra
+  a la imagen Docker (antes el deploy corría con el fallback de 5 líneas) · CORS del compose sin `"*"` ·
+  `run_id` validado con regex 12-hex en `api/store.py` · delete de run con dialog de confirmación +
+  `onError` + `removeQueries` · invalidación de `["runs"]` al terminar análisis · `requires-python>=3.11`.
+- **Fase 1 (cimientos):** CI en GitHub Actions (`.github/workflows/ci.yml`: pytest + tsc + next build) ·
+  `tests/test_api.py` (24 tests, TestClient con grafo/LLM mockeados — encontró y arregló bug real:
+  `pd.NaT` se serializaba como string `"NaT"`) · **`requirements.lock`** (pip freeze del venv testeado;
+  Dockerfile.api y CI instalan del lock — `requirements.txt` quedó como pointer `-e .`) · whitelist de
+  hiperparámetros en `refinement_node` (solo `init/n_init/max_iter`, el LLM ya no puede romper
+  `random_state` ni crashear KMeans) + executor re-fuerza `random_state=settings.random_seed` ·
+  `NA_TOKENS` ya no usa la API privada `pd.io.parsers.readers.STR_NA_VALUES`.
+- **Tests: 137/137** (108 previos + 24 API + 5 robustez).
+- Pendientes priorizados en `PLAN-LANZAMIENTO.md` (Fases 2-3) y backlog de hallazgos menores ahí mismo.
 
 ## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
 Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, manteniendo el pipeline `src/` intacto. Streamlit queda como legacy.
@@ -159,7 +177,7 @@ Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plu
 **Estado (Jun 5, 2026): INTEGRADO al pipeline** por decisión del usuario — ver la sección "Capa comportamental integrada" arriba. La restricción "no tocar prompts ni schema" quedó levantada. El `.md` se inyecta en `INTERPRETATION_PROMPT` vía `src/llm/methodology.py` (carga desde disco), `ArchetypeDescription` tiene los 8 campos, y la UI los renderiza con badge de cautela. Como el doc se carga desde disco, ajustes de copy del equipo son **cero-código** (editar el `.md` y listo).
 
 ## Notas técnicas
-- Python 3.9 — usar `typing.Dict`, `typing.List`, `typing.Optional` (no `dict | None` syntax).
+- **Python 3.11** (venv 3.11.14 + `python:3.11-slim` en Docker; `requires-python = ">=3.11"` desde Jun 10, 2026). El código existente usa `typing.Dict`/`List`/`Optional` por herencia 3.9 — sintaxis moderna (`dict[...]`, `X | None`) es válida en código nuevo; modernización masiva pendiente (opcional, `pyupgrade --py311-plus`).
 - En `src/models/state.py` y `src/models/schemas.py` NO usar `from __future__ import annotations` (LangGraph y Pydantic v2 evalúan hints en runtime).
 - Streamlit 1.50: `st.container(height=...)` soporta scroll interno — útil para listas largas dentro de cards.
 - `st.expander` ejecuta los widgets internos siempre (sólo es display); el estado de checkboxes persiste aunque colapses.

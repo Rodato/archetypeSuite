@@ -48,6 +48,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>;
@@ -62,9 +72,14 @@ export default function RunPage() {
   const del = useMutation({
     mutationFn: () => api.deleteRun(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["runs"] });
       toast.success("Análisis eliminado");
       router.push("/");
+      qc.invalidateQueries({ queryKey: ["runs"] });
+      // Sin esto, volver con el botón "atrás" dentro del staleTime muestra el run borrado.
+      qc.removeQueries({ queryKey: ["run", id] });
+    },
+    onError: () => {
+      toast.error("No se pudo eliminar el análisis. Inténtalo de nuevo.");
     },
   });
 
@@ -138,9 +153,28 @@ export default function RunPage() {
               </div>
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="icon" aria-label="Eliminar" onClick={() => del.mutate()} disabled={del.isPending}>
-            <Trash2 className="size-4 text-muted-foreground" />
-          </Button>
+          <Dialog>
+            <DialogTrigger
+              aria-label="Eliminar"
+              className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+            >
+              <Trash2 className="size-4 text-muted-foreground" />
+            </DialogTrigger>
+            <DialogContent showCloseButton={false}>
+              <DialogHeader>
+                <DialogTitle>¿Eliminar este análisis?</DialogTitle>
+                <DialogDescription>
+                  Se borrará «{run.file_name}» de Mis análisis. Esta acción no se puede deshacer.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose render={<Button variant="outline" />}>Cancelar</DialogClose>
+                <Button variant="destructive" onClick={() => del.mutate()} disabled={del.isPending}>
+                  {del.isPending ? "Eliminando…" : "Eliminar"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -206,21 +240,23 @@ export default function RunPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="map">
+            {/* keepMounted: Base UI desmonta los paneles inactivos por defecto — sin esto,
+                cambiar de tab borra el historial del chat y re-anima los charts. */}
+            <TabsContent value="map" keepMounted>
               <p className="mb-2 text-xs text-muted-foreground">
                 Cada punto es una fila de tu dataset, coloreada por arquetipo. Las filas parecidas aparecen cerca.
               </p>
               <ScatterMap points={run.charts.scatter} />
             </TabsContent>
 
-            <TabsContent value="compare">
+            <TabsContent value="compare" keepMounted>
               <p className="mb-2 text-xs text-muted-foreground">
                 Compara los arquetipos en varias variables a la vez. Valores normalizados de 0 a 1 para poder compararse.
               </p>
               <RadarCompare radar={run.charts.radar} />
             </TabsContent>
 
-            <TabsContent value="variable">
+            <TabsContent value="variable" keepMounted>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">Cómo se distribuye una variable entre los arquetipos.</p>
                 {boxCols.length > 0 && (
@@ -247,7 +283,7 @@ export default function RunPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="chat">
+            <TabsContent value="chat" keepMounted>
               <div className="flex h-[440px] flex-col">
                 <DataChat
                   ask={(q, history) => api.chatRun(run.id, { question: q, context: run.dataset_context, history })}

@@ -8,13 +8,17 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # System deps for scientific Python wheels are already in the slim image for these versions.
-COPY requirements.txt ./
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# requirements.lock pins exact versions (pip freeze of the tested venv) — sklearn/pandas
+# version drift changes clustering results, so the lock IS part of the determinism story.
+COPY requirements.lock ./
+RUN pip install --upgrade pip && pip install -r requirements.lock
 
 # App code (pipeline + API + sample data)
 COPY src ./src
 COPY api ./api
 COPY sample_data ./sample_data
+# Marco metodológico Plural — sin esto, interpret cae a un fallback de 5 líneas (fail-soft).
+COPY knowledge_database/methodology_v1.md ./knowledge_database/methodology_v1.md
 
 # Persisted runs ("Mis análisis"); mount a volume here to keep history across restarts.
 ENV ARCHETYPE_DATA_DIR=/data

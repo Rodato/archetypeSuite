@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from src.clustering.registry import AlgorithmRegistry
+from src.config.settings import settings
 
 
 class ClusteringExecutor:
@@ -23,6 +24,11 @@ class ClusteringExecutor:
         merged_params = {**algorithm_entry["default_params"]}
         if params:
             merged_params.update(params)
+
+        # El seed es invariante del producto (determinismo): ningún caller puede
+        # sobreescribirlo, venga de donde venga el dict de params.
+        if "random_state" in merged_params:
+            merged_params["random_state"] = settings.random_seed
 
         model = algorithm_entry["class"](**merged_params)
         labels = model.fit_predict(data)

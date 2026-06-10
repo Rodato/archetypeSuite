@@ -36,6 +36,9 @@ def to_jsonable(obj: Any) -> Any:
     if isinstance(obj, np.ndarray):
         return [to_jsonable(x) for x in obj.tolist()]
     if isinstance(obj, (datetime, date, pd.Timestamp)):
+        # pd.NaT es instancia de datetime: sin este guard se serializa como "NaT".
+        if pd.isna(obj):
+            return None
         return obj.isoformat()
     if isinstance(obj, pd.Series):
         return [to_jsonable(x) for x in obj.tolist()]

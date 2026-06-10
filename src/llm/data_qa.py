@@ -99,7 +99,9 @@ def _apply_filters(df: pd.DataFrame, query: DataQuery) -> pd.DataFrame:
             else:
                 mask = s.isin(vals)
         elif cond.op == "contains":
-            mask = s.astype(str).str.contains(str(val), case=False, na=False)
+            # regex=False: el valor viene del LLM (que lee el CSV del usuario) — un
+            # patrón con backtracking catastrófico colgaría el worker (ReDoS).
+            mask = s.astype(str).str.contains(str(val), case=False, na=False, regex=False)
         else:
             continue
         df = df[mask]

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { AlertTriangle, ArrowLeft, Play, Sparkles } from "lucide-react";
 import { streamAnalyze } from "@/lib/api";
@@ -27,6 +28,7 @@ type Status = "idle" | "running" | "error";
 
 export function StepAnalizar() {
   const router = useRouter();
+  const qc = useQueryClient();
   const { dataset, context, suggestion, selectedColumns, setStep } = useWizard();
   const [status, setStatus] = useState<Status>("idle");
   const [steps, setSteps] = useState<ProgressStep[]>(INITIAL_STEPS);
@@ -60,6 +62,8 @@ export function StepAnalizar() {
           setSteps(ev.steps);
           setMessage(ev.message);
         } else if (ev.type === "done") {
+          // Sin esto, volver al dashboard dentro del staleTime muestra la lista sin el run nuevo.
+          qc.invalidateQueries({ queryKey: ["runs"] });
           router.push(`/runs/${ev.run_id}`);
         } else if (ev.type === "error") {
           setStatus("error");

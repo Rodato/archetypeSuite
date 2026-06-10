@@ -10,7 +10,8 @@ services:
     environment:
       # Reads OPENROUTER_API_KEY (and any overrides) from your local .env
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      ARCHETYPE_CORS_ORIGINS: "*"
+      # Default seguro para el stack local; en producción exporta la URL real del frontend.
+      ARCHETYPE_CORS_ORIGINS: ${ARCHETYPE_CORS_ORIGINS:-http://localhost:3000}
     volumes:
       - ./api/_data:/data
     restart: unless-stopped

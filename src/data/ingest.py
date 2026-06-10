@@ -7,10 +7,18 @@ from typing import Optional, Tuple, Union
 import pandas as pd
 import sqlalchemy
 
+# pandas' documented default NA tokens (read_csv docs), inlined as our own constant:
+# pandas only exposes them via a private module path (pd.io.parsers.readers.STR_NA_VALUES)
+# that can disappear in any minor release.
+_PANDAS_DEFAULT_NA = {
+    "", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan",
+    "1.#IND", "1.#QNAN", "<NA>", "N/A", "NA", "NULL", "NaN", "None", "n/a", "nan", "null",
+}
+
 # Extended missing-value tokens: pandas' defaults + common Spanish/LatAm sentinels.
 # Without this, a column full of "-" / "sin dato" / "?" reads as text and the app
 # wrongly reports "no missing values".
-NA_TOKENS = set(pd.io.parsers.readers.STR_NA_VALUES) | {
+NA_TOKENS = _PANDAS_DEFAULT_NA | {
     "?", "-", "--", ".", "..", "none", "None", "NONE",
     "n/a", "N/A", "#N/A", "na", "n.a.", "n. a.",
     "n/d", "n.d.", "s/d", "s.d.", "sin dato", "Sin dato", "SIN DATO",

@@ -8,6 +8,7 @@ __pycache__/
 .github/
 web/
 knowledge_database/
+!knowledge_database/methodology_v1.md
 api/_data/
 .env
 .DS_Store
