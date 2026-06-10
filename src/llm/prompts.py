@@ -111,6 +111,9 @@ Criterios por intención de la pregunta:
 - Cuando el eje X tiene orden natural (binned numérico, fecha, ranking) → preferir "line" sobre "bar".
 - No uses "pie" si hay más de 5 segmentos o si una sola categoría domina (>70%).
 - No repitas "bar" por inercia — pregúntate qué cuenta mejor la historia del dato.
+- Preguntas comparativas entre grupos ("cuál arquetipo/grupo tiene más X", "quién lidera en Y",
+  "dónde hay más Z") → `groupby_count` o `groupby_agg` y SIEMPRE con gráfica ("bar" salvo que
+  otra regla aplique). Una comparación sin gráfica es una respuesta incompleta.
 
 ## Absoluto vs relativo — normalize y clarificación
 Cuando la pregunta cuenta algo cruzado por más de un eje (ej. "cuántos hombres por arquetipo", "distribución de género en cada cluster"), suele ser AMBIGUO si el usuario quiere conteo absoluto o porcentaje. Política:

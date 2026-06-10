@@ -18,7 +18,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             <BackendStatus />
             <ThemeToggle />
-            <Link href="/new" className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>
+            {/* fresh=1: empezar siempre de cero; el wizard persistido se restaura solo en F5/back. */}
+            <Link href="/new?fresh=1" className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>
               <Plus className="size-4" />
               <span className="hidden sm:inline">Nuevo análisis</span>
             </Link>

@@ -83,7 +83,7 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 ## Como ejecutar
 - **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests backend:** `python3 -m pytest tests/ -v` → 137/137 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 143/143 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **UI Streamlit (legacy, sigue funcionando):** `streamlit run src/ui/app.py`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
@@ -115,7 +115,14 @@ Auditoría completa (pipeline/API/front/infra, ~45 hallazgos) consolidada en `PL
   hiperparámetros en `refinement_node` (solo `init/n_init/max_iter`, el LLM ya no puede romper
   `random_state` ni crashear KMeans) + executor re-fuerza `random_state=settings.random_seed` ·
   `NA_TOKENS` ya no usa la API privada `pd.io.parsers.readers.STR_NA_VALUES`.
-- **Tests: 137/137** (108 previos + 24 API + 5 robustez).
+- **Fase 2 (demo-ready, mismo día):** wizard persistido en sessionStorage (`skipHydration` +
+  rehidratación manual; reset solo con `/new?fresh=1`) · paso 3 real (`step: 1|2|3` + `lastRunId`,
+  card "completado" al volver a `/new`) · chat comparativo SIEMPRE grafica (`_resolve_chart_type`
+  fuerza bar si el LLM eligió table/none en op comparativa de 2-24 filas + regla dura en prompt) ·
+  `streamAnalyze` propaga `detail` del backend + watchdog de stall 180s · `error.tsx`/`not-found.tsx`
+  en español · dashboard y `/runs/[id]` distinguen backend caído de "no existe" · actions del CI
+  en majors Node 24. **Falta de Fase 2:** dataset demo de cambio social (A2 — decisión de tema).
+- **Tests: 143/143** (108 previos + 24 API + 5 robustez + 6 chat comparativo).
 - Pendientes priorizados en `PLAN-LANZAMIENTO.md` (Fases 2-3) y backlog de hallazgos menores ahí mismo.
 
 ## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
@@ -183,3 +190,4 @@ Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plu
 - `st.expander` ejecuta los widgets internos siempre (sólo es display); el estado de checkboxes persiste aunque colapses.
 - Dataset de ejemplo: `sample_data/customers.csv` (50 filas, 8 columnas).
 - Los modelos vía OpenRouter a veces ignoran `response_format: json_object` y envuelven en markdown — usar siempre `extract_json()` al parsear respuestas LLM.
+- **Checklist del paso 2 muestra 8 pasos de los 10 nodos reales** (oculta `select` y `evaluate` — son internos y durarían <1s en pantalla). Decisión deliberada y coherente con el MD de lanzamiento; la lista visible vive en `PIPELINE_UI_STEPS` (`src/ui/quality.py`) y se replica en `INITIAL_STEPS` de `step-analizar.tsx`.

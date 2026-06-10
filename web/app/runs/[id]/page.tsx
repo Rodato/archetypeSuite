@@ -67,7 +67,10 @@ export default function RunPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const qc = useQueryClient();
-  const { data: run, isLoading, isError } = useQuery({ queryKey: ["run", id], queryFn: () => api.getRun(id) });
+  const { data: run, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ["run", id],
+    queryFn: () => api.getRun(id),
+  });
 
   const del = useMutation({
     mutationFn: () => api.deleteRun(id),
@@ -103,13 +106,30 @@ export default function RunPage() {
   }
 
   if (isError || !run) {
+    // El 404 del backend trae "Análisis no encontrado."; cualquier otra cosa es
+    // un problema de conexión — son mensajes (y acciones) distintos.
+    const notFound = !isError || ((error as Error)?.message ?? "").includes("no encontrado");
     return (
       <AppShell>
         <div className="flex flex-col items-center gap-3 py-24 text-center">
-          <div className="font-semibold">No encontramos este análisis.</div>
-          <Link href="/" className={buttonVariants()}>
-            Volver al inicio
-          </Link>
+          <div className="font-semibold">
+            {notFound ? "No encontramos este análisis." : "No pudimos conectar con el servidor."}
+          </div>
+          {!notFound && (
+            <p className="max-w-sm text-sm text-muted-foreground">
+              El análisis sigue guardado. Revisa que el backend esté activo y reintenta.
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            {!notFound && (
+              <Button variant="outline" onClick={() => refetch()}>
+                Reintentar
+              </Button>
+            )}
+            <Link href="/" className={buttonVariants()}>
+              Volver al inicio
+            </Link>
+          </div>
         </div>
       </AppShell>
     );

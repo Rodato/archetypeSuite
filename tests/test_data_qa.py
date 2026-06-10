@@ -340,3 +340,48 @@ def test_answer_data_question_llm_error_falls_through(chat_df):
 
     assert result.error == "boom"
     assert "conteo" in result.narrative.lower() or "entendí" in result.narrative.lower()
+
+
+# --------------------------------------------------------------------------- #
+# A3 — el chat grafica preguntas comparativas (pregunta canónica del demo:
+# "¿cuál arquetipo tiene más barreras?"). Si el LLM elige "table"/"none" por
+# inercia en una operación comparativa chica, el código fuerza "bar".
+# --------------------------------------------------------------------------- #
+class TestComparativeChartDefault:
+    def test_groupby_count_table_inertia_becomes_bar(self, chat_df):
+        query = DataQuery(operation="groupby_count", groupby=["region"], chart_type="table", narrative="x")
+        out = _execute(chat_df, query)
+        assert out["chart"]["type"] == "bar"
+
+    def test_groupby_agg_none_inertia_becomes_bar(self, chat_df):
+        query = DataQuery(
+            operation="groupby_agg", groupby=["region"], columns=["income"],
+            agg="mean", chart_type="none", narrative="x",
+        )
+        out = _execute(chat_df, query)
+        assert out["chart"]["type"] == "bar"
+
+    def test_explicit_chart_choice_is_respected(self, chat_df):
+        query = DataQuery(operation="groupby_count", groupby=["region"], chart_type="line", narrative="x")
+        out = _execute(chat_df, query)
+        assert out["chart"]["type"] == "line"
+
+    def test_single_group_result_stays_without_chart(self, chat_df):
+        # Con 1 sola fila no hay comparación que graficar.
+        df = chat_df[chat_df["region"] == "North"]
+        query = DataQuery(operation="groupby_count", groupby=["region"], chart_type="none", narrative="x")
+        out = _execute(df, query)
+        assert out["chart"]["type"] == "none"
+
+    def test_large_results_keep_llm_choice(self, chat_df):
+        # 30 grupos distintos > _MAX_BARS_DEFAULT — un bar ilegible no se fuerza.
+        df = chat_df.copy()
+        df["id_like"] = [f"g{i}" for i in range(len(df))]
+        query = DataQuery(operation="groupby_count", groupby=["id_like"], chart_type="table", narrative="x")
+        out = _execute(df, query)
+        assert out["chart"]["type"] == "table"
+
+    def test_describe_is_not_affected(self, chat_df):
+        query = DataQuery(operation="describe", columns=["income"], chart_type="table", narrative="x")
+        out = _execute(chat_df, query)
+        assert out["chart"] is None

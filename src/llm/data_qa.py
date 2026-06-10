@@ -156,6 +156,22 @@ def _apply_normalize(
     return "porcentaje"
 
 
+# Operaciones cuyo resultado es una comparación entre grupos: si el LLM eligió
+# "table"/"none" por inercia, un bar chart es estrictamente mejor respuesta.
+_COMPARATIVE_OPS = {"value_counts", "groupby_count", "groupby_agg", "top_n"}
+_MAX_BARS_DEFAULT = 24
+
+
+def _resolve_chart_type(operation: str, requested: str, n_rows: int) -> str:
+    """Garantiza gráfica en respuestas comparativas chicas (la promesa del producto:
+    "el chat responde con gráficos"). Respeta la elección del LLM cuando ya es un chart."""
+    if requested not in ("table", "none"):
+        return requested
+    if operation in _COMPARATIVE_OPS and 2 <= n_rows <= _MAX_BARS_DEFAULT:
+        return "bar"
+    return requested
+
+
 def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
     """Run the operation deterministically. Returns dict with 'table' and optional 'chart'."""
     df = _apply_bins(df, query)
@@ -178,7 +194,10 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         counts = df[col].value_counts(dropna=False).reset_index()
         counts.columns = [col, "conteo"]
         value_col = _apply_normalize(counts, value_col="conteo", primary=None, mode=query.normalize)
-        chart = {"type": query.chart_type, "data": counts, "x": col, "y": value_col, "color": None}
+        chart = {
+            "type": _resolve_chart_type(op, query.chart_type, len(counts)),
+            "data": counts, "x": col, "y": value_col, "color": None,
+        }
         return {"table": counts, "chart": chart}
 
     if op == "groupby_count":
@@ -188,7 +207,7 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
         primary = query.groupby[0] if len(query.groupby) >= 2 else None
         value_col = _apply_normalize(gb, value_col="conteo", primary=primary, mode=query.normalize)
         chart = {
-            "type": query.chart_type,
+            "type": _resolve_chart_type(op, query.chart_type, len(gb)),
             "data": gb,
             "x": query.groupby[0],
             "y": value_col,
@@ -209,7 +228,7 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
             gb[numeric_cols] = gb[numeric_cols].round(3)
         chart_y = targets[0] if len(targets) == 1 else None
         chart = {
-            "type": query.chart_type if len(targets) == 1 else "table",
+            "type": _resolve_chart_type(op, query.chart_type, len(gb)) if len(targets) == 1 else "table",
             "data": gb,
             "x": query.groupby[0],
             "y": chart_y,
@@ -259,7 +278,10 @@ def _execute(df: pd.DataFrame, query: DataQuery) -> Dict[str, Any]:
             top = df[col].value_counts().head(n).reset_index()
             top.columns = [col, "conteo"]
         chart_y = "conteo" if "conteo" in top.columns else col
-        chart = {"type": query.chart_type, "data": top, "x": col, "y": chart_y, "color": None}
+        chart = {
+            "type": _resolve_chart_type(op, query.chart_type, len(top)),
+            "data": top, "x": col, "y": chart_y, "color": None,
+        }
         return {"table": top, "chart": chart}
 
     if op == "missing_values":

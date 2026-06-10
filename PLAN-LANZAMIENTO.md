@@ -100,29 +100,34 @@ Admin: la nota "Python 3.9" de CLAUDE.md está obsoleta — el venv YA es 3.11.1
 **✅ Verificado:** 137/137 tests (108 + 24 API + 5 robustez) · `tsc --noEmit` y `pnpm build` en
 verde · workflow no-gitignored. Falta solo ver el primer run verde en GitHub tras el push.
 
-## 5. Fase 2 · Demo-ready (ex Grupo A)
+## 5. Fase 2 · Demo-ready (ex Grupo A) — EN CURSO (solo falta A2 + guion final)
 
-- [ ] **Persistir el wizard** (`zustand/persist` + sessionStorage: dataset_id, contexto, selección,
-      sugerencia) y reset solo explícito (`/new?fresh=1` o acción del usuario) — hoy F5 o back pierde
-      todo (`web/lib/wizard-store.ts:19`, `web/app/new/page.tsx:21-24`). Prerequisito de A1.
-- [ ] **A1 · Wizard real de 3 pasos:** extender `step: 1 | 2` a `1 | 2 | 3` y presentar resultados
-      como paso 3 dentro del shell del wizard (barra de 3 segmentos). Portar la narrativa
-      "Paso N de 3 · {nombre}" del legacy (`src/ui/app.py`).
+- [x] **Persistir el wizard:** `zustand/persist` + sessionStorage (`skipHydration` + rehidratación
+      manual en `/new` para evitar mismatch SSR). Reset solo explícito: `/new?fresh=1` (header y
+      hero apuntan ahí) o "?sample=1". F5 y back-navigation restauran dataset/contexto/selección.
+- [x] **A1 · Wizard real de 3 pasos:** `step: 1 | 2 | 3` + `lastRunId` en el store. Al terminar el
+      análisis se marca paso 3 y se navega a resultados (que ya rendereaban la barra "Paso 3 de 3");
+      volver a `/new` con el wizard completado muestra card "✨ listo" con "Ver resultados" /
+      "Empezar de nuevo".
 - [ ] **A2 · Dataset de ejemplo vistoso (cambio social):** reemplazar `sample_data/customers.csv`
       por una encuesta de cambio de comportamiento que produzca arquetipos alineados al pitch.
       Cablear en `/datasets/sample` (`api/routers/datasets.py`) y popover "cambiar archivo".
-- [ ] **A3 · Chat que grafica comparativas:** afinar `DataQuery` + reglas duras en `src/llm/data_qa.py`
-      para que "¿cuál arquetipo tiene más barreras?" devuelva bar chart fiable. Test en
-      `tests/test_data_qa.py` que lo fije.
-- [ ] Propagar el `detail` del backend en `streamAnalyze` (`web/lib/api.ts:127` descarta el body
-      del error HTTP) + timeout/stall guard del SSE.
-- [ ] `error.tsx` + `not-found.tsx` en español; dashboard distingue backend caído de "sin análisis"
-      (`web/app/page.tsx:22` ignora `isError`).
-- [ ] A4 (opcional) · Documentar la decisión 8 pasos visibles vs 10 nodos en `CLAUDE.md`.
+      **Esperando decisión del usuario: tema de la encuesta.**
+- [x] **A3 · Chat que grafica comparativas:** doble capa — regla dura nueva en el prompt
+      (comparaciones entre grupos → groupby + bar SIEMPRE) y `_resolve_chart_type` en
+      `data_qa.py`: si el LLM elige "table"/"none" en una op comparativa con 2–24 filas, el
+      código fuerza "bar" (determinista, no depende del LLM). 6 tests nuevos lo fijan.
+- [x] Propagar el `detail` del backend en `streamAnalyze` + watchdog de stall (180s sin eventos →
+      error explicable en vez de checklist girando para siempre).
+- [x] `error.tsx` + `not-found.tsx` en español; dashboard distingue backend caído de "sin análisis"
+      (con botón reintentar); `/runs/[id]` distingue 404 de fallo de conexión.
+- [x] A4 · Decisión 8 pasos visibles vs 10 nodos documentada en `CLAUDE.md` (notas técnicas).
+- [x] (Extra) Actions del CI bumpeadas a majors con Node 24 (`checkout@v6`, `setup-node@v6`,
+      `setup-python@v6`, `pnpm/action-setup@v6`) — GitHub fuerza Node 24 el 16 de junio.
 
 **✅ Avanzamos cuando:** el guion demo pasa de corrido — subir dataset nuevo → wizard de 3 pasos sin
 salir del shell (con un F5 a mitad sin perder nada) → "¿cuál arquetipo tiene más barreras?" responde
-con gráfico.
+con gráfico. (Pendiente de A2 para correr el guion completo con el dataset definitivo.)
 
 ## 6. Fase 3 · Pre-beta (ex Grupo B + seguridad/escala)
 

@@ -6,7 +6,7 @@ import { ArrowRight, Database, MessagesSquare, Sparkles, Wand2 } from "lucide-re
 import { AppShell } from "@/components/app-shell";
 import { BrandMark } from "@/components/brand-mark";
 import { RunCard } from "@/components/run-card";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { COPY } from "@/lib/copy";
@@ -19,7 +19,7 @@ const STEPS = [
 ];
 
 export default function HomePage() {
-  const { data, isLoading } = useQuery({ queryKey: ["runs"], queryFn: api.listRuns });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["runs"], queryFn: api.listRuns });
   const runs = data?.runs ?? [];
 
   return (
@@ -40,7 +40,7 @@ export default function HomePage() {
             {COPY.product_tagline}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/new" className={cn(buttonVariants({ size: "lg" }), "gap-2")}>
+            <Link href="/new?fresh=1" className={cn(buttonVariants({ size: "lg" }), "gap-2")}>
               {COPY.nav_new} <ArrowRight className="size-4" />
             </Link>
             <Link href="/new?sample=1" className={buttonVariants({ size: "lg", variant: "outline" })}>
@@ -76,7 +76,18 @@ export default function HomePage() {
           {runs.length > 0 && <span className="text-sm text-muted-foreground">{runs.length} en total</span>}
         </div>
 
-        {isLoading ? (
+        {isError ? (
+          // Backend caído ≠ "no tienes análisis": decir la verdad y ofrecer reintento.
+          <div className="flex flex-col items-center rounded-2xl border border-dashed py-16 text-center">
+            <div className="font-semibold">No pudimos conectar con el servidor</div>
+            <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+              Tus análisis siguen guardados. Revisa que el backend esté activo y reintenta.
+            </p>
+            <Button variant="outline" className="mt-5" onClick={() => refetch()}>
+              {COPY.retry}
+            </Button>
+          </div>
+        ) : isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-44 rounded-2xl" />

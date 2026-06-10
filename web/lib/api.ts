@@ -116,8 +116,23 @@ export function streamAnalyze(
 ): () => void {
   const controller = new AbortController();
 
+  // Watchdog: si el stream deja de emitir (proxy colgado, red caída sin cierre),
+  // abortamos con un error explicable en vez de dejar el checklist girando para siempre.
+  // 180s > peor caso de un nodo LLM con reintentos.
+  const STALL_MS = 180_000;
+  let stalled = false;
+  let stallTimer: ReturnType<typeof setTimeout> | undefined;
+  const armStall = () => {
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(() => {
+      stalled = true;
+      controller.abort();
+    }, STALL_MS);
+  };
+
   (async () => {
     try {
+      armStall();
       const res = await fetch(`${API_BASE}/api/datasets/${datasetId}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,13 +140,22 @@ export function streamAnalyze(
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
-        throw new Error(`No se pudo iniciar el análisis (HTTP ${res.status}).`);
+        // El backend manda un detail útil ("Dataset no encontrado o expirado…") — no lo tires.
+        let detail = `No se pudo iniciar el análisis (HTTP ${res.status}).`;
+        try {
+          const errBody = await res.json();
+          if (errBody.detail) detail = errBody.detail;
+        } catch {
+          /* cuerpo no-JSON */
+        }
+        throw new Error(detail);
       }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       while (true) {
         const { done, value } = await reader.read();
+        armStall();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
         const chunks = buffer.split("\n\n");
@@ -148,8 +172,14 @@ export function streamAnalyze(
       }
       onClose?.();
     } catch (err) {
+      if (stalled) {
+        onClose?.(new Error("El análisis dejó de responder. Revisa tu conexión y vuelve a intentarlo."));
+        return;
+      }
       if ((err as Error).name === "AbortError") return;
       onClose?.(err as Error);
+    } finally {
+      clearTimeout(stallTimer);
     }
   })();
 

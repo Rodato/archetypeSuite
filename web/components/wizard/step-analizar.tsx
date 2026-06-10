@@ -29,7 +29,7 @@ type Status = "idle" | "running" | "error";
 export function StepAnalizar() {
   const router = useRouter();
   const qc = useQueryClient();
-  const { dataset, context, suggestion, selectedColumns, setStep } = useWizard();
+  const { dataset, context, suggestion, selectedColumns, setStep, setLastRunId } = useWizard();
   const [status, setStatus] = useState<Status>("idle");
   const [steps, setSteps] = useState<ProgressStep[]>(INITIAL_STEPS);
   const [message, setMessage] = useState("");
@@ -64,6 +64,9 @@ export function StepAnalizar() {
         } else if (ev.type === "done") {
           // Sin esto, volver al dashboard dentro del staleTime muestra la lista sin el run nuevo.
           qc.invalidateQueries({ queryKey: ["runs"] });
+          // Resultados = paso 3 del wizard; volver a /new muestra el estado "completado".
+          setLastRunId(ev.run_id);
+          setStep(3);
           router.push(`/runs/${ev.run_id}`);
         } else if (ev.type === "error") {
           setStatus("error");
