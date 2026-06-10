@@ -3,3 +3,11 @@ onlyBuiltDependencies:
   - unrs-resolver
   - msw
   - esbuild
+
+# pnpm 11 renombró el mecanismo de aprobación de build scripts a allowBuilds;
+# se mantiene onlyBuiltDependencies por compat con pnpm 10 (p. ej. Vercel).
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+  msw: true
+  esbuild: true

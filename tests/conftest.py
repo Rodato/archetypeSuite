@@ -3,6 +3,19 @@ import pandas as pd
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _dummy_api_key(monkeypatch):
+    """Los tests mockean los LLM, pero las factories validan que exista una API key.
+
+    En CI (sin .env) esto inyecta una key dummy para que la suite corra sin secretos.
+    Los tests que verifican el guard de key faltante la vacían explícitamente.
+    """
+    from src.config.settings import settings
+
+    if not settings.openrouter_api_key:
+        monkeypatch.setattr(settings, "openrouter_api_key", "test-key")
+
+
 @pytest.fixture
 def sample_df():
     np.random.seed(42)
