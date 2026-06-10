@@ -57,3 +57,26 @@ class TestNumericFilterCoercion:
         q = DataQuery(operation="filter_count", filter_by=[FilterCondition(column="age", op="gt", value="abc")])
         out = _apply_filters(df, q)
         assert len(out) == 3  # condition skipped, nothing filtered
+
+
+class TestSemicolonCsv:
+    """Excel en locale es-* exporta 'CSV' con ';' — debe detectarse, no parsear 1 columna."""
+
+    def test_semicolon_csv_detected(self):
+        from src.data.ingest import read_csv_bytes
+        content = "edad;ciudad;ingreso\n30;Bogotá;1200\n41;Lima;3400\n".encode("utf-8")
+        df = read_csv_bytes(content)
+        assert list(df.columns) == ["edad", "ciudad", "ingreso"]
+        assert df.shape == (2, 3)
+
+    def test_tab_separated_detected(self):
+        from src.data.ingest import read_csv_bytes
+        content = "edad\tciudad\n30\tBogotá\n41\tLima\n".encode("utf-8")
+        df = read_csv_bytes(content)
+        assert list(df.columns) == ["edad", "ciudad"]
+
+    def test_single_column_file_stays_single(self):
+        from src.data.ingest import read_csv_bytes
+        content = "comentario\nhola\nadiós\n".encode("utf-8")
+        df = read_csv_bytes(content)
+        assert df.shape[1] == 1

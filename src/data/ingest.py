@@ -67,13 +67,28 @@ def read_csv_bytes(content: bytes) -> pd.DataFrame:
     last_err: Optional[Exception] = None
     for enc in _CSV_ENCODINGS:
         try:
-            return pd.read_csv(
+            df = pd.read_csv(
                 io.BytesIO(content), encoding=enc, na_values=list(NA_TOKENS),
                 keep_default_na=True, skipinitialspace=True,
             )
         except (UnicodeDecodeError, pd.errors.ParserError) as exc:
             last_err = exc
             continue
+        # Excel en locales es-* exporta "CSV" con ";" (y a veces tab): eso parsea como
+        # UNA sola columna gigante. Si pasa, reintentar con el separador detectado.
+        if df.shape[1] == 1:
+            header = str(df.columns[0])
+            for sep in (";", "\t"):
+                if sep in header:
+                    try:
+                        return pd.read_csv(
+                            io.BytesIO(content), encoding=enc, sep=sep,
+                            na_values=list(NA_TOKENS), keep_default_na=True,
+                            skipinitialspace=True,
+                        )
+                    except pd.errors.ParserError:
+                        break
+        return df
     if last_err:
         raise last_err
     raise pd.errors.ParserError("No se pudo leer el CSV.")
