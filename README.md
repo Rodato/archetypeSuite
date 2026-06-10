@@ -95,7 +95,7 @@ src/        # Pipeline LangGraph (graph, nodes, clustering, data, llm, models) �
 api/        # FastAPI: main, routers/, transform.py, serialization.py, store.py
 web/        # Next.js: app/ (rutas) · components/ (ui, charts, wizard, chat, results) · lib/
 tests/      # 143 tests (pytest — pipeline + capa API)
-sample_data/  customers.csv (demo, 50×8)
+sample_data/  bienestar_digital.csv (demo, 900×14, generado con seed) · otros CSV de prueba
 Dockerfile.api · web/Dockerfile · docker-compose.yml · Makefile
 ```
 

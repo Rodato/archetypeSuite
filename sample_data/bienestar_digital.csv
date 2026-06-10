@@ -1,0 +1,901 @@
+edad,genero,horas_uso_diario,sesiones_por_dia,minutos_por_sesion,franja_uso_principal,publicaciones_por_semana,interacciones_por_dia,proposito_principal,impacto_en_sueno,bienestar_autoreportado,preocupacion_tiempo_pantalla,toma_pausas,dispositivo_principal
+26,Femenino,6.3,17,21.6,Noche,0,47,Entretenimiento,Moderado,3.0,Sí,Nunca,Celular
+50,Femenino,2.9,12,25.9,Tarde,1,26,Conexión social,Leve,5.6,A veces,A veces,Celular
+21,Masculino,6.7,16,25.1,Noche,1,60,Conexión social,Moderado,3.6,Sí,Nunca,Celular
+37,Femenino,5.8,8,38.1,Tarde,12,150,Crear contenido,Leve,6.0,A veces,Frecuentemente,Celular
+23,No binario,7.4,21,14.6,Madrugada,2,56,Entretenimiento,Severo,2.0,Sí,A veces,Celular
+32,Femenino,2.7,11,15.2,Noche,2,24,Conexión social,Sin impacto,4.8,A veces,Frecuentemente,Celular
+37,Masculino,0.9,4,19.7,Noche,2,7,Trabajo,Sin impacto,7.2,No,Frecuentemente,Celular
+26,Femenino,7.2,20,22.2,Madrugada,1,47,Conexión social,Severo,2.3,A veces,A veces,Celular
+28,Femenino,6.5,16,30.2,Madrugada,0,45,Entretenimiento,Severo,3.0,No,Nunca,Computador
+25,Femenino,6.7,18,22.1,Madrugada,1,35,Entretenimiento,Moderado,2.8,Sí,Nunca,Celular
+21,Masculino,8.6,19,32.8,Madrugada,2,45,Entretenimiento,Severo,2.7,Sí,Nunca,Computador
+21,Femenino,5.1,6,52.3,Tarde,18,158,Crear contenido,Leve,7.2,Sí,A veces,Celular
+41,Femenino,2.9,12,12.1,Tarde,2,26,Conexión social,Moderado,6.2,A veces,Frecuentemente,Celular
+23,Femenino,6.4,19,21.8,Noche,1,35,Entretenimiento,Severo,2.7,A veces,Nunca,Celular
+35,Femenino,2.3,12,8.1,Noche,0,18,Conexión social,Moderado,5.6,Sí,A veces,Tablet
+32,Masculino,5.6,7,46.5,Tarde,11,150,Crear contenido,Leve,6.4,A veces,Frecuentemente,Celular
+31,Femenino,6.9,18,23.8,Noche,1,48,Entretenimiento,Severo,2.0,Sí,Nunca,Celular
+48,Masculino,1.6,3,28.4,Tarde,1,7,Noticias,Leve,8.1,A veces,Frecuentemente,Celular
+53,Masculino,1.3,4,20.6,Mañana,2,7,Trabajo,Sin impacto,7.7,A veces,Frecuentemente,Celular
+24,Masculino,6.7,14,35.1,Madrugada,2,60,Entretenimiento,Severo,2.9,Sí,Nunca,Celular
+16,Masculino,6.3,14,19.6,Madrugada,1,39,Entretenimiento,Severo,2.4,Sí,A veces,Celular
+37,Masculino,2.8,13,19.6,Noche,3,22,Conexión social,Moderado,5.5,No,Nunca,Computador
+36,Masculino,3.4,11,20.3,Noche,1,22,Conexión social,Moderado,5.4,No,A veces,Computador
+43,Masculino,1.7,3,38.0,Mañana,1,12,Noticias,Sin impacto,7.3,A veces,Frecuentemente,Celular
+24,Masculino,4.9,6,55.9,Tarde,16,138,Crear contenido,Leve,5.3,No,A veces,Celular
+43,Femenino,1.0,5,8.1,Noche,0,5,Noticias,Sin impacto,8.4,No,Frecuentemente,Celular
+17,Masculino,8.2,18,31.2,Madrugada,0,50,Conexión social,Severo,2.5,Sí,Nunca,Celular
+34,No binario,2.9,12,14.8,Mañana,2,27,Noticias,Sin impacto,3.6,A veces,Nunca,Celular
+25,Masculino,5.1,6,46.1,Tarde,15,175,Crear contenido,Leve,7.1,Sí,A veces,Celular
+19,Masculino,5.2,8,39.1,Tarde,14,128,Crear contenido,Sin impacto,6.7,Sí,Frecuentemente,Tablet
+45,Femenino,1.0,3,12.6,Mañana,1,8,Conexión social,Sin impacto,8.5,No,Frecuentemente,Celular
+29,Femenino,2.7,12,10.3,Noche,4,23,Conexión social,Leve,5.2,No,A veces,Celular
+41,Masculino,1.4,4,26.1,Mañana,3,14,Trabajo,Sin impacto,8.6,No,Frecuentemente,Tablet
+22,Masculino,4.6,7,38.7,Tarde,20,105,Crear contenido,Sin impacto,6.5,A veces,A veces,Celular
+30,Femenino,4.5,8,33.2,Tarde,20,140,Crear contenido,Leve,6.1,Sí,A veces,Celular
+35,Masculino,2.8,10,17.5,Mañana,2,28,Conexión social,Sin impacto,4.9,No,Nunca,Celular
+25,Femenino,6.9,16,31.0,Madrugada,2,58,Noticias,Severo,2.8,Sí,A veces,Computador
+27,No binario,5.4,8,36.3,Noche,16,174,Crear contenido,Sin impacto,6.1,A veces,A veces,Celular
+31,Masculino,1.8,4,19.8,Mañana,1,9,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+27,Femenino,6.8,19,19.4,Madrugada,2,49,Entretenimiento,Severo,3.0,A veces,Nunca,Tablet
+22,Femenino,7.3,16,24.4,Madrugada,0,29,Entretenimiento,Severo,3.1,Sí,Nunca,Celular
+48,Femenino,1.5,4,26.0,Mañana,2,12,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+39,Masculino,1.1,4,24.5,Tarde,1,18,Trabajo,Sin impacto,8.3,A veces,Frecuentemente,Celular
+28,Femenino,3.7,14,22.1,Noche,0,19,Conexión social,Moderado,4.3,No,Nunca,Celular
+23,Femenino,4.9,7,45.5,Noche,19,165,Crear contenido,Leve,6.2,Sí,A veces,Celular
+26,Masculino,4.7,5,57.5,Noche,15,122,Crear contenido,Moderado,8.1,Sí,Nunca,Celular
+22,Femenino,7.6,18,29.0,Madrugada,1,50,Entretenimiento,Severo,3.1,Sí,A veces,Celular
+30,Masculino,5.6,7,46.8,Tarde,15,137,Crear contenido,Sin impacto,6.4,A veces,Frecuentemente,Celular
+30,Femenino,0.8,4,18.3,Tarde,0,11,Trabajo,Sin impacto,9.0,No,Frecuentemente,Celular
+38,Femenino,2.8,11,13.8,Tarde,4,24,Conexión social,Moderado,5.7,No,A veces,Celular
+41,Femenino,0.8,6,3.9,Tarde,1,12,Trabajo,Sin impacto,7.1,No,Frecuentemente,Celular
+38,No binario,0.5,5,6.7,Mañana,1,12,Trabajo,Sin impacto,6.9,No,Frecuentemente,Celular
+24,Femenino,5.8,6,53.0,Tarde,19,127,Crear contenido,Moderado,6.3,Sí,A veces,Celular
+37,Masculino,0.9,3,16.6,Mañana,0,9,Trabajo,Sin impacto,8.6,No,Frecuentemente,Celular
+35,Masculino,1.0,4,9.8,Tarde,0,7,Noticias,Sin impacto,8.3,A veces,Frecuentemente,Celular
+21,Femenino,6.7,16,28.6,Noche,2,55,Entretenimiento,Severo,3.2,Sí,Nunca,Celular
+26,Masculino,7.5,19,23.3,Madrugada,2,42,Entretenimiento,Severo,1.7,A veces,Nunca,Celular
+37,Masculino,0.8,5,6.5,Tarde,1,16,Trabajo,Sin impacto,7.8,No,Frecuentemente,Celular
+39,Femenino,1.4,6,12.0,Tarde,0,13,Noticias,Sin impacto,9.0,No,Frecuentemente,Celular
+27,Masculino,5.2,6,51.7,Mañana,17,123,Crear contenido,Leve,6.6,A veces,A veces,Celular
+16,No binario,7.1,19,26.5,Noche,1,61,Entretenimiento,Severo,2.9,Sí,A veces,Celular
+31,No binario,1.1,4,8.4,Tarde,2,9,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+27,Masculino,2.6,10,17.3,Noche,1,24,Entretenimiento,Leve,5.0,Sí,A veces,Celular
+37,Masculino,0.9,4,13.7,Tarde,1,11,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+23,Masculino,6.5,18,25.3,Madrugada,4,38,Entretenimiento,Severo,2.6,Sí,Nunca,Celular
+26,Masculino,7.0,17,25.2,Madrugada,0,49,Entretenimiento,Severo,2.5,A veces,Nunca,Celular
+28,Masculino,5.1,6,47.0,Tarde,19,143,Trabajo,Leve,7.5,Sí,A veces,Celular
+29,Femenino,5.1,7,38.9,Tarde,18,137,Crear contenido,Moderado,6.7,A veces,A veces,Tablet
+32,Masculino,1.3,5,28.6,Mañana,1,18,Noticias,Sin impacto,8.4,A veces,Frecuentemente,Tablet
+38,Femenino,1.1,4,24.6,Tarde,0,15,Trabajo,Sin impacto,7.5,A veces,Frecuentemente,Celular
+29,Femenino,5.4,7,42.0,Noche,18,138,Crear contenido,Leve,6.7,Sí,Nunca,Celular
+22,Masculino,5.2,6,52.1,Tarde,23,140,Crear contenido,Moderado,7.1,Sí,A veces,Tablet
+32,Femenino,2.8,10,15.1,Noche,5,30,Conexión social,Leve,5.1,Sí,A veces,Computador
+42,Femenino,1.4,4,17.6,Noche,2,10,Trabajo,Sin impacto,9.1,No,Frecuentemente,Celular
+19,Femenino,7.2,17,21.2,Noche,1,62,Entretenimiento,Severo,2.5,Sí,Nunca,Celular
+24,Masculino,2.8,13,13.2,Noche,2,19,Conexión social,Leve,4.3,No,A veces,Celular
+28,Femenino,1.1,2,26.7,Tarde,2,15,Noticias,Sin impacto,7.7,No,Frecuentemente,Celular
+53,Femenino,1.4,4,24.0,Mañana,1,10,Trabajo,Sin impacto,8.3,No,Frecuentemente,Celular
+20,Masculino,6.1,17,18.7,Noche,1,52,Entretenimiento,Moderado,3.0,A veces,A veces,Celular
+25,Masculino,4.6,8,32.3,Tarde,18,149,Trabajo,Leve,6.2,A veces,A veces,Celular
+28,Femenino,4.8,6,46.4,Noche,18,167,Crear contenido,Leve,5.9,Sí,Frecuentemente,Celular
+18,Femenino,6.3,13,24.0,Tarde,3,45,Entretenimiento,Severo,3.4,Sí,Nunca,Celular
+23,Masculino,5.0,7,40.0,Noche,19,177,Crear contenido,Leve,6.4,No,Frecuentemente,Celular
+22,Femenino,6.8,20,17.7,Madrugada,0,33,Entretenimiento,Moderado,2.4,A veces,Nunca,Celular
+38,Femenino,2.6,12,15.1,Noche,4,23,Conexión social,Sin impacto,4.4,No,Frecuentemente,Celular
+41,Masculino,2.8,14,10.9,Noche,1,17,Conexión social,Leve,5.6,No,A veces,Celular
+39,Femenino,0.9,4,12.7,Mañana,0,7,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+41,Masculino,1.6,3,29.0,Tarde,0,10,Trabajo,Sin impacto,8.8,No,Frecuentemente,Celular
+23,Femenino,6.9,21,19.1,Noche,2,42,Entretenimiento,Severo,3.0,A veces,A veces,Celular
+30,Femenino,5.9,7,49.7,Noche,19,141,Crear contenido,Moderado,6.2,Sí,Nunca,Celular
+44,Masculino,0.4,6,9.8,Tarde,0,11,Trabajo,Sin impacto,8.7,No,Frecuentemente,Celular
+25,Masculino,5.7,8,49.7,Tarde,22,158,Crear contenido,Leve,6.6,A veces,Frecuentemente,Celular
+38,Masculino,2.7,13,9.5,Noche,3,32,Conexión social,Leve,4.7,A veces,A veces,Celular
+37,Femenino,3.2,13,17.7,Noche,3,18,Conexión social,Moderado,5.5,No,A veces,Celular
+40,Femenino,3.6,11,18.3,Noche,2,13,Entretenimiento,Leve,6.0,No,A veces,Celular
+46,Femenino,1.7,4,22.3,Tarde,0,12,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+21,Femenino,6.8,19,17.4,Madrugada,1,46,Entretenimiento,Leve,2.3,Sí,Nunca,Celular
+18,Masculino,7.4,15,27.8,Noche,1,49,Conexión social,Severo,2.2,A veces,Nunca,Celular
+36,Masculino,5.3,6,48.9,Tarde,18,163,Crear contenido,Leve,5.9,A veces,A veces,Computador
+30,Masculino,2.7,13,17.2,Noche,1,16,Conexión social,Leve,4.8,A veces,A veces,Celular
+31,Femenino,5.4,6,56.3,Noche,14,157,Crear contenido,Leve,6.6,A veces,A veces,Celular
+48,Masculino,0.9,2,27.6,Mañana,1,7,Noticias,Sin impacto,8.4,No,Frecuentemente,Celular
+24,Masculino,4.9,5,53.6,Tarde,18,111,Crear contenido,Moderado,7.4,Sí,A veces,Celular
+40,Femenino,1.3,3,20.4,Noche,0,15,Trabajo,Sin impacto,7.4,No,Frecuentemente,Celular
+28,Femenino,3.2,10,17.5,Tarde,2,22,Conexión social,Leve,4.2,No,A veces,Celular
+21,Femenino,8.0,15,34.1,Noche,0,46,Entretenimiento,Moderado,1.8,Sí,Nunca,Celular
+29,Masculino,5.0,5,58.8,Noche,21,151,Crear contenido,Leve,6.5,Sí,Nunca,Celular
+22,Masculino,5.9,16,25.5,Noche,0,43,Entretenimiento,Severo,3.5,Sí,Nunca,Celular
+36,Femenino,2.6,14,5.0,Mañana,1,18,Conexión social,Leve,5.8,A veces,A veces,Celular
+16,Masculino,6.8,18,20.8,Madrugada,0,42,Entretenimiento,Severo,2.5,Sí,Nunca,Celular
+31,Masculino,3.1,12,12.6,Tarde,2,32,Conexión social,Leve,4.7,No,Nunca,Computador
+39,Masculino,2.8,11,24.9,Tarde,3,20,Conexión social,Leve,5.4,Sí,A veces,Tablet
+36,No binario,3.2,12,18.1,Noche,0,27,Noticias,Sin impacto,4.9,Sí,A veces,Celular
+42,Masculino,0.8,3,20.6,Noche,0,8,Trabajo,Sin impacto,8.1,No,Frecuentemente,Celular
+34,Masculino,1.8,15,8.5,Noche,2,22,Conexión social,Sin impacto,4.0,No,A veces,Celular
+46,Femenino,0.8,6,15.1,Mañana,1,8,Noticias,Sin impacto,9.3,A veces,Frecuentemente,Celular
+31,Masculino,3.0,12,16.0,Noche,2,14,Conexión social,Leve,5.1,A veces,A veces,Celular
+30,Masculino,2.1,13,11.0,Tarde,2,23,Conexión social,Leve,5.4,No,A veces,Celular
+19,No binario,6.3,20,11.2,Noche,2,54,Entretenimiento,Severo,2.3,Sí,Nunca,Celular
+34,Femenino,2.8,12,17.0,Mañana,2,24,Conexión social,Leve,5.7,Sí,A veces,Celular
+37,Femenino,1.1,4,8.6,Tarde,1,3,Noticias,Sin impacto,7.7,No,Frecuentemente,Celular
+38,Masculino,1.5,3,27.7,Mañana,2,12,Trabajo,Sin impacto,7.8,No,Frecuentemente,Celular
+26,Femenino,7.5,16,25.4,Noche,2,50,Conexión social,Severo,2.9,Sí,Nunca,Celular
+38,Femenino,1.2,4,26.1,Tarde,0,9,Noticias,Sin impacto,9.1,No,Frecuentemente,Celular
+33,Femenino,2.3,14,10.9,Mañana,3,25,Entretenimiento,Leve,4.3,Sí,Nunca,Celular
+21,Masculino,7.3,20,22.1,Noche,1,45,Entretenimiento,Severo,2.0,A veces,Nunca,Celular
+52,Masculino,0.6,3,10.0,Mañana,2,14,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+29,Masculino,3.0,10,15.8,Noche,2,21,Conexión social,Leve,4.7,No,Frecuentemente,Computador
+41,Femenino,1.2,4,19.0,Tarde,1,12,Trabajo,Sin impacto,8.1,A veces,Frecuentemente,Computador
+25,Masculino,6.5,21,20.4,Noche,2,44,Entretenimiento,Moderado,4.1,A veces,Nunca,Celular
+19,Femenino,5.8,7,52.5,Tarde,19,162,Crear contenido,Leve,5.6,Sí,A veces,Celular
+26,Masculino,2.4,13,14.7,Noche,3,21,Conexión social,Moderado,5.7,No,Nunca,Computador
+41,Masculino,0.8,3,20.2,Noche,0,4,Trabajo,Sin impacto,7.4,No,Frecuentemente,Celular
+19,Masculino,7.4,18,22.0,Noche,2,40,Noticias,Leve,2.2,Sí,Nunca,Celular
+29,Femenino,3.2,13,14.8,Noche,5,20,Noticias,Leve,5.2,A veces,A veces,Celular
+35,Masculino,1.4,4,19.8,Mañana,0,12,Trabajo,Sin impacto,9.4,A veces,Frecuentemente,Celular
+32,Masculino,5.3,6,44.4,Tarde,18,152,Crear contenido,Leve,7.1,No,Nunca,Celular
+20,Femenino,3.8,14,12.0,Noche,3,26,Entretenimiento,Leve,4.4,No,A veces,Tablet
+46,Masculino,1.2,5,15.0,Mañana,1,10,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+46,Femenino,1.3,4,20.3,Mañana,2,12,Noticias,Sin impacto,7.6,No,A veces,Celular
+38,Masculino,1.1,3,21.4,Mañana,1,2,Conexión social,Leve,8.1,No,Frecuentemente,Celular
+27,Masculino,7.0,18,28.2,Noche,1,42,Conexión social,Severo,2.9,A veces,Nunca,Celular
+27,Masculino,5.0,6,50.7,Noche,20,110,Crear contenido,Leve,6.2,A veces,A veces,Celular
+52,Masculino,1.5,3,31.7,Mañana,0,9,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+22,Masculino,2.8,15,11.7,Noche,2,28,Conexión social,Moderado,5.3,No,A veces,Celular
+43,Masculino,1.0,4,20.6,Tarde,1,12,Trabajo,Sin impacto,6.9,No,A veces,Celular
+29,No binario,3.2,12,19.3,Noche,1,20,Conexión social,Leve,4.8,A veces,Frecuentemente,Computador
+29,Femenino,6.5,16,25.1,Madrugada,0,41,Conexión social,Severo,2.9,Sí,Nunca,Celular
+31,No binario,4.7,6,42.6,Mañana,25,140,Crear contenido,Moderado,6.4,Sí,A veces,Celular
+22,Femenino,6.6,18,23.1,Tarde,2,46,Entretenimiento,Moderado,2.6,No,Nunca,Celular
+20,Femenino,6.8,19,21.7,Madrugada,0,43,Entretenimiento,Severo,2.2,A veces,A veces,Celular
+28,Masculino,5.4,4,79.0,Tarde,17,139,Crear contenido,Moderado,7.1,Sí,Frecuentemente,Celular
+51,Masculino,1.1,3,21.9,Mañana,0,5,Conexión social,Sin impacto,7.6,No,Frecuentemente,Celular
+30,Femenino,5.5,7,48.8,Noche,23,136,Crear contenido,Leve,6.6,A veces,A veces,Celular
+44,Femenino,1.8,3,36.1,Tarde,1,16,Trabajo,Sin impacto,7.2,No,A veces,Celular
+21,No binario,6.0,18,18.5,Madrugada,2,40,Entretenimiento,Severo,2.1,Sí,Nunca,Celular
+16,Masculino,7.1,18,23.4,Madrugada,1,33,Entretenimiento,Severo,1.7,Sí,Nunca,Celular
+28,Masculino,1.2,3,26.2,Mañana,2,13,Noticias,Sin impacto,8.9,No,Frecuentemente,Computador
+38,Femenino,1.1,5,13.3,Mañana,1,7,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+19,Masculino,6.8,17,23.1,Madrugada,2,45,Entretenimiento,Severo,2.4,Sí,Nunca,Celular
+51,Femenino,1.2,4,19.8,Mañana,1,9,Trabajo,Sin impacto,9.1,No,Frecuentemente,Celular
+22,Femenino,5.4,6,52.3,Tarde,21,143,Crear contenido,Sin impacto,7.0,A veces,Frecuentemente,Celular
+23,Femenino,3.3,9,20.6,Noche,2,27,Conexión social,Leve,4.8,No,Nunca,Celular
+42,Femenino,1.2,2,45.5,Mañana,0,7,Trabajo,Sin impacto,8.2,No,Frecuentemente,Celular
+46,Masculino,1.5,4,21.7,Mañana,3,11,Trabajo,Sin impacto,7.7,No,Frecuentemente,Celular
+37,Femenino,1.4,4,17.9,Mañana,2,8,Noticias,Sin impacto,8.4,A veces,Frecuentemente,Celular
+16,Femenino,6.3,16,25.0,Madrugada,1,50,Entretenimiento,Moderado,3.1,Sí,Nunca,Computador
+19,No binario,6.7,16,20.0,Madrugada,3,37,Entretenimiento,Moderado,3.1,Sí,Nunca,Celular
+34,Femenino,2.5,12,11.7,Mañana,2,16,Conexión social,Leve,4.5,No,Nunca,Celular
+37,Femenino,1.1,3,21.2,Noche,1,2,Trabajo,Sin impacto,7.8,No,A veces,Computador
+37,Femenino,0.6,2,18.7,Tarde,0,11,Trabajo,Sin impacto,8.6,A veces,Frecuentemente,Computador
+39,Femenino,1.4,5,17.0,Tarde,1,12,Trabajo,Sin impacto,7.8,No,Frecuentemente,Tablet
+24,Masculino,6.5,18,26.7,Madrugada,2,45,Entretenimiento,Moderado,2.9,Sí,Nunca,Celular
+47,Masculino,1.4,4,22.9,Tarde,0,13,Trabajo,Sin impacto,7.3,No,Frecuentemente,Celular
+21,Femenino,5.4,6,49.7,Tarde,14,124,Crear contenido,Moderado,7.4,Sí,A veces,Celular
+38,Masculino,2.8,9,13.5,Noche,1,30,Conexión social,Leve,4.7,No,Frecuentemente,Celular
+18,Femenino,5.6,7,50.1,Tarde,20,155,Crear contenido,Leve,6.8,No,A veces,Tablet
+37,Femenino,3.1,9,14.0,Tarde,2,27,Conexión social,Sin impacto,3.9,No,Nunca,Computador
+29,Femenino,6.8,15,23.3,Madrugada,2,52,Entretenimiento,Severo,2.7,Sí,Nunca,Celular
+19,Femenino,6.3,19,17.7,Madrugada,1,45,Entretenimiento,Severo,2.8,Sí,Nunca,Tablet
+17,Femenino,7.5,21,17.6,Madrugada,1,36,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+37,Masculino,1.4,3,20.1,Noche,2,7,Noticias,Sin impacto,7.8,No,A veces,Celular
+44,Masculino,1.5,2,43.8,Tarde,1,7,Trabajo,Sin impacto,8.8,No,Frecuentemente,Celular
+28,Masculino,2.7,13,12.5,Noche,0,20,Conexión social,Moderado,4.6,No,Nunca,Celular
+46,Masculino,1.5,6,17.5,Tarde,0,10,Noticias,Sin impacto,8.4,A veces,A veces,Computador
+23,Femenino,4.3,8,39.0,Tarde,19,170,Trabajo,Leve,6.9,A veces,A veces,Tablet
+29,Femenino,7.9,16,31.5,Noche,0,41,Entretenimiento,Severo,1.8,Sí,Nunca,Computador
+40,Femenino,1.2,4,17.7,Mañana,1,10,Trabajo,Sin impacto,7.4,A veces,Frecuentemente,Celular
+49,Masculino,1.3,6,14.8,Tarde,0,8,Noticias,Sin impacto,9.0,No,Frecuentemente,Celular
+18,Femenino,7.2,16,29.0,Madrugada,1,46,Entretenimiento,Severo,1.8,Sí,A veces,Celular
+24,Femenino,6.6,17,16.8,Noche,1,53,Entretenimiento,Moderado,3.4,No,A veces,Celular
+36,Femenino,1.3,3,25.3,Tarde,0,11,Trabajo,Sin impacto,8.6,No,A veces,Celular
+25,Masculino,4.3,5,56.0,Tarde,16,129,Crear contenido,Leve,5.6,No,Nunca,Celular
+36,Femenino,2.3,11,18.5,Mañana,4,23,Entretenimiento,Leve,5.0,Sí,A veces,Celular
+35,Femenino,1.1,3,24.5,Mañana,0,9,Trabajo,Sin impacto,8.0,A veces,Frecuentemente,Tablet
+27,Masculino,6.6,16,23.6,Madrugada,2,53,Conexión social,Severo,2.4,Sí,Nunca,Celular
+18,Femenino,5.1,9,34.0,Tarde,22,145,Crear contenido,Sin impacto,6.6,A veces,Nunca,Celular
+39,Femenino,1.2,4,12.2,Mañana,1,15,Trabajo,Sin impacto,8.8,No,Frecuentemente,Celular
+43,Masculino,2.6,13,10.5,Tarde,3,27,Conexión social,Leve,4.2,No,Nunca,Celular
+32,Masculino,1.4,3,35.6,Mañana,1,10,Noticias,Sin impacto,8.8,No,Frecuentemente,Tablet
+36,No binario,2.6,16,6.6,Mañana,2,21,Conexión social,Sin impacto,6.0,No,A veces,Celular
+25,Femenino,5.3,5,58.0,Tarde,19,141,Trabajo,Leve,6.1,Sí,A veces,Celular
+31,Masculino,3.7,12,19.8,Tarde,0,24,Conexión social,Leve,3.2,Sí,A veces,Tablet
+36,Masculino,1.4,5,20.1,Tarde,1,13,Conexión social,Leve,6.9,A veces,Frecuentemente,Celular
+34,Femenino,3.0,11,14.4,Noche,3,28,Conexión social,Sin impacto,5.4,A veces,A veces,Celular
+32,Masculino,4.9,6,45.3,Tarde,17,161,Crear contenido,Leve,7.2,Sí,Nunca,Celular
+46,Masculino,1.2,3,23.2,Mañana,0,12,Noticias,Sin impacto,8.5,No,Frecuentemente,Celular
+25,Masculino,2.5,14,7.7,Tarde,1,14,Conexión social,Leve,5.1,Sí,Nunca,Celular
+38,Femenino,2.9,14,11.7,Noche,2,30,Entretenimiento,Leve,4.5,No,Nunca,Celular
+36,No binario,2.9,12,11.5,Noche,2,17,Conexión social,Leve,4.9,A veces,Nunca,Celular
+32,Masculino,1.5,2,45.6,Mañana,1,9,Noticias,Sin impacto,8.3,No,Frecuentemente,Celular
+40,Masculino,0.9,2,33.6,Tarde,1,22,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+42,Femenino,1.2,3,26.2,Noche,0,10,Noticias,Sin impacto,8.6,No,Frecuentemente,Celular
+28,Femenino,3.1,11,18.3,Noche,0,32,Conexión social,Leve,4.6,A veces,Nunca,Tablet
+35,Femenino,0.9,4,9.2,Mañana,0,14,Trabajo,Sin impacto,9.2,No,A veces,Celular
+32,Masculino,1.2,6,18.6,Mañana,0,7,Noticias,Sin impacto,8.3,No,Frecuentemente,Celular
+34,Femenino,1.5,3,37.4,Mañana,0,7,Trabajo,Leve,8.4,No,Frecuentemente,Celular
+47,Femenino,1.8,4,22.0,Mañana,1,12,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+23,Femenino,6.8,17,29.4,Noche,1,51,Entretenimiento,Leve,3.3,A veces,Nunca,Tablet
+41,Femenino,1.2,3,29.3,Mañana,1,5,Trabajo,Sin impacto,8.8,No,Frecuentemente,Celular
+25,Femenino,8.0,14,34.0,Madrugada,1,49,Entretenimiento,Leve,2.6,A veces,Nunca,Celular
+44,Femenino,1.2,4,12.7,Mañana,1,14,Conexión social,Sin impacto,8.4,No,Frecuentemente,Computador
+53,Femenino,1.1,3,19.7,Tarde,1,7,Trabajo,Sin impacto,8.0,No,Frecuentemente,Computador
+27,Masculino,7.7,15,31.9,Madrugada,1,48,Entretenimiento,Severo,2.3,Sí,Nunca,Computador
+25,Femenino,6.9,14,33.9,Madrugada,2,46,Entretenimiento,Severo,3.3,Sí,A veces,Celular
+26,Femenino,5.2,7,36.2,Tarde,22,165,Crear contenido,Leve,7.4,No,Frecuentemente,Celular
+32,Masculino,4.9,8,42.6,Tarde,22,147,Crear contenido,Moderado,7.0,Sí,A veces,Computador
+32,Femenino,2.8,11,21.5,Tarde,0,24,Conexión social,Moderado,5.3,A veces,A veces,Celular
+41,Masculino,1.0,4,26.0,Mañana,0,11,Noticias,Sin impacto,7.7,No,Frecuentemente,Celular
+35,Masculino,1.1,2,37.0,Mañana,0,7,Trabajo,Sin impacto,9.2,No,Frecuentemente,Celular
+45,Femenino,1.3,3,33.6,Mañana,0,12,Noticias,Sin impacto,9.2,No,A veces,Celular
+30,Femenino,1.9,15,12.0,Noche,3,26,Conexión social,Leve,5.8,Sí,A veces,Computador
+35,No binario,1.0,2,30.1,Tarde,1,6,Trabajo,Sin impacto,8.2,No,Frecuentemente,Celular
+22,Masculino,7.4,13,37.6,Noche,2,54,Entretenimiento,Severo,3.1,A veces,Nunca,Celular
+37,Masculino,1.7,4,25.8,Mañana,1,16,Trabajo,Sin impacto,7.9,No,Frecuentemente,Computador
+28,Masculino,4.7,8,40.3,Tarde,22,145,Crear contenido,Moderado,6.4,Sí,A veces,Celular
+38,Femenino,1.4,3,27.4,Tarde,1,6,Trabajo,Sin impacto,7.2,A veces,Frecuentemente,Tablet
+43,Femenino,0.9,3,22.1,Tarde,0,10,Noticias,Sin impacto,7.7,No,Frecuentemente,Celular
+22,Femenino,6.7,16,20.7,Noche,1,36,Entretenimiento,Moderado,2.2,Sí,Nunca,Celular
+37,Femenino,4.8,5,65.6,Noche,15,167,Crear contenido,Leve,7.1,A veces,A veces,Celular
+28,Masculino,2.9,10,20.2,Noche,2,22,Conexión social,Sin impacto,4.8,A veces,A veces,Celular
+26,Femenino,6.0,6,63.2,Mañana,18,146,Crear contenido,Moderado,7.7,No,A veces,Tablet
+43,Masculino,1.4,3,35.2,Mañana,2,16,Noticias,Sin impacto,8.7,No,Frecuentemente,Celular
+28,Femenino,1.2,4,20.9,Mañana,1,8,Noticias,Sin impacto,8.4,A veces,Frecuentemente,Celular
+56,Masculino,1.5,4,21.8,Mañana,1,13,Trabajo,Sin impacto,7.5,No,Frecuentemente,Celular
+36,No binario,1.1,3,18.4,Mañana,0,14,Trabajo,Sin impacto,7.5,No,Frecuentemente,Celular
+27,Masculino,4.9,6,47.1,Tarde,20,148,Crear contenido,Sin impacto,6.9,A veces,A veces,Celular
+47,Femenino,1.5,4,19.9,Tarde,2,18,Conexión social,Sin impacto,6.9,No,Frecuentemente,Celular
+43,Femenino,3.3,10,21.5,Noche,4,28,Conexión social,Moderado,4.7,A veces,Frecuentemente,Celular
+43,Femenino,1.3,4,23.3,Tarde,0,2,Noticias,Sin impacto,9.0,No,Frecuentemente,Celular
+24,Masculino,4.9,5,57.9,Tarde,15,150,Crear contenido,Leve,6.7,A veces,A veces,Tablet
+27,Femenino,5.3,6,58.3,Tarde,16,158,Crear contenido,Leve,5.1,A veces,Nunca,Celular
+28,Masculino,6.2,7,53.6,Tarde,19,147,Crear contenido,Leve,7.6,Sí,A veces,Celular
+21,Femenino,7.0,19,29.2,Madrugada,2,54,Entretenimiento,Severo,3.2,No,Nunca,Celular
+33,Femenino,3.3,12,17.3,Noche,0,17,Conexión social,Leve,5.2,No,A veces,Celular
+17,Femenino,6.8,18,27.3,Noche,0,44,Noticias,Moderado,2.0,Sí,Nunca,Celular
+17,Masculino,7.6,14,37.3,Noche,2,42,Entretenimiento,Leve,2.7,Sí,Nunca,Celular
+57,Femenino,1.1,4,16.3,Mañana,1,8,Noticias,Sin impacto,8.4,No,Frecuentemente,Celular
+20,Masculino,5.3,6,58.3,Tarde,17,118,Crear contenido,Leve,7.0,Sí,A veces,Tablet
+33,Masculino,3.2,12,20.2,Tarde,0,24,Conexión social,Moderado,5.6,No,A veces,Celular
+40,Masculino,0.7,4,8.5,Mañana,1,2,Trabajo,Sin impacto,7.7,No,Frecuentemente,Celular
+32,Masculino,1.1,4,21.7,Mañana,1,7,Noticias,Sin impacto,8.4,A veces,Frecuentemente,Celular
+25,Femenino,6.9,16,30.9,Noche,1,37,Entretenimiento,Severo,2.6,Sí,Nunca,Celular
+40,Femenino,1.1,4,15.7,Mañana,2,7,Trabajo,Sin impacto,8.5,A veces,Frecuentemente,Celular
+30,Masculino,5.2,8,42.0,Tarde,17,156,Crear contenido,Leve,6.5,A veces,Nunca,Celular
+33,Masculino,5.0,7,48.9,Tarde,22,177,Crear contenido,Moderado,6.7,A veces,Nunca,Celular
+29,Femenino,5.0,7,36.2,Noche,19,126,Entretenimiento,Leve,7.2,A veces,A veces,Computador
+34,Masculino,4.6,7,40.2,Noche,22,120,Crear contenido,Moderado,7.7,No,A veces,Celular
+34,Femenino,2.5,11,22.3,Tarde,2,22,Conexión social,Moderado,5.5,Sí,Nunca,Celular
+50,Femenino,1.1,4,16.9,Tarde,0,12,Noticias,Sin impacto,7.3,No,Frecuentemente,Celular
+32,Femenino,2.6,12,8.5,Tarde,2,37,Conexión social,Leve,4.6,Sí,A veces,Celular
+36,Femenino,3.0,13,7.4,Noche,1,19,Conexión social,Leve,5.8,Sí,Nunca,Computador
+40,Femenino,1.4,2,40.5,Mañana,0,8,Trabajo,Sin impacto,8.0,No,Frecuentemente,Computador
+24,Femenino,6.7,17,23.1,Madrugada,0,28,Entretenimiento,Moderado,3.3,Sí,Nunca,Celular
+39,Masculino,2.7,9,16.2,Noche,1,25,Conexión social,Sin impacto,4.5,A veces,A veces,Celular
+38,No binario,0.6,2,12.8,Mañana,2,7,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+42,Masculino,2.9,13,13.2,Noche,1,24,Conexión social,Moderado,4.6,A veces,Nunca,Celular
+36,Femenino,2.4,13,17.5,Tarde,0,29,Conexión social,Moderado,5.5,A veces,Nunca,Celular
+25,Masculino,7.4,20,21.5,Madrugada,0,50,Entretenimiento,Leve,1.4,Sí,Nunca,Computador
+30,Femenino,3.1,11,18.5,Noche,2,20,Conexión social,Moderado,4.3,No,A veces,Celular
+24,Femenino,7.1,17,21.4,Noche,1,34,Entretenimiento,Severo,2.4,Sí,Nunca,Celular
+31,Femenino,2.9,9,22.5,Noche,2,13,Noticias,Moderado,4.0,No,A veces,Celular
+35,Femenino,3.0,11,13.9,Noche,3,23,Conexión social,Sin impacto,6.1,Sí,Nunca,Celular
+27,Femenino,6.9,16,23.6,Noche,2,57,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+16,Masculino,6.2,20,11.7,Madrugada,0,42,Entretenimiento,Moderado,2.9,Sí,Nunca,Celular
+35,Femenino,5.7,7,48.3,Tarde,17,132,Crear contenido,Leve,6.5,No,Nunca,Celular
+29,Femenino,1.4,3,17.7,Mañana,0,9,Trabajo,Sin impacto,6.5,No,Frecuentemente,Celular
+16,Masculino,6.4,19,15.2,Noche,1,58,Entretenimiento,Severo,2.0,Sí,Nunca,Computador
+23,No binario,7.5,18,20.5,Madrugada,1,33,Entretenimiento,Leve,3.2,No,Nunca,Tablet
+27,Femenino,7.2,17,26.9,Madrugada,0,49,Entretenimiento,Severo,2.6,Sí,Nunca,Celular
+32,Femenino,1.1,3,27.9,Mañana,1,12,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+25,No binario,7.8,20,22.7,Noche,1,54,Entretenimiento,Moderado,1.4,Sí,Nunca,Celular
+28,Femenino,0.7,3,9.7,Mañana,0,14,Noticias,Sin impacto,8.2,No,Frecuentemente,Celular
+27,No binario,2.4,15,6.7,Noche,3,25,Conexión social,Leve,4.8,Sí,Frecuentemente,Celular
+29,Masculino,5.3,8,40.4,Tarde,16,145,Crear contenido,Leve,7.1,A veces,Frecuentemente,Celular
+31,Masculino,5.0,7,41.2,Tarde,15,142,Crear contenido,Leve,7.5,Sí,Nunca,Celular
+18,Femenino,7.2,18,27.9,Noche,0,61,Entretenimiento,Severo,3.3,A veces,Nunca,Celular
+20,Femenino,6.3,18,28.5,Madrugada,2,27,Conexión social,Severo,3.1,A veces,A veces,Celular
+19,Masculino,7.1,15,28.5,Noche,2,43,Entretenimiento,Severo,2.9,A veces,A veces,Computador
+26,Masculino,5.0,6,45.0,Tarde,18,105,Trabajo,Moderado,7.1,A veces,Nunca,Celular
+36,Femenino,1.2,3,24.3,Mañana,2,11,Trabajo,Sin impacto,8.2,No,Frecuentemente,Celular
+20,Masculino,7.3,19,19.7,Noche,0,47,Entretenimiento,Moderado,2.8,Sí,Nunca,Celular
+33,Masculino,5.3,7,47.2,Noche,21,129,Crear contenido,Moderado,6.8,No,Frecuentemente,Computador
+48,Masculino,1.1,4,19.4,Tarde,0,8,Noticias,Sin impacto,8.9,No,Frecuentemente,Celular
+37,Femenino,2.4,9,8.9,Mañana,3,23,Conexión social,Moderado,5.2,A veces,A veces,Celular
+28,Femenino,6.8,16,28.8,Madrugada,2,53,Entretenimiento,Severo,2.5,A veces,Nunca,Celular
+39,Masculino,1.3,5,11.0,Mañana,2,8,Noticias,Sin impacto,8.3,No,Frecuentemente,Celular
+20,Masculino,6.9,17,34.8,Noche,1,46,Entretenimiento,Leve,2.6,Sí,Nunca,Celular
+25,Femenino,5.6,8,40.3,Tarde,14,158,Entretenimiento,Leve,5.3,Sí,A veces,Celular
+32,Masculino,2.7,11,11.0,Noche,3,29,Conexión social,Sin impacto,4.7,A veces,Frecuentemente,Computador
+24,Femenino,7.3,16,26.6,Noche,2,38,Entretenimiento,Leve,3.4,A veces,Nunca,Celular
+27,Femenino,3.2,10,27.3,Mañana,2,42,Conexión social,Sin impacto,5.7,A veces,Nunca,Celular
+33,Femenino,1.1,2,35.9,Mañana,0,10,Noticias,Sin impacto,8.9,No,Frecuentemente,Tablet
+24,Femenino,7.8,19,21.4,Madrugada,0,41,Entretenimiento,Severo,2.6,Sí,Nunca,Celular
+20,Masculino,7.3,18,29.3,Madrugada,2,28,Entretenimiento,Leve,2.4,Sí,Nunca,Celular
+27,Femenino,5.3,5,65.7,Tarde,20,132,Crear contenido,Leve,7.4,A veces,Frecuentemente,Celular
+23,Masculino,7.5,17,20.6,Madrugada,3,43,Entretenimiento,Moderado,2.2,No,Nunca,Celular
+41,Femenino,0.8,4,14.7,Mañana,0,11,Trabajo,Sin impacto,8.3,No,A veces,Celular
+25,Masculino,6.8,17,27.5,Noche,3,51,Conexión social,Severo,3.6,A veces,Nunca,Tablet
+24,Femenino,4.8,6,55.4,Tarde,19,171,Crear contenido,Leve,6.5,No,Nunca,Celular
+44,Masculino,1.2,4,11.3,Tarde,1,12,Trabajo,Sin impacto,7.6,A veces,Frecuentemente,Celular
+31,Masculino,1.4,4,26.8,Mañana,2,7,Trabajo,Sin impacto,8.7,No,A veces,Computador
+29,Femenino,6.8,17,29.4,Noche,1,48,Entretenimiento,Severo,3.5,Sí,Nunca,Celular
+36,Masculino,5.5,7,37.3,Tarde,11,161,Crear contenido,Leve,6.8,No,A veces,Celular
+45,Masculino,1.2,3,25.7,Tarde,0,12,Trabajo,Sin impacto,8.1,A veces,Frecuentemente,Celular
+38,Masculino,1.0,4,17.6,Tarde,2,16,Trabajo,Sin impacto,7.8,No,Frecuentemente,Computador
+27,No binario,7.3,16,23.6,Noche,3,63,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+42,Masculino,1.2,4,21.3,Noche,2,15,Trabajo,Sin impacto,7.3,No,Frecuentemente,Celular
+39,Masculino,2.9,16,13.1,Noche,0,15,Conexión social,Sin impacto,4.8,A veces,Frecuentemente,Celular
+30,Masculino,3.3,9,19.0,Tarde,2,34,Conexión social,Leve,5.8,Sí,Nunca,Celular
+46,Femenino,1.1,4,13.8,Mañana,1,9,Trabajo,Sin impacto,7.3,No,A veces,Celular
+45,Femenino,3.0,11,21.6,Noche,2,19,Conexión social,Sin impacto,5.7,A veces,Nunca,Celular
+25,Femenino,5.0,7,41.9,Tarde,11,147,Trabajo,Leve,6.2,A veces,Nunca,Celular
+37,Masculino,3.3,12,15.0,Tarde,2,26,Conexión social,Leve,5.8,No,A veces,Celular
+37,Masculino,1.3,3,33.2,Tarde,0,6,Noticias,Sin impacto,8.3,No,Frecuentemente,Celular
+24,Masculino,7.5,20,23.2,Madrugada,0,44,Entretenimiento,Moderado,2.2,A veces,Nunca,Celular
+20,Masculino,3.3,12,13.1,Noche,1,17,Conexión social,Moderado,4.4,No,Nunca,Celular
+38,Femenino,1.3,3,22.7,Mañana,0,5,Trabajo,Sin impacto,7.2,No,Frecuentemente,Computador
+23,Masculino,6.8,16,28.1,Madrugada,2,47,Entretenimiento,Moderado,2.9,A veces,Nunca,Celular
+18,Masculino,6.8,17,24.0,Madrugada,3,51,Entretenimiento,Severo,2.7,Sí,Nunca,Celular
+32,Femenino,1.4,2,40.3,Tarde,2,10,Noticias,Sin impacto,8.4,No,Frecuentemente,Celular
+41,Femenino,1.0,5,12.3,Mañana,2,9,Noticias,Sin impacto,8.7,A veces,Frecuentemente,Celular
+36,Femenino,0.7,5,7.5,Tarde,3,10,Noticias,Sin impacto,8.1,No,Frecuentemente,Tablet
+38,Femenino,3.3,12,17.3,Noche,2,10,Conexión social,Leve,5.2,A veces,A veces,Computador
+19,Femenino,7.0,15,29.9,Madrugada,1,43,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+17,No binario,6.8,19,20.5,Madrugada,3,35,Entretenimiento,Moderado,2.8,Sí,Nunca,Tablet
+34,Masculino,1.1,2,26.5,Mañana,1,14,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+25,Femenino,2.7,12,9.8,Noche,1,33,Entretenimiento,Sin impacto,4.2,Sí,A veces,Celular
+24,Masculino,6.4,15,27.5,Madrugada,1,62,Entretenimiento,Severo,1.8,Sí,Nunca,Celular
+30,Masculino,5.0,6,44.1,Noche,15,146,Crear contenido,Leve,6.7,A veces,A veces,Celular
+33,Femenino,5.4,6,54.5,Tarde,15,147,Crear contenido,Leve,6.6,Sí,Frecuentemente,Celular
+26,Masculino,5.4,6,45.5,Tarde,21,141,Entretenimiento,Leve,6.0,A veces,Nunca,Tablet
+22,Masculino,4.6,6,47.8,Mañana,20,123,Crear contenido,Moderado,6.9,Sí,Nunca,Celular
+26,Masculino,5.1,8,44.2,Tarde,12,164,Crear contenido,Leve,7.1,No,A veces,Celular
+30,Masculino,5.7,7,46.2,Tarde,17,150,Crear contenido,Moderado,6.5,Sí,Nunca,Celular
+23,Masculino,7.9,14,28.5,Madrugada,1,44,Entretenimiento,Moderado,2.0,Sí,Nunca,Celular
+24,Masculino,5.7,6,55.4,Tarde,20,142,Crear contenido,Leve,7.7,A veces,A veces,Celular
+33,Masculino,0.9,5,5.8,Mañana,0,8,Noticias,Sin impacto,8.4,No,Frecuentemente,Celular
+41,Femenino,1.4,2,41.7,Tarde,0,13,Trabajo,Sin impacto,8.6,No,Frecuentemente,Celular
+23,Masculino,6.5,17,27.3,Madrugada,4,52,Entretenimiento,Severo,3.3,A veces,Nunca,Celular
+49,Femenino,1.7,2,49.9,Mañana,0,10,Noticias,Sin impacto,7.9,No,Frecuentemente,Celular
+39,Femenino,2.8,10,15.1,Tarde,3,30,Conexión social,Sin impacto,4.8,A veces,Nunca,Celular
+36,Masculino,2.6,15,9.9,Tarde,3,27,Conexión social,Moderado,6.3,No,A veces,Celular
+26,Masculino,7.1,18,23.4,Madrugada,1,35,Conexión social,Severo,1.9,Sí,Nunca,Tablet
+25,Masculino,6.2,18,20.6,Madrugada,0,48,Entretenimiento,Severo,2.8,Sí,A veces,Computador
+31,Femenino,5.0,7,46.5,Tarde,17,149,Crear contenido,Moderado,6.8,No,A veces,Celular
+40,Masculino,1.2,5,17.4,Tarde,0,10,Conexión social,Sin impacto,8.0,No,Frecuentemente,Celular
+20,Femenino,6.5,19,22.3,Madrugada,1,44,Entretenimiento,Severo,2.1,Sí,Nunca,Celular
+22,Femenino,7.0,14,27.5,Noche,1,41,Entretenimiento,Moderado,1.9,A veces,A veces,Celular
+41,No binario,1.4,4,20.5,Mañana,0,9,Noticias,Sin impacto,8.6,No,Frecuentemente,Celular
+25,Femenino,6.8,14,26.9,Noche,1,29,Entretenimiento,Severo,2.6,Sí,Nunca,Celular
+31,Masculino,3.9,12,18.0,Noche,2,29,Conexión social,Leve,5.5,No,A veces,Celular
+20,Femenino,7.2,18,29.9,Noche,0,34,Entretenimiento,Severo,2.4,A veces,Nunca,Celular
+43,Femenino,1.1,4,27.2,Tarde,1,8,Trabajo,Sin impacto,8.6,No,Frecuentemente,Celular
+33,Femenino,2.8,12,9.5,Noche,2,31,Entretenimiento,Leve,4.8,A veces,Frecuentemente,Computador
+36,Masculino,3.3,11,11.9,Noche,4,21,Conexión social,Leve,4.8,No,A veces,Celular
+40,Masculino,3.2,14,16.1,Tarde,3,40,Conexión social,Leve,4.0,A veces,A veces,Celular
+23,Masculino,5.5,6,54.4,Tarde,18,206,Trabajo,Leve,6.1,A veces,A veces,Celular
+34,Femenino,5.1,7,48.7,Tarde,20,143,Crear contenido,Sin impacto,7.7,Sí,Frecuentemente,Celular
+22,Femenino,6.1,15,33.9,Noche,1,54,Entretenimiento,Severo,3.3,Sí,Nunca,Computador
+25,Femenino,7.4,15,30.5,Madrugada,4,45,Entretenimiento,Severo,1.0,Sí,Nunca,Celular
+39,Masculino,3.4,13,13.7,Noche,3,27,Conexión social,Leve,5.6,Sí,Nunca,Celular
+20,Femenino,7.1,15,20.9,Madrugada,1,53,Entretenimiento,Leve,2.8,A veces,Nunca,Tablet
+21,No binario,6.6,16,26.0,Tarde,0,46,Entretenimiento,Moderado,1.8,Sí,Nunca,Celular
+40,Femenino,0.9,4,12.7,Tarde,0,10,Trabajo,Sin impacto,8.4,No,A veces,Celular
+24,Femenino,7.2,17,18.5,Noche,1,45,Entretenimiento,Severo,2.9,Sí,Nunca,Celular
+36,Masculino,2.8,14,10.5,Tarde,0,29,Entretenimiento,Sin impacto,5.0,A veces,Frecuentemente,Celular
+27,Masculino,5.4,6,55.9,Tarde,20,144,Crear contenido,Leve,6.7,No,A veces,Celular
+34,Masculino,3.2,14,14.5,Tarde,3,26,Conexión social,Leve,4.6,Sí,Nunca,Celular
+38,Femenino,2.4,10,7.0,Mañana,1,35,Entretenimiento,Sin impacto,5.7,Sí,Frecuentemente,Celular
+25,Masculino,6.9,16,24.2,Noche,2,47,Entretenimiento,Severo,2.7,Sí,Nunca,Celular
+30,Masculino,5.1,7,47.3,Tarde,17,148,Trabajo,Sin impacto,7.2,A veces,Nunca,Celular
+35,Masculino,2.5,11,10.0,Noche,5,23,Noticias,Moderado,4.5,No,A veces,Celular
+18,Masculino,5.2,5,52.5,Tarde,14,163,Crear contenido,Leve,6.9,No,Nunca,Celular
+19,Femenino,7.1,13,39.6,Madrugada,1,45,Noticias,Severo,2.5,Sí,Nunca,Celular
+32,Femenino,2.6,13,17.1,Noche,0,23,Conexión social,Moderado,6.1,No,Nunca,Celular
+40,Masculino,3.9,12,15.2,Tarde,4,25,Conexión social,Leve,4.8,Sí,A veces,Celular
+27,Masculino,2.6,13,13.1,Tarde,1,13,Conexión social,Moderado,4.5,A veces,A veces,Celular
+40,Masculino,1.0,3,23.3,Tarde,1,12,Trabajo,Sin impacto,9.3,No,Frecuentemente,Celular
+28,Femenino,0.4,4,6.2,Tarde,0,2,Noticias,Sin impacto,7.7,No,Frecuentemente,Celular
+44,Masculino,1.4,4,15.1,Mañana,0,14,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+40,Masculino,0.8,2,25.0,Mañana,0,7,Conexión social,Sin impacto,7.6,No,Frecuentemente,Celular
+35,Femenino,2.5,12,6.8,Mañana,2,26,Conexión social,Leve,4.3,No,A veces,Celular
+17,Masculino,6.5,15,35.2,Madrugada,2,51,Entretenimiento,Moderado,2.8,Sí,A veces,Celular
+19,Masculino,7.5,17,32.3,Madrugada,1,36,Entretenimiento,Severo,3.1,Sí,Nunca,Computador
+21,Femenino,6.5,6,76.1,Tarde,21,122,Crear contenido,Leve,6.9,Sí,A veces,Celular
+51,Femenino,1.3,2,36.2,Tarde,0,7,Trabajo,Leve,8.4,No,Frecuentemente,Celular
+28,Masculino,1.8,3,32.6,Mañana,1,8,Trabajo,Sin impacto,8.2,No,Frecuentemente,Celular
+35,Masculino,1.3,2,39.2,Mañana,1,7,Trabajo,Sin impacto,8.3,No,Frecuentemente,Celular
+34,Masculino,3.4,14,14.3,Noche,2,32,Conexión social,Leve,4.6,Sí,A veces,Celular
+44,Femenino,1.0,4,19.8,Noche,0,12,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+20,Masculino,7.1,19,20.6,Noche,2,44,Entretenimiento,Severo,1.3,Sí,Nunca,Celular
+22,Femenino,5.5,7,39.5,Tarde,17,158,Entretenimiento,Moderado,6.3,A veces,A veces,Celular
+52,Masculino,1.6,3,32.3,Noche,1,13,Trabajo,Leve,6.6,A veces,A veces,Tablet
+43,No binario,1.2,3,31.1,Mañana,2,7,Conexión social,Sin impacto,7.8,No,A veces,Tablet
+37,Masculino,1.1,5,12.2,Noche,0,8,Trabajo,Sin impacto,7.7,No,Frecuentemente,Celular
+27,No binario,4.6,7,34.2,Noche,12,159,Crear contenido,Sin impacto,7.3,A veces,Nunca,Celular
+23,Masculino,6.5,14,32.5,Noche,0,51,Entretenimiento,Severo,2.4,A veces,Nunca,Celular
+34,Masculino,0.9,2,26.3,Tarde,2,10,Trabajo,Sin impacto,8.2,No,A veces,Celular
+21,Femenino,7.7,18,21.7,Madrugada,2,37,Conexión social,Moderado,2.6,Sí,Nunca,Celular
+51,Femenino,0.8,2,21.6,Mañana,3,8,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+27,Masculino,7.1,17,27.4,Noche,1,40,Entretenimiento,Moderado,3.4,Sí,Nunca,Celular
+25,Femenino,5.6,6,54.5,Tarde,19,149,Crear contenido,Leve,6.8,No,Frecuentemente,Celular
+32,No binario,3.4,10,21.7,Noche,3,31,Entretenimiento,Leve,4.7,Sí,A veces,Celular
+30,Masculino,2.4,13,6.5,Noche,1,28,Conexión social,Moderado,6.6,No,Nunca,Celular
+25,Femenino,5.1,7,39.3,Tarde,22,157,Crear contenido,Moderado,6.1,Sí,A veces,Computador
+41,Femenino,0.9,3,13.4,Mañana,0,12,Noticias,Sin impacto,7.3,A veces,A veces,Celular
+28,Femenino,2.6,9,16.2,Noche,5,13,Entretenimiento,Sin impacto,5.5,A veces,Frecuentemente,Computador
+25,Masculino,5.4,6,59.5,Noche,20,155,Crear contenido,Leve,5.7,Sí,A veces,Celular
+16,Masculino,7.4,15,32.4,Noche,1,64,Entretenimiento,Moderado,2.6,Sí,Nunca,Celular
+39,Masculino,0.9,4,6.4,Mañana,1,13,Trabajo,Sin impacto,8.8,A veces,Frecuentemente,Celular
+20,Femenino,7.0,17,25.7,Noche,2,44,Entretenimiento,Moderado,3.2,Sí,Nunca,Celular
+27,Femenino,5.3,7,44.8,Noche,18,158,Crear contenido,Moderado,6.5,Sí,A veces,Celular
+38,Masculino,1.6,3,32.5,Noche,1,7,Noticias,Leve,8.2,No,Frecuentemente,Celular
+41,Femenino,2.6,12,24.5,Noche,2,18,Conexión social,Sin impacto,4.1,No,A veces,Celular
+41,Masculino,1.4,3,26.8,Tarde,0,17,Trabajo,Sin impacto,9.3,No,Frecuentemente,Celular
+29,Masculino,7.2,17,31.1,Madrugada,3,56,Noticias,Severo,2.8,Sí,Nunca,Tablet
+38,Masculino,2.8,12,16.7,Tarde,0,30,Conexión social,Leve,4.1,No,A veces,Celular
+40,Femenino,1.1,4,16.1,Mañana,0,3,Conexión social,Sin impacto,8.2,No,Frecuentemente,Celular
+26,Femenino,2.8,11,19.5,Mañana,0,23,Conexión social,Leve,5.8,No,Nunca,Computador
+17,Masculino,6.7,18,23.7,Madrugada,1,45,Noticias,Moderado,2.4,A veces,Nunca,Celular
+22,Masculino,7.4,20,22.5,Madrugada,1,49,Entretenimiento,Moderado,3.4,Sí,Nunca,Tablet
+37,Femenino,2.9,12,14.9,Noche,3,19,Conexión social,Leve,5.3,Sí,A veces,Celular
+20,No binario,5.1,7,49.2,Noche,14,139,Entretenimiento,Leve,6.4,A veces,A veces,Celular
+28,Femenino,0.8,3,15.9,Mañana,2,12,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+24,No binario,7.5,19,24.4,Noche,1,61,Entretenimiento,Moderado,2.6,A veces,Nunca,Celular
+36,Femenino,5.0,5,54.2,Noche,20,178,Crear contenido,Leve,7.2,A veces,A veces,Celular
+21,Femenino,6.2,16,16.3,Noche,0,38,Conexión social,Moderado,2.5,Sí,Nunca,Celular
+30,Masculino,1.7,3,34.4,Tarde,2,19,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+29,Femenino,5.6,6,61.9,Mañana,19,130,Crear contenido,Leve,6.7,A veces,A veces,Celular
+27,Femenino,4.7,8,29.7,Tarde,12,164,Entretenimiento,Leve,6.0,A veces,A veces,Celular
+46,Femenino,1.3,3,29.4,Tarde,0,12,Noticias,Sin impacto,7.9,No,Frecuentemente,Celular
+28,No binario,7.3,19,19.1,Madrugada,0,38,Noticias,Moderado,1.4,A veces,Nunca,Celular
+35,No binario,3.4,12,17.8,Tarde,3,25,Conexión social,Moderado,4.6,No,Frecuentemente,Tablet
+22,Femenino,7.0,19,20.3,Noche,3,35,Entretenimiento,Severo,3.9,Sí,Nunca,Celular
+25,Masculino,7.2,17,30.3,Madrugada,0,44,Entretenimiento,Severo,3.4,Sí,Nunca,Celular
+36,Masculino,3.2,13,15.7,Noche,3,21,Conexión social,Leve,5.4,Sí,A veces,Celular
+42,Masculino,1.1,4,15.4,Tarde,1,16,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+43,Femenino,0.8,3,14.4,Noche,1,13,Trabajo,Leve,8.5,No,Frecuentemente,Celular
+18,Masculino,7.2,16,25.4,Madrugada,2,36,Conexión social,Moderado,2.0,Sí,Nunca,Celular
+36,Masculino,2.1,13,9.7,Tarde,3,24,Conexión social,Sin impacto,5.3,A veces,Frecuentemente,Celular
+31,Femenino,5.1,7,39.9,Tarde,14,133,Crear contenido,Sin impacto,6.2,Sí,Frecuentemente,Tablet
+26,Femenino,2.9,9,20.2,Tarde,3,14,Entretenimiento,Sin impacto,4.5,A veces,Frecuentemente,Celular
+52,Femenino,0.7,2,21.4,Tarde,2,10,Trabajo,Sin impacto,8.2,No,Frecuentemente,Celular
+26,Femenino,5.0,6,47.7,Tarde,18,141,Trabajo,Leve,7.4,Sí,A veces,Celular
+16,Masculino,7.8,17,26.7,Madrugada,0,56,Entretenimiento,Severo,2.3,A veces,A veces,Computador
+35,Masculino,1.5,4,25.9,Tarde,1,13,Trabajo,Sin impacto,8.1,No,Frecuentemente,Celular
+29,Masculino,2.8,13,11.0,Noche,2,17,Entretenimiento,Sin impacto,4.6,A veces,Frecuentemente,Celular
+17,Masculino,7.1,18,29.5,Tarde,2,47,Conexión social,Severo,2.7,Sí,Nunca,Computador
+24,Femenino,6.5,14,32.3,Noche,0,45,Entretenimiento,Moderado,2.1,Sí,Nunca,Celular
+35,Masculino,2.2,12,11.4,Tarde,3,22,Conexión social,Leve,5.3,A veces,A veces,Celular
+24,Masculino,4.9,5,54.1,Noche,11,116,Crear contenido,Leve,6.8,No,A veces,Celular
+20,Masculino,7.8,17,25.2,Noche,1,49,Entretenimiento,Severo,3.3,Sí,Nunca,Celular
+23,Femenino,3.6,13,17.2,Noche,1,30,Conexión social,Leve,6.0,A veces,A veces,Celular
+34,No binario,1.6,2,45.0,Tarde,1,5,Noticias,Leve,7.8,No,Frecuentemente,Computador
+46,Masculino,1.2,3,21.8,Mañana,2,11,Noticias,Sin impacto,8.3,No,A veces,Celular
+20,No binario,5.4,6,49.0,Noche,21,175,Crear contenido,Leve,6.5,A veces,Frecuentemente,Celular
+24,Masculino,6.6,20,16.2,Madrugada,0,74,Entretenimiento,Leve,2.7,No,A veces,Celular
+39,Femenino,2.6,12,16.6,Tarde,1,38,Conexión social,Sin impacto,5.1,A veces,A veces,Celular
+27,Femenino,5.6,7,53.3,Tarde,21,170,Crear contenido,Leve,6.6,A veces,Frecuentemente,Computador
+39,Femenino,3.6,9,24.3,Tarde,2,21,Entretenimiento,Leve,5.2,A veces,Frecuentemente,Celular
+27,Masculino,3.0,9,11.4,Noche,3,24,Conexión social,Leve,4.5,A veces,A veces,Celular
+43,Masculino,0.9,5,18.0,Tarde,1,7,Conexión social,Sin impacto,7.9,No,A veces,Celular
+46,No binario,0.6,5,7.6,Tarde,1,3,Trabajo,Sin impacto,8.0,No,Frecuentemente,Computador
+26,Masculino,5.1,6,45.9,Tarde,19,165,Trabajo,Moderado,6.6,Sí,A veces,Celular
+49,Femenino,1.2,2,38.6,Tarde,0,14,Conexión social,Sin impacto,8.2,No,Frecuentemente,Celular
+36,Masculino,1.1,3,18.2,Mañana,1,6,Noticias,Sin impacto,9.0,No,Frecuentemente,Celular
+36,Masculino,1.4,3,32.3,Mañana,1,6,Noticias,Sin impacto,7.4,No,Frecuentemente,Celular
+36,Masculino,0.9,3,16.2,Tarde,1,7,Noticias,Sin impacto,7.6,No,Frecuentemente,Celular
+16,Masculino,7.5,18,30.6,Madrugada,2,42,Entretenimiento,Moderado,2.7,A veces,Nunca,Celular
+36,Masculino,0.9,5,6.1,Tarde,0,10,Trabajo,Sin impacto,7.4,No,Frecuentemente,Celular
+40,Femenino,1.3,5,15.0,Mañana,1,14,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+48,Femenino,1.2,4,18.2,Mañana,1,17,Trabajo,Sin impacto,8.6,No,Frecuentemente,Celular
+26,Masculino,6.2,7,54.8,Noche,16,160,Crear contenido,Sin impacto,6.4,No,Nunca,Celular
+34,Masculino,1.5,4,28.5,Tarde,1,14,Trabajo,Sin impacto,8.1,A veces,Frecuentemente,Celular
+23,Masculino,6.5,18,23.3,Noche,1,37,Noticias,Leve,2.5,Sí,Nunca,Celular
+30,Femenino,2.5,10,18.5,Mañana,3,26,Conexión social,Moderado,5.2,Sí,Nunca,Celular
+38,Masculino,2.5,11,7.1,Noche,3,25,Conexión social,Sin impacto,5.3,A veces,Frecuentemente,Celular
+28,Masculino,6.8,18,21.3,Madrugada,0,47,Entretenimiento,Severo,2.7,Sí,Nunca,Celular
+44,Masculino,2.6,12,7.3,Noche,4,24,Conexión social,Leve,5.6,Sí,Nunca,Celular
+24,Femenino,7.5,12,30.2,Madrugada,1,51,Entretenimiento,Leve,2.8,Sí,Nunca,Celular
+32,Masculino,2.8,11,9.6,Noche,1,13,Conexión social,Leve,4.7,No,A veces,Celular
+41,Femenino,1.1,3,27.0,Tarde,0,10,Trabajo,Sin impacto,8.3,No,Frecuentemente,Celular
+25,Masculino,5.3,6,52.5,Tarde,14,139,Crear contenido,Moderado,6.2,A veces,A veces,Celular
+27,Femenino,6.8,17,21.6,Madrugada,2,48,Entretenimiento,Severo,3.1,Sí,Nunca,Celular
+41,Femenino,1.8,4,24.6,Tarde,1,8,Noticias,Sin impacto,9.3,No,Frecuentemente,Celular
+41,Femenino,1.4,4,21.5,Mañana,1,2,Trabajo,Leve,8.7,No,Frecuentemente,Celular
+30,Masculino,4.9,8,39.1,Mañana,21,155,Crear contenido,Sin impacto,6.5,Sí,A veces,Celular
+40,Masculino,2.5,10,18.6,Noche,3,24,Conexión social,Sin impacto,5.0,A veces,A veces,Celular
+32,Femenino,3.2,13,10.9,Mañana,2,25,Conexión social,Leve,4.2,No,A veces,Celular
+21,Masculino,7.0,16,23.8,Madrugada,0,36,Entretenimiento,Severo,3.0,Sí,Nunca,Computador
+22,Femenino,7.2,18,23.8,Madrugada,0,54,Entretenimiento,Moderado,2.6,No,Nunca,Celular
+37,Masculino,1.2,3,25.8,Tarde,0,11,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+46,Femenino,1.2,4,23.2,Tarde,0,5,Trabajo,Sin impacto,8.2,No,Frecuentemente,Computador
+37,Masculino,2.6,13,8.1,Noche,4,24,Conexión social,Leve,5.4,A veces,Frecuentemente,Computador
+26,Masculino,7.1,15,29.2,Madrugada,1,41,Entretenimiento,Severo,2.4,Sí,Nunca,Celular
+23,Masculino,7.5,15,31.7,Madrugada,3,45,Entretenimiento,Leve,2.5,Sí,Nunca,Celular
+24,Femenino,2.9,14,11.2,Tarde,3,19,Conexión social,Leve,4.8,No,A veces,Celular
+22,Femenino,7.2,15,25.0,Madrugada,2,36,Entretenimiento,Severo,1.8,Sí,Nunca,Computador
+48,Femenino,1.3,3,29.2,Tarde,0,10,Trabajo,Sin impacto,8.2,No,Frecuentemente,Computador
+27,Femenino,2.5,16,3.8,Noche,2,29,Conexión social,Moderado,5.1,No,Frecuentemente,Celular
+20,Masculino,5.8,17,21.1,Madrugada,0,46,Conexión social,Severo,2.3,Sí,Nunca,Celular
+30,Femenino,1.2,5,10.4,Mañana,1,12,Trabajo,Sin impacto,7.4,No,Frecuentemente,Computador
+35,Masculino,1.3,3,23.0,Mañana,1,17,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+44,Masculino,2.5,15,4.9,Noche,1,34,Conexión social,Leve,5.6,Sí,Nunca,Celular
+34,Femenino,1.1,5,8.9,Mañana,1,11,Trabajo,Sin impacto,7.2,No,Frecuentemente,Tablet
+22,Femenino,7.0,15,27.6,Madrugada,2,55,Entretenimiento,Severo,3.4,Sí,Nunca,Celular
+28,Masculino,2.2,12,18.4,Noche,0,23,Entretenimiento,Leve,5.3,No,Nunca,Celular
+27,Masculino,3.3,10,25.5,Mañana,3,25,Conexión social,Leve,4.8,A veces,Frecuentemente,Celular
+34,Femenino,2.3,13,11.4,Noche,2,21,Entretenimiento,Moderado,5.3,A veces,Nunca,Celular
+35,Femenino,1.2,2,45.3,Tarde,0,12,Noticias,Sin impacto,7.9,No,Frecuentemente,Celular
+32,Femenino,2.4,14,12.0,Noche,3,21,Conexión social,Moderado,4.8,No,Nunca,Celular
+30,Femenino,6.5,17,26.0,Madrugada,4,54,Entretenimiento,Leve,2.1,Sí,Nunca,Celular
+30,Masculino,7.1,15,23.7,Madrugada,1,43,Entretenimiento,Severo,2.5,Sí,Nunca,Celular
+40,Femenino,1.1,3,21.1,Mañana,0,11,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+35,Masculino,2.9,13,7.7,Noche,0,23,Conexión social,Moderado,4.8,No,Nunca,Celular
+29,Femenino,5.1,6,56.1,Noche,19,127,Crear contenido,Moderado,7.1,No,A veces,Celular
+43,Femenino,2.8,12,24.0,Noche,1,14,Conexión social,Moderado,4.2,A veces,A veces,Celular
+40,Masculino,2.8,13,13.3,Noche,3,20,Conexión social,Leve,3.9,Sí,A veces,Celular
+23,Masculino,7.0,17,24.1,Noche,1,48,Entretenimiento,Severo,2.3,No,A veces,Computador
+41,Femenino,1.3,4,19.6,Mañana,1,2,Trabajo,Sin impacto,7.3,No,Frecuentemente,Celular
+30,Femenino,5.2,5,60.8,Mañana,17,178,Crear contenido,Sin impacto,6.9,A veces,Nunca,Tablet
+23,Femenino,6.5,18,27.5,Madrugada,1,36,Entretenimiento,Severo,2.0,Sí,Nunca,Celular
+20,Masculino,6.3,18,25.1,Madrugada,1,22,Entretenimiento,Moderado,3.2,A veces,A veces,Celular
+42,Masculino,1.2,6,16.4,Tarde,0,24,Noticias,Sin impacto,8.1,No,Frecuentemente,Celular
+38,Masculino,1.1,4,21.8,Mañana,2,5,Noticias,Sin impacto,7.9,No,Frecuentemente,Tablet
+23,Femenino,5.1,4,71.1,Tarde,13,142,Crear contenido,Leve,7.1,No,Nunca,Celular
+30,Masculino,3.3,14,13.7,Noche,2,24,Conexión social,Leve,4.9,A veces,A veces,Celular
+21,Masculino,7.9,15,36.4,Tarde,2,41,Entretenimiento,Moderado,3.6,A veces,Nunca,Celular
+23,Femenino,6.7,20,22.9,Noche,0,47,Entretenimiento,Severo,2.5,No,Nunca,Computador
+21,Femenino,5.0,6,58.8,Tarde,16,155,Crear contenido,Moderado,7.5,Sí,Frecuentemente,Celular
+21,Femenino,7.7,16,27.3,Madrugada,1,35,Entretenimiento,Severo,3.2,Sí,Nunca,Celular
+31,Femenino,1.0,4,12.3,Mañana,1,7,Noticias,Sin impacto,8.3,No,Frecuentemente,Celular
+35,Femenino,2.3,11,12.1,Tarde,3,32,Conexión social,Leve,4.8,No,Nunca,Celular
+34,Masculino,4.6,8,32.2,Tarde,18,143,Crear contenido,Sin impacto,6.0,Sí,Nunca,Tablet
+31,Femenino,2.3,10,17.3,Tarde,3,13,Entretenimiento,Moderado,5.7,A veces,A veces,Celular
+34,Femenino,4.7,7,33.9,Tarde,16,150,Crear contenido,Leve,7.0,Sí,A veces,Celular
+35,Masculino,2.7,9,18.9,Noche,4,19,Conexión social,Leve,6.1,Sí,Nunca,Celular
+20,Femenino,5.2,7,50.8,Tarde,22,117,Entretenimiento,Moderado,6.4,A veces,A veces,Computador
+40,Femenino,2.8,13,12.4,Tarde,1,21,Entretenimiento,Leve,5.2,Sí,A veces,Computador
+17,Femenino,7.1,17,23.0,Madrugada,1,50,Entretenimiento,Severo,1.8,Sí,Nunca,Computador
+30,Masculino,3.2,14,13.6,Noche,2,24,Conexión social,Sin impacto,4.7,A veces,A veces,Tablet
+16,Masculino,7.5,17,26.3,Madrugada,1,51,Entretenimiento,Severo,2.7,Sí,Nunca,Celular
+33,Masculino,5.8,6,61.1,Tarde,17,154,Crear contenido,Moderado,8.0,No,Frecuentemente,Computador
+23,Masculino,7.2,17,22.0,Madrugada,2,46,Entretenimiento,Severo,2.2,A veces,Nunca,Celular
+21,Masculino,7.2,16,29.6,Noche,1,42,Entretenimiento,Severo,2.9,Sí,Nunca,Tablet
+26,Masculino,5.5,7,54.8,Mañana,21,167,Crear contenido,Moderado,7.5,Sí,A veces,Celular
+18,Femenino,7.4,19,24.1,Noche,2,45,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+26,Femenino,2.9,14,3.0,Tarde,3,27,Entretenimiento,Leve,5.3,No,Nunca,Celular
+39,Femenino,2.5,12,13.6,Tarde,1,18,Conexión social,Leve,4.6,No,A veces,Celular
+30,Masculino,5.3,6,51.6,Tarde,24,154,Crear contenido,Leve,6.0,No,A veces,Celular
+27,Masculino,5.2,8,46.4,Tarde,22,149,Crear contenido,Leve,6.7,A veces,A veces,Celular
+43,Femenino,1.1,2,39.8,Tarde,1,9,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+46,Masculino,1.1,2,28.9,Tarde,1,7,Trabajo,Sin impacto,7.5,No,A veces,Computador
+25,Femenino,5.4,8,33.7,Mañana,15,162,Crear contenido,Moderado,6.8,No,A veces,Celular
+29,Masculino,7.1,17,31.2,Noche,0,49,Entretenimiento,Moderado,2.4,Sí,Nunca,Computador
+18,Masculino,7.3,17,29.6,Noche,1,35,Entretenimiento,Severo,2.0,Sí,Nunca,Celular
+30,Femenino,3.2,10,18.7,Tarde,0,26,Entretenimiento,Leve,5.1,No,A veces,Celular
+43,Masculino,1.1,4,19.0,Tarde,0,3,Noticias,Sin impacto,8.1,No,Frecuentemente,Celular
+36,Masculino,2.1,15,8.8,Noche,2,23,Conexión social,Leve,4.6,No,Nunca,Celular
+39,Masculino,1.0,3,14.7,Mañana,0,19,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+17,Femenino,6.8,13,33.1,Madrugada,0,49,Entretenimiento,Severo,2.1,Sí,Nunca,Celular
+19,Femenino,6.5,18,23.7,Madrugada,1,25,Entretenimiento,Moderado,2.9,Sí,Nunca,Celular
+26,Masculino,2.2,11,15.6,Tarde,2,18,Conexión social,Sin impacto,4.6,A veces,A veces,Celular
+28,Masculino,1.0,4,18.9,Tarde,1,6,Trabajo,Sin impacto,7.8,No,Frecuentemente,Celular
+49,Masculino,1.5,3,24.4,Mañana,1,9,Noticias,Sin impacto,8.7,No,A veces,Tablet
+32,Masculino,2.7,12,8.0,Noche,2,22,Conexión social,Leve,5.6,A veces,Nunca,Computador
+39,Masculino,3.1,10,17.6,Noche,5,18,Conexión social,Leve,4.6,No,A veces,Celular
+27,Masculino,5.1,6,51.6,Tarde,22,172,Crear contenido,Leve,7.2,A veces,A veces,Celular
+21,Femenino,6.4,15,28.6,Madrugada,0,39,Noticias,Moderado,2.1,Sí,Nunca,Celular
+31,Femenino,2.7,12,13.7,Noche,2,19,Conexión social,Moderado,4.7,No,Frecuentemente,Tablet
+25,Femenino,2.8,12,14.6,Noche,3,23,Conexión social,Leve,5.8,A veces,Frecuentemente,Celular
+45,Femenino,1.0,3,18.4,Tarde,1,4,Noticias,Sin impacto,8.3,No,Frecuentemente,Computador
+34,Femenino,3.4,10,20.4,Tarde,3,24,Conexión social,Leve,4.5,No,Frecuentemente,Celular
+29,Femenino,3.3,14,15.2,Noche,4,36,Entretenimiento,Leve,5.5,No,A veces,Computador
+30,Femenino,4.5,5,57.3,Noche,21,173,Crear contenido,Moderado,7.1,No,A veces,Celular
+22,Femenino,3.1,12,14.5,Mañana,2,27,Conexión social,Moderado,5.0,A veces,A veces,Tablet
+25,Femenino,8.2,18,27.9,Noche,3,39,Entretenimiento,Severo,3.1,Sí,Nunca,Computador
+26,Femenino,5.6,8,33.9,Tarde,13,135,Crear contenido,Moderado,6.1,No,A veces,Tablet
+22,Femenino,6.1,18,8.8,Madrugada,1,48,Entretenimiento,Severo,3.0,Sí,Nunca,Celular
+27,Masculino,5.5,6,50.2,Tarde,15,163,Crear contenido,Leve,8.3,No,Frecuentemente,Computador
+23,Femenino,4.8,6,48.9,Tarde,20,156,Crear contenido,Leve,7.5,Sí,Nunca,Celular
+34,Femenino,2.7,14,9.9,Mañana,0,18,Conexión social,Leve,5.3,A veces,Nunca,Computador
+16,Masculino,7.1,13,31.3,Noche,2,40,Entretenimiento,Severo,2.9,A veces,Nunca,Celular
+24,Masculino,8.4,18,25.3,Madrugada,0,43,Entretenimiento,Moderado,2.5,Sí,Nunca,Celular
+28,Masculino,5.1,7,48.0,Tarde,15,143,Trabajo,Sin impacto,6.7,Sí,A veces,Celular
+23,Femenino,7.4,18,24.0,Noche,1,55,Entretenimiento,Severo,3.0,Sí,Nunca,Celular
+39,Masculino,0.7,3,21.2,Tarde,0,10,Noticias,Sin impacto,8.0,No,Frecuentemente,Computador
+41,Masculino,1.8,2,50.8,Mañana,0,10,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+28,Femenino,5.5,6,51.7,Tarde,26,147,Crear contenido,Leve,7.3,Sí,Frecuentemente,Celular
+25,Masculino,6.9,18,21.9,Noche,0,58,Entretenimiento,Severo,3.4,Sí,Nunca,Celular
+25,Masculino,6.8,17,27.4,Noche,0,55,Entretenimiento,Severo,2.3,A veces,Nunca,Celular
+20,Masculino,6.4,16,25.7,Noche,3,45,Entretenimiento,Severo,1.8,Sí,Nunca,Celular
+43,Femenino,1.2,4,21.1,Mañana,1,23,Trabajo,Sin impacto,7.8,No,Frecuentemente,Computador
+32,Masculino,3.0,13,6.6,Tarde,2,10,Conexión social,Sin impacto,5.4,Sí,A veces,Celular
+23,Femenino,6.3,18,19.0,Madrugada,2,35,Entretenimiento,Severo,2.3,Sí,Nunca,Celular
+20,Masculino,3.0,11,24.7,Tarde,1,19,Conexión social,Leve,4.2,A veces,Nunca,Computador
+35,Masculino,2.8,13,11.5,Noche,3,23,Entretenimiento,Leve,3.9,No,A veces,Celular
+23,Femenino,7.0,14,36.7,Noche,2,45,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+30,Masculino,2.9,12,12.9,Tarde,2,20,Conexión social,Leve,5.5,No,A veces,Celular
+20,Femenino,6.9,16,34.6,Madrugada,0,30,Entretenimiento,Severo,2.7,A veces,Nunca,Celular
+39,Femenino,0.8,4,6.6,Mañana,2,6,Conexión social,Sin impacto,8.4,No,Frecuentemente,Celular
+38,Femenino,1.3,5,12.6,Mañana,1,9,Noticias,Sin impacto,8.2,No,Frecuentemente,Celular
+44,No binario,1.1,4,24.5,Mañana,0,6,Trabajo,Sin impacto,7.6,No,Frecuentemente,Celular
+25,Masculino,5.6,6,55.1,Tarde,14,166,Crear contenido,Moderado,7.0,A veces,Frecuentemente,Celular
+32,Masculino,5.5,6,59.2,Tarde,18,157,Crear contenido,Moderado,6.7,No,Frecuentemente,Celular
+25,Femenino,5.4,7,44.5,Tarde,17,171,Crear contenido,Sin impacto,6.7,A veces,Nunca,Computador
+30,Femenino,3.2,12,14.1,Noche,2,14,Conexión social,Sin impacto,4.7,No,Nunca,Celular
+28,No binario,5.0,6,56.1,Tarde,18,154,Crear contenido,Leve,7.1,A veces,A veces,Celular
+41,Femenino,1.1,4,13.4,Mañana,1,13,Conexión social,Sin impacto,7.5,No,Frecuentemente,Computador
+29,Femenino,4.9,6,52.7,Tarde,18,167,Crear contenido,Leve,7.5,A veces,A veces,Celular
+36,Masculino,1.3,4,18.2,Tarde,1,15,Noticias,Sin impacto,8.0,No,Frecuentemente,Celular
+45,Femenino,0.9,2,23.8,Tarde,0,16,Noticias,Sin impacto,8.7,A veces,Frecuentemente,Tablet
+19,Femenino,6.9,14,28.9,Noche,1,53,Conexión social,Severo,1.8,A veces,Nunca,Tablet
+33,Masculino,4.0,13,22.6,Tarde,2,19,Conexión social,Leve,5.5,No,A veces,Celular
+34,Femenino,2.7,13,11.6,Tarde,4,29,Conexión social,Moderado,4.4,A veces,A veces,Celular
+31,Masculino,5.7,6,60.0,Tarde,22,146,Crear contenido,Leve,6.5,A veces,A veces,Celular
+45,Masculino,1.5,4,29.0,Mañana,1,18,Noticias,Sin impacto,6.7,No,Frecuentemente,Celular
+23,Femenino,6.9,19,25.2,Madrugada,0,54,Entretenimiento,Severo,2.6,Sí,A veces,Celular
+21,No binario,6.7,17,19.1,Madrugada,0,39,Entretenimiento,Severo,2.8,Sí,A veces,Celular
+27,Femenino,4.9,7,41.9,Tarde,20,144,Crear contenido,Leve,6.2,No,Frecuentemente,Celular
+41,Masculino,2.7,13,9.4,Mañana,2,24,Conexión social,Sin impacto,4.9,No,A veces,Celular
+21,Masculino,4.8,7,34.7,Tarde,17,140,Crear contenido,Leve,7.2,Sí,Frecuentemente,Celular
+39,Masculino,1.0,3,18.6,Tarde,2,6,Noticias,Sin impacto,8.7,No,Frecuentemente,Computador
+50,Femenino,1.5,2,41.3,Noche,1,13,Trabajo,Sin impacto,7.8,A veces,A veces,Celular
+37,Masculino,1.2,4,19.7,Mañana,0,16,Trabajo,Sin impacto,8.1,No,Frecuentemente,Computador
+21,Femenino,7.1,17,27.7,Madrugada,2,22,Entretenimiento,Severo,2.2,A veces,Nunca,Celular
+16,Masculino,7.7,17,20.3,Madrugada,1,45,Entretenimiento,Moderado,2.8,A veces,Nunca,Celular
+29,Masculino,2.6,9,15.0,Tarde,2,22,Conexión social,Leve,4.4,No,A veces,Celular
+30,Masculino,5.5,6,59.3,Tarde,19,131,Crear contenido,Leve,6.9,No,Frecuentemente,Celular
+23,Masculino,7.1,13,34.6,Madrugada,1,48,Entretenimiento,Severo,3.4,Sí,Nunca,Celular
+33,Masculino,2.6,10,15.0,Noche,3,21,Conexión social,Leve,5.4,A veces,Nunca,Celular
+27,Femenino,6.8,18,16.1,Madrugada,0,31,Entretenimiento,Severo,3.4,Sí,A veces,Celular
+27,Masculino,5.2,8,33.3,Tarde,17,143,Crear contenido,Moderado,6.8,A veces,A veces,Celular
+38,Femenino,1.1,4,16.3,Mañana,1,12,Trabajo,Sin impacto,8.1,No,Frecuentemente,Celular
+44,Femenino,1.5,4,18.1,Mañana,1,7,Noticias,Sin impacto,8.5,No,Frecuentemente,Celular
+38,Femenino,1.2,4,22.6,Tarde,1,8,Trabajo,Sin impacto,8.0,No,A veces,Celular
+21,Masculino,7.1,17,27.2,Madrugada,0,28,Entretenimiento,Severo,2.7,A veces,A veces,Celular
+23,Masculino,7.6,19,33.9,Madrugada,1,48,Noticias,Severo,2.1,Sí,Nunca,Celular
+23,Masculino,7.0,16,27.8,Madrugada,2,39,Entretenimiento,Severo,2.6,Sí,Nunca,Celular
+46,Masculino,1.5,4,17.7,Tarde,1,14,Trabajo,Sin impacto,8.3,A veces,Frecuentemente,Celular
+42,Masculino,1.3,5,19.1,Mañana,1,12,Trabajo,Sin impacto,7.7,No,Frecuentemente,Tablet
+40,Masculino,2.0,5,28.3,Tarde,1,15,Trabajo,Sin impacto,7.8,No,Frecuentemente,Celular
+27,Femenino,2.4,14,9.6,Noche,2,30,Entretenimiento,Leve,5.2,A veces,A veces,Celular
+19,Femenino,6.5,15,20.0,Noche,2,59,Entretenimiento,Moderado,2.6,Sí,Nunca,Celular
+23,Masculino,5.3,5,65.1,Tarde,19,156,Crear contenido,Moderado,6.3,No,Frecuentemente,Computador
+58,Masculino,0.6,4,8.0,Tarde,3,12,Noticias,Sin impacto,7.7,No,Frecuentemente,Celular
+36,Femenino,2.6,13,12.9,Noche,2,11,Conexión social,Leve,5.3,No,Nunca,Celular
+36,Masculino,3.1,12,10.4,Noche,6,23,Conexión social,Leve,5.8,A veces,Nunca,Celular
+38,Masculino,3.3,13,12.8,Tarde,4,19,Noticias,Moderado,5.0,Sí,A veces,Celular
+19,No binario,6.6,21,17.2,Madrugada,3,37,Entretenimiento,Moderado,2.7,A veces,A veces,Celular
+26,Masculino,4.7,6,48.9,Noche,18,169,Crear contenido,Moderado,7.4,A veces,A veces,Celular
+42,Masculino,2.1,9,10.7,Tarde,2,11,Noticias,Leve,4.1,No,A veces,Celular
+29,Femenino,3.1,10,21.0,Noche,2,37,Conexión social,Sin impacto,5.5,Sí,A veces,Celular
+26,Femenino,3.6,10,21.0,Noche,4,27,Conexión social,Moderado,4.1,No,A veces,Celular
+19,Masculino,5.7,7,47.6,Tarde,20,141,Crear contenido,Leve,6.1,A veces,A veces,Celular
+24,Femenino,3.2,14,18.7,Mañana,3,28,Conexión social,Leve,5.1,Sí,A veces,Tablet
+33,Masculino,3.2,11,13.5,Mañana,3,33,Conexión social,Moderado,5.3,A veces,Nunca,Celular
+43,Femenino,1.4,2,42.1,Mañana,1,9,Trabajo,Sin impacto,8.5,No,Frecuentemente,Computador
+38,Masculino,2.7,10,10.7,Noche,2,14,Conexión social,Leve,4.9,A veces,A veces,Celular
+27,Femenino,5.4,7,41.2,Tarde,17,141,Crear contenido,Moderado,8.1,No,Nunca,Celular
+38,Masculino,1.5,5,21.8,Tarde,1,7,Trabajo,Sin impacto,8.7,No,Frecuentemente,Celular
+30,Femenino,2.6,12,17.3,Noche,0,38,Conexión social,Leve,4.7,A veces,A veces,Celular
+41,Masculino,0.7,4,16.8,Tarde,1,11,Trabajo,Sin impacto,8.7,No,Frecuentemente,Celular
+48,Femenino,1.7,3,34.6,Tarde,1,10,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+16,Femenino,6.7,16,23.9,Noche,0,39,Entretenimiento,Severo,2.1,Sí,Nunca,Celular
+21,Masculino,7.2,16,26.7,Noche,2,48,Entretenimiento,Severo,2.4,Sí,Nunca,Celular
+28,Femenino,3.0,12,14.7,Noche,1,18,Conexión social,Leve,4.5,Sí,A veces,Celular
+30,Masculino,5.6,7,52.8,Tarde,14,150,Crear contenido,Leve,5.9,Sí,A veces,Celular
+32,Masculino,5.4,6,60.2,Tarde,18,136,Crear contenido,Leve,8.1,Sí,Nunca,Celular
+54,Masculino,1.8,4,22.8,Tarde,0,12,Trabajo,Sin impacto,8.9,No,Frecuentemente,Celular
+30,Masculino,3.4,12,16.2,Tarde,3,31,Conexión social,Leve,5.6,No,A veces,Celular
+37,Femenino,3.3,11,18.3,Tarde,1,20,Conexión social,Moderado,5.0,Sí,A veces,Celular
+20,Femenino,7.7,20,20.7,Madrugada,1,50,Entretenimiento,Moderado,2.4,A veces,Nunca,Celular
+29,Masculino,3.1,14,7.6,Tarde,2,27,Conexión social,Leve,4.8,No,A veces,Celular
+32,Masculino,2.4,13,5.0,Tarde,3,27,Conexión social,Moderado,6.2,Sí,Nunca,Celular
+43,Femenino,1.4,3,26.2,Mañana,1,16,Noticias,Sin impacto,7.9,No,Frecuentemente,Celular
+29,Masculino,5.2,7,33.5,Tarde,17,162,Crear contenido,Leve,6.9,A veces,A veces,Celular
+51,Masculino,1.6,5,18.1,Noche,0,14,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+33,Masculino,2.7,9,19.0,Noche,3,26,Conexión social,Leve,4.9,Sí,A veces,Celular
+39,Femenino,1.1,5,9.1,Tarde,0,11,Trabajo,Sin impacto,8.2,A veces,Frecuentemente,Tablet
+35,Masculino,1.2,3,23.0,Tarde,1,8,Trabajo,Sin impacto,6.8,No,Frecuentemente,Celular
+30,Masculino,5.6,5,68.6,Tarde,21,174,Crear contenido,Moderado,7.2,A veces,A veces,Celular
+22,Masculino,5.4,8,47.3,Tarde,11,145,Crear contenido,Sin impacto,6.7,Sí,Frecuentemente,Celular
+37,Masculino,1.3,4,22.8,Mañana,3,11,Noticias,Sin impacto,7.8,No,Frecuentemente,Celular
+41,Femenino,1.3,4,18.9,Mañana,2,7,Trabajo,Sin impacto,8.5,No,Frecuentemente,Computador
+41,Masculino,0.9,4,14.2,Tarde,2,18,Trabajo,Sin impacto,8.7,No,Frecuentemente,Celular
+16,Femenino,7.0,18,19.5,Madrugada,2,43,Entretenimiento,Severo,1.9,Sí,Nunca,Computador
+34,Masculino,3.5,14,14.1,Noche,3,17,Conexión social,Leve,4.6,No,Nunca,Celular
+32,Masculino,2.8,11,14.2,Tarde,4,25,Conexión social,Leve,5.0,Sí,Nunca,Computador
+29,Femenino,1.5,3,28.8,Mañana,1,4,Trabajo,Sin impacto,7.8,No,Frecuentemente,Tablet
+44,Masculino,1.0,4,15.6,Tarde,0,5,Noticias,Sin impacto,7.9,No,Frecuentemente,Celular
+21,Masculino,5.0,8,38.9,Tarde,20,130,Crear contenido,Leve,7.4,A veces,Nunca,Celular
+27,Femenino,5.2,6,42.9,Tarde,16,147,Trabajo,Moderado,6.3,A veces,Frecuentemente,Computador
+41,Masculino,3.2,9,20.8,Noche,1,24,Noticias,Sin impacto,4.9,A veces,Nunca,Celular
+41,Femenino,3.0,15,15.6,Tarde,1,19,Conexión social,Moderado,5.6,No,A veces,Celular
+26,Masculino,2.9,9,21.4,Tarde,1,21,Conexión social,Leve,4.9,A veces,A veces,Celular
+21,Masculino,5.7,6,56.6,Noche,18,183,Crear contenido,Leve,7.0,A veces,A veces,Computador
+34,Masculino,2.6,16,14.1,Noche,4,29,Conexión social,Sin impacto,6.1,A veces,Nunca,Celular
+35,Femenino,5.3,6,48.7,Tarde,16,167,Crear contenido,Leve,7.3,No,Frecuentemente,Celular
+32,Masculino,2.3,11,10.9,Noche,3,29,Noticias,Sin impacto,4.7,No,A veces,Celular
+21,Masculino,5.2,7,41.4,Tarde,17,179,Crear contenido,Moderado,7.6,No,A veces,Celular
+30,Femenino,3.1,13,12.9,Tarde,4,26,Conexión social,Leve,4.7,Sí,Nunca,Celular
+22,Masculino,6.0,6,62.1,Tarde,18,138,Crear contenido,Moderado,6.5,A veces,Nunca,Celular
+20,Femenino,7.3,15,31.4,Madrugada,3,43,Entretenimiento,Severo,2.8,A veces,Nunca,Celular
+41,Masculino,1.2,4,18.1,Tarde,2,14,Trabajo,Sin impacto,7.5,No,Frecuentemente,Celular
+37,Masculino,3.0,13,17.2,Noche,2,30,Conexión social,Leve,5.6,Sí,A veces,Celular
+25,Masculino,6.3,18,20.6,Noche,3,32,Entretenimiento,Severo,3.3,Sí,Nunca,Celular
+24,Femenino,4.6,6,49.7,Tarde,17,153,Crear contenido,Leve,6.4,A veces,A veces,Celular
+20,No binario,7.6,17,23.6,Madrugada,0,52,Conexión social,Moderado,2.5,No,Nunca,Celular
+26,Femenino,5.8,7,55.9,Tarde,14,181,Crear contenido,Moderado,6.5,A veces,A veces,Celular
+19,Masculino,6.6,18,20.7,Noche,2,52,Entretenimiento,Moderado,1.9,Sí,Nunca,Celular
+28,Femenino,5.2,6,45.7,Noche,16,135,Crear contenido,Moderado,6.4,A veces,Frecuentemente,Celular
+37,Femenino,2.7,11,12.4,Tarde,0,30,Conexión social,Sin impacto,5.6,A veces,A veces,Celular
+43,Masculino,2.4,13,15.7,Noche,1,21,Conexión social,Leve,6.0,A veces,A veces,Celular
+31,Femenino,2.7,13,15.5,Mañana,1,21,Conexión social,Leve,5.1,A veces,A veces,Celular
+29,Femenino,3.7,13,19.6,Noche,3,18,Conexión social,Leve,4.4,Sí,Nunca,Celular
+22,Masculino,6.2,16,19.0,Madrugada,0,55,Conexión social,Severo,2.7,Sí,Nunca,Celular
+34,Femenino,4.7,6,50.8,Tarde,16,152,Crear contenido,Sin impacto,5.6,Sí,Nunca,Computador
+52,Femenino,1.3,4,13.0,Mañana,0,10,Noticias,Sin impacto,7.1,No,A veces,Celular
+30,Masculino,5.4,6,56.2,Mañana,16,144,Crear contenido,Leve,7.7,A veces,Nunca,Celular
+31,Masculino,2.8,14,11.3,Noche,0,30,Conexión social,Leve,4.7,No,A veces,Celular
+33,Femenino,1.5,3,33.0,Tarde,2,6,Trabajo,Sin impacto,7.7,A veces,Frecuentemente,Celular
+22,Masculino,5.4,7,49.9,Tarde,20,143,Crear contenido,Leve,6.4,A veces,Frecuentemente,Tablet
+40,Masculino,2.3,13,10.4,Noche,3,25,Conexión social,Leve,4.9,A veces,A veces,Celular
+24,Femenino,6.5,17,16.6,Madrugada,2,46,Entretenimiento,Severo,1.5,Sí,Nunca,Celular
+43,Femenino,1.4,4,16.3,Mañana,1,11,Trabajo,Sin impacto,8.2,No,Frecuentemente,Tablet
+42,Femenino,1.4,2,44.9,Tarde,2,15,Conexión social,Sin impacto,9.2,No,Frecuentemente,Tablet
+27,Femenino,2.4,13,15.7,Noche,2,37,Conexión social,Leve,4.2,A veces,A veces,Celular
+18,Femenino,7.7,18,24.8,Noche,1,28,Entretenimiento,Severo,2.3,A veces,Nunca,Tablet
+22,Masculino,5.9,15,29.7,Noche,1,37,Entretenimiento,Moderado,2.7,A veces,Nunca,Computador
+30,Masculino,5.1,8,43.1,Tarde,19,117,Crear contenido,Moderado,6.7,Sí,Nunca,Celular
+32,Femenino,3.1,9,13.7,Noche,2,19,Conexión social,Leve,4.6,No,A veces,Celular
+28,Masculino,5.5,5,59.7,Noche,16,123,Crear contenido,Sin impacto,6.7,Sí,A veces,Celular
+32,Femenino,3.1,13,13.0,Tarde,1,29,Conexión social,Leve,5.2,A veces,A veces,Celular
+29,Masculino,5.0,6,47.3,Mañana,18,158,Crear contenido,Leve,7.9,A veces,A veces,Celular
+31,Masculino,2.8,15,15.2,Tarde,0,23,Conexión social,Moderado,4.7,A veces,Frecuentemente,Computador
+31,Femenino,2.1,13,10.3,Noche,3,25,Conexión social,Moderado,5.3,A veces,A veces,Celular
+24,Femenino,7.2,16,23.8,Madrugada,1,37,Entretenimiento,Severo,2.3,Sí,Nunca,Celular
+21,Masculino,3.5,12,18.0,Mañana,1,25,Conexión social,Sin impacto,4.2,No,Frecuentemente,Celular
+24,Femenino,5.6,7,50.3,Tarde,18,135,Crear contenido,Leve,6.2,Sí,A veces,Celular
+43,Masculino,1.2,4,15.0,Mañana,0,12,Conexión social,Sin impacto,7.4,No,Frecuentemente,Celular
+45,No binario,0.8,2,23.4,Mañana,1,10,Trabajo,Sin impacto,9.1,No,Frecuentemente,Celular
+16,Femenino,7.1,14,30.2,Noche,2,37,Entretenimiento,Severo,3.0,Sí,Nunca,Celular
+23,Masculino,6.7,17,29.4,Madrugada,3,48,Entretenimiento,Moderado,3.1,Sí,Nunca,Celular
+17,Masculino,7.2,19,17.9,Madrugada,1,44,Entretenimiento,Severo,2.6,A veces,Nunca,Celular
+21,Femenino,6.2,17,14.2,Tarde,2,42,Entretenimiento,Severo,2.5,Sí,Nunca,Celular
+19,Femenino,7.2,17,25.1,Madrugada,2,35,Noticias,Severo,2.5,Sí,Nunca,Celular
+29,Femenino,2.2,11,12.3,Noche,5,25,Conexión social,Moderado,5.0,Sí,A veces,Celular
+26,Masculino,6.2,15,25.2,Noche,0,55,Entretenimiento,Moderado,4.0,A veces,A veces,Celular
+37,Femenino,1.1,4,18.3,Tarde,0,11,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+46,Masculino,1.0,5,10.6,Noche,0,3,Noticias,Sin impacto,8.0,No,Frecuentemente,Celular
+36,Femenino,1.2,2,42.7,Tarde,1,15,Trabajo,Sin impacto,8.1,No,A veces,Celular
+33,Masculino,1.4,3,27.3,Mañana,0,11,Conexión social,Sin impacto,7.6,No,Frecuentemente,Celular
+19,Masculino,5.0,5,60.6,Tarde,14,134,Entretenimiento,Leve,7.5,A veces,Nunca,Celular
+46,Masculino,1.3,4,21.3,Tarde,1,10,Noticias,Sin impacto,8.3,No,Frecuentemente,Tablet
+19,Masculino,5.2,6,55.9,Noche,20,167,Crear contenido,Leve,5.6,A veces,A veces,Computador
+37,Masculino,1.3,4,19.7,Mañana,0,8,Trabajo,Sin impacto,9.1,No,Frecuentemente,Celular
+16,Masculino,8.1,19,24.1,Madrugada,2,62,Entretenimiento,Leve,2.1,Sí,Nunca,Celular
+18,Femenino,7.1,18,27.4,Noche,1,48,Entretenimiento,Severo,2.7,Sí,Nunca,Computador
+33,Femenino,1.1,3,26.4,Tarde,1,8,Noticias,Sin impacto,8.6,No,Frecuentemente,Celular
+30,No binario,5.3,6,56.4,Tarde,19,182,Trabajo,Leve,7.0,A veces,A veces,Celular
+18,Masculino,6.6,19,18.2,Madrugada,1,49,Entretenimiento,Severo,2.2,A veces,Nunca,Celular
+33,Femenino,2.8,12,18.1,Mañana,0,29,Conexión social,Moderado,5.1,No,Nunca,Celular
+33,Masculino,5.1,7,38.9,Tarde,17,136,Crear contenido,Leve,6.6,Sí,Nunca,Celular
+23,Femenino,7.4,14,38.3,Madrugada,1,46,Entretenimiento,Severo,2.6,No,Nunca,Celular
+22,Femenino,7.3,22,21.7,Noche,1,31,Entretenimiento,Severo,1.7,Sí,Nunca,Tablet
+23,Femenino,7.1,13,35.5,Noche,2,28,Entretenimiento,Severo,3.0,Sí,Nunca,Computador
+25,Masculino,7.4,20,18.9,Noche,1,36,Entretenimiento,Moderado,3.2,A veces,Nunca,Celular
+40,Masculino,1.6,2,52.3,Mañana,1,10,Trabajo,Sin impacto,8.7,A veces,A veces,Celular
+46,Masculino,0.7,3,15.8,Noche,0,2,Trabajo,Sin impacto,9.7,A veces,Frecuentemente,Celular
+20,Masculino,6.3,15,22.0,Noche,2,30,Conexión social,Severo,2.5,Sí,Nunca,Celular
+37,Masculino,3.4,14,11.3,Noche,3,26,Conexión social,Leve,4.9,A veces,Frecuentemente,Celular
+26,Masculino,7.3,17,28.1,Madrugada,1,57,Entretenimiento,Severo,2.7,Sí,Nunca,Celular
+32,Femenino,3.0,13,14.8,Noche,1,40,Entretenimiento,Moderado,4.2,No,A veces,Celular
+23,Femenino,6.2,17,21.1,Noche,0,61,Conexión social,Moderado,2.4,Sí,Nunca,Celular
+45,Femenino,1.3,5,17.8,Mañana,0,11,Trabajo,Sin impacto,8.3,A veces,Frecuentemente,Celular
+31,Masculino,2.4,15,9.7,Mañana,4,26,Conexión social,Leve,4.9,No,Nunca,Celular
+37,Femenino,2.6,13,16.6,Tarde,3,10,Noticias,Leve,5.4,No,Nunca,Celular
+39,Masculino,2.2,13,10.1,Tarde,2,15,Conexión social,Leve,5.5,A veces,Frecuentemente,Celular
+42,Femenino,2.0,3,44.5,Noche,1,7,Trabajo,Leve,8.6,A veces,Frecuentemente,Celular
+39,Femenino,3.0,13,16.7,Noche,2,17,Conexión social,Moderado,4.6,A veces,Nunca,Celular
+42,Masculino,1.2,5,18.2,Tarde,1,9,Noticias,Sin impacto,7.0,No,Frecuentemente,Celular
+42,Femenino,2.3,12,11.8,Noche,3,35,Conexión social,Leve,4.7,No,A veces,Computador
+38,Masculino,0.7,2,20.4,Mañana,1,16,Trabajo,Sin impacto,8.8,A veces,A veces,Computador
+42,No binario,1.3,4,24.5,Mañana,2,12,Trabajo,Sin impacto,8.5,No,Frecuentemente,Celular
+27,Masculino,3.5,13,27.5,Tarde,0,35,Conexión social,Leve,6.0,No,Nunca,Celular
+37,Masculino,1.0,3,22.4,Mañana,2,8,Noticias,Sin impacto,7.9,No,Frecuentemente,Celular
+25,Masculino,7.8,16,31.7,Madrugada,0,59,Entretenimiento,Severo,2.6,A veces,Nunca,Celular
+18,Masculino,6.6,17,23.8,Madrugada,0,46,Entretenimiento,Moderado,2.9,Sí,Nunca,Computador
+24,No binario,5.9,7,49.9,Noche,15,125,Crear contenido,Moderado,6.1,No,A veces,Computador
+41,Masculino,2.5,12,5.7,Noche,2,13,Conexión social,Leve,4.9,No,Nunca,Celular
+42,Masculino,0.5,3,12.2,Mañana,0,16,Trabajo,Sin impacto,9.3,No,Frecuentemente,Celular
+40,Masculino,2.9,14,12.2,Tarde,2,19,Conexión social,Sin impacto,4.8,No,A veces,Tablet
+37,Femenino,1.5,3,33.1,Mañana,0,12,Conexión social,Sin impacto,8.3,A veces,Frecuentemente,Celular
+36,Masculino,3.7,13,26.5,Mañana,4,28,Conexión social,Sin impacto,4.0,A veces,Nunca,Computador
+22,Femenino,6.9,18,18.9,Madrugada,0,34,Entretenimiento,Severo,3.1,A veces,Nunca,Celular
+21,Masculino,5.7,7,46.5,Noche,17,164,Crear contenido,Leve,7.8,A veces,Nunca,Celular
+35,Femenino,0.6,2,12.8,Tarde,1,14,Noticias,Sin impacto,8.7,No,Frecuentemente,Celular
+16,Femenino,6.4,16,15.7,Madrugada,0,44,Entretenimiento,Severo,2.6,No,Nunca,Celular
+41,Masculino,2.7,13,13.3,Noche,4,27,Conexión social,Leve,5.4,A veces,Frecuentemente,Computador
+25,Masculino,4.9,6,55.2,Tarde,17,155,Crear contenido,Leve,6.9,Sí,Nunca,Celular
+25,Masculino,7.3,18,29.0,Noche,2,61,Conexión social,Severo,2.6,A veces,A veces,Celular
+23,Femenino,7.0,18,20.5,Noche,0,34,Entretenimiento,Severo,1.3,A veces,Nunca,Celular
+20,Femenino,7.3,17,28.4,Madrugada,0,52,Noticias,Severo,2.4,A veces,Nunca,Celular
+37,Masculino,2.7,12,12.3,Noche,2,24,Entretenimiento,Moderado,3.6,Sí,Nunca,Celular
+26,Femenino,4.8,7,42.7,Tarde,20,154,Crear contenido,Moderado,7.4,A veces,Nunca,Celular
+33,Femenino,1.0,3,18.3,Mañana,1,11,Trabajo,Leve,8.7,No,Frecuentemente,Computador
+41,Masculino,0.8,3,18.6,Mañana,3,17,Noticias,Sin impacto,7.6,No,Frecuentemente,Celular
+48,Masculino,1.0,2,35.4,Tarde,1,12,Trabajo,Sin impacto,9.7,No,Frecuentemente,Celular
+22,Femenino,6.9,18,29.7,Madrugada,0,49,Entretenimiento,Moderado,2.6,Sí,A veces,Celular
+47,Femenino,1.4,4,21.6,Mañana,1,14,Noticias,Sin impacto,8.1,No,Frecuentemente,Computador
+24,Femenino,5.3,5,55.0,Noche,18,162,Crear contenido,Moderado,6.6,A veces,A veces,Celular
+45,Masculino,1.1,3,19.7,Tarde,1,9,Conexión social,Sin impacto,9.3,A veces,A veces,Computador
+30,Femenino,3.1,12,8.5,Noche,4,29,Conexión social,Leve,4.9,A veces,A veces,Celular
+45,Femenino,1.5,3,31.8,Tarde,0,11,Trabajo,Sin impacto,9.3,No,Frecuentemente,Celular
+24,Femenino,7.6,20,15.6,Madrugada,3,34,Conexión social,Severo,1.0,Sí,Nunca,Celular
+43,Masculino,1.5,3,27.2,Tarde,0,6,Noticias,Sin impacto,8.2,No,Frecuentemente,Celular
+20,Masculino,5.4,7,53.0,Tarde,17,186,Crear contenido,Leve,6.9,No,Nunca,Celular
+46,Femenino,0.9,4,12.9,Mañana,2,10,Trabajo,Sin impacto,8.4,No,Frecuentemente,Celular
+36,Masculino,1.0,5,16.0,Tarde,1,7,Noticias,Sin impacto,8.0,No,Frecuentemente,Celular
+24,Femenino,7.5,17,31.7,Madrugada,1,40,Entretenimiento,Severo,2.9,Sí,A veces,Celular
+35,Masculino,2.8,10,17.9,Noche,4,29,Conexión social,Leve,4.6,No,A veces,Celular
+37,Masculino,2.7,13,16.8,Noche,1,16,Conexión social,Moderado,5.2,A veces,A veces,Celular
+24,Masculino,4.5,7,34.5,Noche,18,149,Crear contenido,Moderado,6.0,No,A veces,Celular
+25,Femenino,2.5,11,15.9,Noche,2,30,Conexión social,Leve,5.5,A veces,A veces,Celular
+34,Femenino,1.3,4,18.0,Tarde,1,8,Noticias,Sin impacto,8.5,No,Frecuentemente,Celular
+25,Masculino,2.8,12,15.3,Tarde,2,25,Conexión social,Leve,4.7,No,Frecuentemente,Computador
+22,Femenino,5.8,7,40.4,Tarde,22,117,Crear contenido,Leve,6.5,A veces,A veces,Celular
+43,Femenino,3.5,11,24.6,Noche,3,17,Conexión social,Leve,5.4,A veces,Nunca,Celular
+41,Masculino,0.8,3,22.4,Mañana,0,7,Noticias,Sin impacto,9.1,No,Frecuentemente,Computador
+31,Masculino,4.3,6,35.9,Tarde,21,153,Crear contenido,Leve,6.7,No,A veces,Celular
+24,Femenino,5.6,7,49.1,Tarde,18,162,Crear contenido,Leve,7.1,Sí,Nunca,Tablet
+27,Femenino,3.4,13,22.0,Noche,2,27,Conexión social,Leve,5.3,A veces,A veces,Celular
+21,Masculino,7.9,14,38.0,Noche,1,40,Entretenimiento,Severo,2.5,A veces,A veces,Computador
+31,Femenino,3.6,12,16.6,Noche,3,25,Conexión social,Moderado,5.1,A veces,A veces,Celular
+37,Femenino,3.2,13,16.9,Noche,2,24,Conexión social,Leve,4.8,A veces,Frecuentemente,Celular
+31,Femenino,1.5,3,29.1,Mañana,0,10,Trabajo,Sin impacto,8.5,A veces,Frecuentemente,Computador
+39,Femenino,4.1,12,21.7,Tarde,0,20,Conexión social,Sin impacto,5.0,No,A veces,Celular
+18,Femenino,4.8,7,38.7,Tarde,15,118,Crear contenido,Moderado,6.9,Sí,Nunca,Celular
+24,Masculino,6.5,20,18.0,Madrugada,3,56,Conexión social,Severo,2.5,Sí,Nunca,Computador
+36,Femenino,1.6,4,23.5,Tarde,0,15,Noticias,Sin impacto,8.1,A veces,Frecuentemente,Celular
+25,Masculino,5.4,7,48.7,Noche,14,158,Crear contenido,Leve,6.0,No,A veces,Celular
+38,Femenino,3.2,12,10.6,Noche,3,23,Conexión social,Moderado,4.6,A veces,A veces,Celular
+37,Masculino,2.4,13,10.0,Tarde,1,14,Conexión social,Leve,4.5,No,Frecuentemente,Celular
+53,Femenino,0.9,3,19.7,Tarde,0,9,Noticias,Sin impacto,8.9,No,Frecuentemente,Computador
+26,Femenino,6.6,18,18.8,Noche,2,32,Entretenimiento,Moderado,3.8,Sí,Nunca,Celular
+44,Femenino,1.2,5,10.5,Mañana,0,11,Trabajo,Sin impacto,7.8,No,Frecuentemente,Celular
+44,Masculino,1.6,3,31.8,Mañana,0,8,Conexión social,Leve,8.3,A veces,A veces,Celular
+16,Masculino,6.5,18,21.8,Madrugada,0,44,Entretenimiento,Severo,3.5,Sí,Nunca,Celular
+34,Femenino,1.5,3,28.8,Mañana,1,3,Conexión social,Sin impacto,8.8,A veces,A veces,Tablet
+25,Femenino,6.9,16,30.1,Madrugada,1,45,Entretenimiento,Moderado,2.5,Sí,Nunca,Celular
+40,Masculino,1.4,3,33.3,Tarde,1,16,Noticias,Sin impacto,7.8,No,Frecuentemente,Computador
+23,Masculino,2.5,13,9.8,Tarde,2,20,Conexión social,Leve,4.0,No,Frecuentemente,Computador
+39,Masculino,1.5,2,50.2,Mañana,1,6,Trabajo,Sin impacto,7.4,A veces,Frecuentemente,Celular
+39,Femenino,1.1,3,26.1,Mañana,1,11,Trabajo,Leve,8.0,No,Frecuentemente,Computador
+30,Femenino,1.4,3,29.3,Mañana,0,12,Noticias,Sin impacto,8.5,No,Frecuentemente,Celular
+30,Masculino,3.1,11,21.2,Noche,0,16,Conexión social,Leve,4.5,A veces,Nunca,Celular
+46,Femenino,1.0,4,12.7,Tarde,1,9,Trabajo,Sin impacto,7.9,No,Frecuentemente,Celular
+39,Masculino,5.0,6,54.5,Tarde,16,105,Crear contenido,Leve,7.4,A veces,Nunca,Celular
+22,Femenino,6.8,17,24.5,Madrugada,1,35,Entretenimiento,Moderado,2.0,Sí,Nunca,Celular
+24,Femenino,5.4,6,55.6,Noche,18,150,Crear contenido,Leve,7.8,A veces,A veces,Celular
+35,Femenino,4.0,13,13.4,Noche,0,16,Conexión social,Leve,5.2,No,A veces,Tablet
+24,Masculino,6.5,15,25.9,Madrugada,1,35,Entretenimiento,Severo,2.6,Sí,A veces,Celular
+39,Femenino,1.3,4,17.3,Mañana,1,13,Conexión social,Sin impacto,8.2,No,Frecuentemente,Celular
+22,Femenino,7.0,17,20.9,Madrugada,1,44,Entretenimiento,Severo,2.9,No,Nunca,Tablet
+40,No binario,0.6,5,3.0,Mañana,1,9,Trabajo,Leve,8.9,No,Frecuentemente,Celular
+37,Masculino,0.7,3,13.8,Mañana,1,3,Noticias,Sin impacto,9.0,A veces,Frecuentemente,Celular
+16,Femenino,6.8,19,24.6,Madrugada,2,58,Entretenimiento,Severo,2.7,A veces,Nunca,Tablet
+37,No binario,1.4,3,28.0,Mañana,1,17,Noticias,Sin impacto,9.2,No,Frecuentemente,Celular
+20,Masculino,7.1,17,31.3,Madrugada,3,26,Entretenimiento,Severo,2.8,Sí,Nunca,Celular
+20,Femenino,4.8,8,40.0,Tarde,22,150,Crear contenido,Leve,6.7,No,Frecuentemente,Celular
+27,Femenino,6.9,17,25.9,Noche,0,24,Noticias,Moderado,2.3,A veces,Nunca,Celular
+34,No binario,3.1,14,4.6,Mañana,3,19,Conexión social,Leve,4.5,A veces,A veces,Celular
+18,Masculino,6.4,15,30.9,Madrugada,0,57,Entretenimiento,Severo,2.4,A veces,Nunca,Celular
+20,Femenino,6.5,13,27.1,Madrugada,1,42,Entretenimiento,Severo,3.0,Sí,Nunca,Celular
+35,Masculino,1.1,4,15.0,Noche,1,13,Trabajo,Leve,9.4,No,Frecuentemente,Celular
+29,Femenino,2.6,12,8.7,Noche,0,24,Conexión social,Leve,6.0,Sí,A veces,Computador
+48,Femenino,1.5,3,29.1,Tarde,0,7,Trabajo,Sin impacto,8.8,No,Frecuentemente,Celular
+21,Masculino,6.8,16,21.7,Madrugada,0,57,Entretenimiento,Severo,3.0,Sí,Nunca,Celular

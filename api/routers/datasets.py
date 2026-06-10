@@ -16,7 +16,11 @@ from src.llm.data_qa import answer_data_question
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
-SAMPLE_PATH = Path(__file__).resolve().parents[2] / "sample_data" / "customers.csv"
+# Demo: bienestar digital (900×14, generado con estructura comportamental plantada —
+# ver sample_data/generate_bienestar_digital.py). El CSV "social_media_user_behavior.csv"
+# original es sintético-uniforme (sin clusters reales, silhouette ~0.07) y queda solo
+# para pruebas drag&drop.
+SAMPLE_PATH = Path(__file__).resolve().parents[2] / "sample_data" / "bienestar_digital.csv"
 
 # Friendly Spanish messages for common parse failures (ported from datos.LOAD_ERROR_MAP).
 _LOAD_ERROR_MAP = {
@@ -82,8 +86,8 @@ def load_sample() -> Dict[str, Any]:
     if not SAMPLE_PATH.exists():
         raise HTTPException(500, "No se encontró el dataset de ejemplo.")
     with open(SAMPLE_PATH, "rb") as f:
-        df, meta = _read_upload("customers.csv", f.read())
-    return _ingest(df, "customers.csv", meta)
+        df, meta = _read_upload(SAMPLE_PATH.name, f.read())
+    return _ingest(df, SAMPLE_PATH.name, meta)
 
 
 def _require_df(dataset_id: str) -> pd.DataFrame:

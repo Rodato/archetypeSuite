@@ -109,10 +109,13 @@ verde · workflow no-gitignored. Falta solo ver el primer run verde en GitHub tr
       análisis se marca paso 3 y se navega a resultados (que ya rendereaban la barra "Paso 3 de 3");
       volver a `/new` con el wizard completado muestra card "✨ listo" con "Ver resultados" /
       "Empezar de nuevo".
-- [ ] **A2 · Dataset de ejemplo vistoso (cambio social):** reemplazar `sample_data/customers.csv`
-      por una encuesta de cambio de comportamiento que produzca arquetipos alineados al pitch.
-      Cablear en `/datasets/sample` (`api/routers/datasets.py`) y popover "cambiar archivo".
-      **Esperando decisión del usuario: tema de la encuesta.**
+- [x] **A2 · Dataset de ejemplo vistoso (bienestar digital):** `sample_data/bienestar_digital.csv`
+      (900×14, español), generado por `generate_bienestar_digital.py` (seed 42, reproducible) con
+      4 perfiles comportamentales plantados y correlaciones realistas horas↔sueño↔bienestar.
+      Cableado en `/datasets/sample`. **Nota:** el CSV que aportó el usuario
+      (`social_media_user_behavior.csv`) resultó ser sintético-uniforme sin estructura de clusters
+      (silhouette ~0.07 → badge "Baja" siempre); se conserva para drag&drop pero el demo usa el
+      generado, mismo tema.
 - [x] **A3 · Chat que grafica comparativas:** doble capa — regla dura nueva en el prompt
       (comparaciones entre grupos → groupby + bar SIEMPRE) y `_resolve_chart_type` en
       `data_qa.py`: si el LLM elige "table"/"none" en una op comparativa con 2–24 filas, el
@@ -125,9 +128,13 @@ verde · workflow no-gitignored. Falta solo ver el primer run verde en GitHub tr
 - [x] (Extra) Actions del CI bumpeadas a majors con Node 24 (`checkout@v6`, `setup-node@v6`,
       `setup-python@v6`, `pnpm/action-setup@v6`) — GitHub fuerza Node 24 el 16 de junio.
 
-**✅ Avanzamos cuando:** el guion demo pasa de corrido — subir dataset nuevo → wizard de 3 pasos sin
-salir del shell (con un F5 a mitad sin perder nada) → "¿cuál arquetipo tiene más barreras?" responde
-con gráfico. (Pendiente de A2 para correr el guion completo con el dataset definitivo.)
+**✅ VERIFICADO (Jun 10, 2026) — guion E2E real contra la API con LLM en vivo:**
+sample (900×14) → suggest (9 columnas sensatas) → analyze → **4 arquetipos · calidad "Buena"
+(silhouette 0.37)** con nombres en voz Plural ("Uso laboral diurno", "Conexión social nocturna",
+"Entretenimiento prolongado nocturno", "Creación de contenido vespertino") → chat: "¿cuál arquetipo
+tiene más horas de uso?" y "¿qué arquetipo reporta peor bienestar?" → ambas con **bar chart** +
+narrativa correcta. Run demo conservado en `api/_data/runs/9dba29549467.json`.
+Falta solo el chequeo visual del wizard persistido (F5 a mitad) en el navegador.
 
 ## 6. Fase 3 · Pre-beta (ex Grupo B + seguridad/escala)
 

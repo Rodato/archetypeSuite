@@ -180,7 +180,10 @@ class TestDatasets:
     def test_sample(self, client):
         res = client.post("/api/datasets/sample")
         assert res.status_code == 200
-        assert res.json()["file_name"] == "customers.csv"
+        payload = res.json()
+        assert payload["file_name"] == "bienestar_digital.csv"
+        assert payload["n_rows"] == 900
+        assert payload["n_cols"] == 14
 
     def test_get_dataset_404(self, client):
         res = client.get("/api/datasets/feedbeefcafe")
