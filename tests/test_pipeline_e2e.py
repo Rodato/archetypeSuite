@@ -1,6 +1,7 @@
 import json
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -64,7 +65,17 @@ def _interpret_response(n_clusters: int) -> str:
 
 @pytest.fixture
 def sample_df() -> pd.DataFrame:
-    return pd.read_csv("sample_data/customers.csv")
+    # Sintético determinista (antes leía customers.csv, eliminado con el legacy Streamlit).
+    rng = np.random.default_rng(42)
+    n = 50
+    return pd.DataFrame({
+        "edad": rng.integers(18, 70, n),
+        "ingreso": rng.integers(20_000, 120_000, n),
+        "gasto_mensual": rng.integers(100, 5_000, n),
+        "visitas_mes": rng.integers(1, 30, n),
+        "ciudad": rng.choice(["Bogotá", "Lima", "Quito"], n),
+        "segmento": rng.choice(["Básico", "Premium"], n),
+    })
 
 
 class TestPipelineEndToEnd:
@@ -112,7 +123,7 @@ class TestPipelineEndToEnd:
         assert all("barreras" in a for a in archs)
 
         # Deterministic caution floor (§9): no archetype may sit below the silhouette-derived floor.
-        from src.ui.quality import CAUTION_ORDER, caution_from_silhouette
+        from src.core.quality import CAUTION_ORDER, caution_from_silhouette
         floor = caution_from_silhouette(final_state["metrics"]["silhouette_score"])
         assert all(CAUTION_ORDER[a["nivel_cautela"]] >= CAUTION_ORDER[floor] for a in archs)
 

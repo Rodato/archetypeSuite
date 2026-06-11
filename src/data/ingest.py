@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Optional, Tuple, Union
 
 import pandas as pd
-import sqlalchemy
 
 # pandas' documented default NA tokens (read_csv docs), inlined as our own constant:
 # pandas only exposes them via a private module path (pd.io.parsers.readers.STR_NA_VALUES)
@@ -164,6 +163,3 @@ class DataIngestor:
                 f"Necesitamos al menos 2 filas para encontrar patrones; el archivo trae {df.shape[0]}."
             )
 
-    def load_sql(self, connection_string: str, query: str) -> pd.DataFrame:
-        engine = sqlalchemy.create_engine(connection_string)
-        return pd.read_sql(query, engine)

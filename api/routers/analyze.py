@@ -12,7 +12,7 @@ from api.transform import build_run_record, run_summary
 from src.agents.graph import compile_graph
 from src.config.settings import settings
 from src.data.column_filter import apply_static_filters
-from src.ui.quality import (
+from src.core.quality import (
     NODE_FRIENDLY_MESSAGES,
     PIPELINE_UI_STEPS,
     nodes_with_logs,

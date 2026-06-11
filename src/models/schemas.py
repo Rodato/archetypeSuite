@@ -29,12 +29,6 @@ class PreprocessingDecision(BaseModel):
     reasoning: str = ""
 
 
-class AlgorithmSelection(BaseModel):
-    algorithm: str = "KMeans"
-    params: dict = Field(default_factory=dict)
-    reasoning: str = ""
-
-
 class ArchetypeDescription(BaseModel):
     """Arquetipo como hipótesis comportamental (8 campos del marco metodológico Plural)."""
     cluster_id: int

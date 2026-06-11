@@ -188,6 +188,11 @@ el run; `GET /runs/{id}` ya no expone `raw_data`.
   `quality.py`/`export.py` a `src/core/` con shims antes de borrar Streamlit.
 - Multi-hoja Excel: el API devuelve `sheets`/`sheet` pero el front nuevo no los usa (regresión vs
   Streamlit) — `web/lib/types.ts` ni los declara.
+- **Persistir el historial del chat entre recargas** (pedido del usuario, Jun 10): las `turns`
+  viven en `useState` local de `data-chat.tsx` — un F5 reinicia la conversación aunque el wizard
+  sí persista. Mismo patrón que el wizard: `sessionStorage` keyed por `run_id`/`dataset_id`.
+  Relacionado: si 3 vueltas de memoria se quedan cortas en pruebas, subir `max_turns` en
+  `_format_history` (`src/llm/data_qa.py`) — una línea.
 - Front: suscripción al store completo re-renderiza el grid en cada tecla (`step-datos.tsx:23`);
   `INITIAL_STEPS` duplica `PIPELINE_UI_STEPS`; a11y (checkbox sin rol, chat sin `aria-live`);
   colores hex saltándose tokens en charts; `shadcn` CLI en dependencies; 3 rutas 100% client

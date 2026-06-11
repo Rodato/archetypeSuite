@@ -7,13 +7,9 @@ from src.clustering.registry import AlgorithmRegistry
 
 
 class TestAlgorithmRegistry:
-    def test_list_algorithms(self):
+    def test_registry_contents(self):
         registry = AlgorithmRegistry()
-        algos = registry.list_algorithms()
-        assert "KMeans" in algos
-        assert "AgglomerativeClustering" in algos
-        assert "DBSCAN" not in algos
-        assert "GaussianMixture" not in algos
+        assert set(registry._algorithms) == {"KMeans", "AgglomerativeClustering"}
 
     def test_get_algorithm(self):
         registry = AlgorithmRegistry()
@@ -25,12 +21,6 @@ class TestAlgorithmRegistry:
         registry = AlgorithmRegistry()
         with pytest.raises(KeyError):
             registry.get("NonExistent")
-
-    def test_descriptions_for_llm(self):
-        registry = AlgorithmRegistry()
-        desc = registry.get_descriptions_for_llm()
-        assert "KMeans" in desc
-        assert "AgglomerativeClustering" in desc
 
 
 class TestClusteringExecutor:

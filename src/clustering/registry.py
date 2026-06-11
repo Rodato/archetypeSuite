@@ -42,19 +42,3 @@ class AlgorithmRegistry:
                 f"Available algorithms: {', '.join(self._algorithms.keys())}"
             )
         return self._algorithms[name]
-
-    def list_algorithms(self) -> dict[str, str]:
-        return {
-            name: entry["description"]
-            for name, entry in self._algorithms.items()
-        }
-
-    def get_descriptions_for_llm(self) -> str:
-        lines: list[str] = ["Available clustering algorithms:\n"]
-        for name, entry in self._algorithms.items():
-            default_params_str = ", ".join(
-                f"{k}={v!r}" for k, v in entry["default_params"].items()
-            )
-            lines.append(f"- {name}: {entry['description']}")
-            lines.append(f"  Default parameters: {default_params_str}\n")
-        return "\n".join(lines)

@@ -356,12 +356,8 @@ export default function RunPage() {
                   </dl>
                 </div>
                 <div>
-                  {run.advanced.selection_reasoning && (
-                    <>
-                      <div className="mb-2 text-xs font-semibold">Selección de algoritmo</div>
-                      <p className="mb-3 text-sm text-muted-foreground">{run.advanced.selection_reasoning}</p>
-                    </>
-                  )}
+                  {/* El algoritmo es KMeans fijo por diseño (determinismo) — no hay "selección"
+                      que explicar; la decisión real del LLM es el refinamiento. */}
                   {run.advanced.refinement_reason && (
                     <>
                       <div className="mb-2 text-xs font-semibold">Decisión de refinamiento</div>

@@ -5,7 +5,7 @@ from src.llm.prompts import INTERPRETATION_PROMPT
 from src.llm.provider import get_narrative_llm, invoke_json_with_retry
 from src.models.schemas import ArchetypeDescription, InterpretationResult
 from src.models.state import PipelineState
-from src.ui.quality import CAUTION_ORDER, caution_from_silhouette
+from src.core.quality import CAUTION_ORDER, caution_from_silhouette
 
 
 def _fallback_interpretation(n_clusters: int) -> InterpretationResult:

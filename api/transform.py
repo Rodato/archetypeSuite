@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 from api.serialization import dataframe_to_table, to_jsonable
 from src.llm.data_qa import DataQAResult
-from src.ui.quality import silhouette_to_quality
+from src.core.quality import silhouette_to_quality
 
 # Categorical color cycle — ported verbatim from cluster_plots.BRAND_PALETTE.
 BRAND_PALETTE = [

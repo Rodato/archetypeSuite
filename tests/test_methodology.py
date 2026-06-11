@@ -2,7 +2,7 @@
 from src.agents.nodes.interpret_node import _fallback_interpretation
 from src.llm.methodology import load_methodology
 from src.models.schemas import ArchetypeDescription
-from src.ui.quality import CAUTION_META, CAUTION_ORDER, caution_from_silhouette
+from src.core.quality import CAUTION_META, CAUTION_ORDER, caution_from_silhouette
 
 
 class TestMethodologyLoader:

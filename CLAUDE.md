@@ -83,8 +83,7 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 ## Como ejecutar
 - **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests backend:** `python3 -m pytest tests/ -v` → 143/143 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
-- **UI Streamlit (legacy, sigue funcionando):** `streamlit run src/ui/app.py`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 145/145 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
 ## Capa comportamental integrada + auditoría del sistema (Jun 5, 2026)
@@ -122,7 +121,13 @@ Auditoría completa (pipeline/API/front/infra, ~45 hallazgos) consolidada en `PL
   `streamAnalyze` propaga `detail` del backend + watchdog de stall 180s · `error.tsx`/`not-found.tsx`
   en español · dashboard y `/runs/[id]` distinguen backend caído de "no existe" · actions del CI
   en majors Node 24. **Falta de Fase 2:** dataset demo de cambio social (A2 — decisión de tema).
-- **Tests: 143/143** (108 previos + 24 API + 5 robustez + 6 chat comparativo).
+- **Limpieza (Jun 10, tarde):** eliminada la UI Streamlit completa (`src/ui/` — `quality.py`/`export.py`
+  movidos a `src/core/`), `load_sql` (riesgo SSRF) + dep sqlalchemy, deps streamlit/plotly (lock pasa de
+  92 a 71 paquetes — Docker más liviano), `AlgorithmSelection`, constantes muertas, `datetime_columns`
+  del state, helpers no usados del registry, `customers.csv`, y el panel "Selección de algoritmo" del
+  front (KMeans es fijo — no hay selección que explicar). Fixture e2e ahora sintética (no depende de CSV).
+  Fix previo del mismo día: CSV con separador `;`/tab (export Excel es-*) se detecta automáticamente.
+- **Tests: 145/145.**
 - Pendientes priorizados en `PLAN-LANZAMIENTO.md` (Fases 2-3) y backlog de hallazgos menores ahí mismo.
 
 ## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
@@ -137,7 +142,7 @@ Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, man
 - Pipeline LangGraph: ingest → profile → **column_selection(LLM)** → preprocess(LLM) → optimize_k → select (determinístico, KMeans) → cluster → evaluate → interpret(LLM) → refinement(LLM)
 - column_selection, preprocess, refinement, data_qa usan Claude Sonnet 4.5 vía OpenRouter
 - interpret usa x-ai/grok-4.3 vía OpenRouter (modelo narrativo separado)
-- UI principal: Next.js + FastAPI (ver sección SaaS rewrite). UI Streamlit legacy en `src/ui/views/`.
+- UI única: Next.js + FastAPI (ver sección SaaS rewrite). La UI Streamlit legacy fue eliminada (Jun 10, 2026); `quality.py`/`export.py` viven en `src/core/`.
 - Clustering: KMeans, AgglomerativeClustering (DBSCAN y GaussianMixture eliminados). Select fija KMeans.
 
 ## Notas técnicas de ingesta y preprocesamiento
@@ -147,16 +152,11 @@ Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, man
 - `column_filter.py`: filtros estáticos deterministas. **Orden importante: datetime ANTES que id**, porque las fechas tienen cardinalidad alta y serían marcadas como ID. ID heuristic distingue numéricas continuas (income con todos únicos) de IDs (enteros secuenciales con `diffs == 1` o nombre matchea regex).
 - `column_selection_node.py`: expone `suggest_columns(df, context)` como función pura para que la UI llame antes del pipeline; el nodo respeta `selected_columns` upstream del estado o, si no, usa la sugerencia LLM como selección final.
 
-## Estructura UI (`src/ui/`)
-- `app.py` — entry point, topbar con brand mark + wizard progress (3 segmentos) + nombre del paso actual + toggle Modo avanzado + chip del dataset.
-- `styles.py` — CSS custom inyectado globalmente. Tokens documentados (COLOR/SPACING/TYPE), clases `.var-list`, `.space-*`, `.qh-grade--*`, `.wizard-progress`, `.hero-onboarding`, `.pipeline-checklist`, `.success-hero`. Scrollbar custom para containers.
-- `copy.py` — microcopy centralizada con convenciones de tone of voice.
-- `quality.py` — `silhouette_to_quality()`, `natural_log_message()`, `PIPELINE_UI_STEPS` (lista ordenada de 8 nodos visibles), `nodes_with_logs()` para mapear logs del grafo a la UI.
-- `export.py` — `archetypes_to_csv`, `labels_to_csv`, `build_markdown_report`.
-- `views/datos.py` — paso 1 single-page (donut tipos + contexto + variables; preview 5 filas + chat). `LOAD_ERROR_MAP` para errores de upload.
-- `views/analizar.py` — paso 2: checklist en vivo de 8 pasos + try/except con retry + validación API key + panel ✨.
-- `views/arquetipos.py` — paso 3: quality card + cluster sizes + cards compactas (con "Ver detalles") + tabs Mapa/Comparar/Por variable/**Conversar** + popover descargas + expander metodología.
-- `components/` — `archetype_cards.py` (cards compactas con expander), `cluster_plots.py` (incluye `render_silhouette_curve`), `column_selector.py` (con tooltips importance + expander Recomendadas), `data_chat.py` (scroll interno + chips de clarificación absoluto/relativo + renderers de line y heatmap + memoria de 3 vueltas vía `_history_for_llm`), `data_preview.py` (5 filas + `render_type_donut`), `profile_cards.py`.
+## `src/core/` (antes `src/ui/quality.py` y `src/ui/export.py`)
+La UI Streamlit (`src/ui/`) fue **eliminada el Jun 10, 2026** (legacy sin uso). Los dos módulos
+puros que el pipeline y el API necesitaban se movieron a `src/core/`:
+- `core/quality.py` — `silhouette_to_quality()`, `caution_from_silhouette()` + `CAUTION_ORDER`/`CAUTION_META`, `natural_log_message()`, `PIPELINE_UI_STEPS` (8 nodos visibles), `nodes_with_logs()`.
+- `core/export.py` — `archetypes_to_csv`, `labels_to_csv`, `build_markdown_report`.
 
 ## Marco Metodológico (v1 escrito — en revisión del equipo)
 Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plural (cambio comportamental con lentes críticos), no en clave marketing.
@@ -186,8 +186,6 @@ Objetivo: que las narrativas e interpretaciones del pipeline hablen en clave Plu
 ## Notas técnicas
 - **Python 3.11** (venv 3.11.14 + `python:3.11-slim` en Docker; `requires-python = ">=3.11"` desde Jun 10, 2026). El código existente usa `typing.Dict`/`List`/`Optional` por herencia 3.9 — sintaxis moderna (`dict[...]`, `X | None`) es válida en código nuevo; modernización masiva pendiente (opcional, `pyupgrade --py311-plus`).
 - En `src/models/state.py` y `src/models/schemas.py` NO usar `from __future__ import annotations` (LangGraph y Pydantic v2 evalúan hints en runtime).
-- Streamlit 1.50: `st.container(height=...)` soporta scroll interno — útil para listas largas dentro de cards.
-- `st.expander` ejecuta los widgets internos siempre (sólo es display); el estado de checkboxes persiste aunque colapses.
 - Dataset de ejemplo (demo del lanzamiento): `sample_data/bienestar_digital.csv` (900×14, español) — **generado** por `sample_data/generate_bienestar_digital.py` (seed 42) con 4 perfiles comportamentales plantados (scroll nocturno · uso funcional · creador activo · social pasivo) y correlaciones realistas (horas ↔ sueño ↔ bienestar). E2E verificado: el pipeline recupera los 4 arquetipos con calidad "Buena" (silhouette 0.37). `social_media_user_behavior.csv` (2000×34, Kaggle-style) quedó para pruebas drag&drop pero es sintético-uniforme SIN estructura de clusters (silhouette ~0.07) — no usarlo de demo. `customers.csv` (50×8) es el legacy original.
 - Los modelos vía OpenRouter a veces ignoran `response_format: json_object` y envuelven en markdown — usar siempre `extract_json()` al parsear respuestas LLM.
-- **Checklist del paso 2 muestra 8 pasos de los 10 nodos reales** (oculta `select` y `evaluate` — son internos y durarían <1s en pantalla). Decisión deliberada y coherente con el MD de lanzamiento; la lista visible vive en `PIPELINE_UI_STEPS` (`src/ui/quality.py`) y se replica en `INITIAL_STEPS` de `step-analizar.tsx`.
+- **Checklist del paso 2 muestra 8 pasos de los 10 nodos reales** (oculta `select` y `evaluate` — son internos y durarían <1s en pantalla). Decisión deliberada y coherente con el MD de lanzamiento; la lista visible vive en `PIPELINE_UI_STEPS` (`src/core/quality.py`) y se replica en `INITIAL_STEPS` de `step-analizar.tsx`.

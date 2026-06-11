@@ -18,8 +18,7 @@ charts interactivos y un chat que entiende tus datos.
 El pipeline es **determinístico** (`temperature=0`, `random_state=42`, KMeans fijo): la misma
 entrada produce el mismo arquetipo.
 
-> El frontend Streamlit original sigue disponible (`streamlit run src/ui/app.py`), pero la UI
-> principal es la app Next.js en `web/`.
+> El frontend Streamlit original fue eliminado (Jun 2026) — la única UI es la app Next.js en `web/`.
 
 ## Arquitectura
 
@@ -82,7 +81,7 @@ Abre **http://localhost:3000** y pulsa *"Probar con datos de ejemplo"* para el f
 ## Tests
 
 ```bash
-make test            # o: python3 -m pytest tests/ -q   → 143 passed
+make test            # o: python3 -m pytest tests/ -q   → 145 passed
 cd web && pnpm exec tsc --noEmit   # typecheck del frontend
 ```
 
@@ -94,7 +93,7 @@ Los tests del pipeline están mockeados — no necesitan `OPENROUTER_API_KEY`.
 src/        # Pipeline LangGraph (graph, nodes, clustering, data, llm, models) — sin cambios de lógica
 api/        # FastAPI: main, routers/, transform.py, serialization.py, store.py
 web/        # Next.js: app/ (rutas) · components/ (ui, charts, wizard, chat, results) · lib/
-tests/      # 143 tests (pytest — pipeline + capa API)
+tests/      # 145 tests (pytest — pipeline + capa API)
 sample_data/  bienestar_digital.csv (demo, 900×14, generado con seed) · otros CSV de prueba
 Dockerfile.api · web/Dockerfile · docker-compose.yml · Makefile
 ```

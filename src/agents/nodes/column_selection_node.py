@@ -143,7 +143,6 @@ def column_selection_node(state: PipelineState) -> dict:
             "static_filter_result": upstream_static,
             "column_recommendation": upstream_recommendation,
             "selected_columns": valid,
-            "datetime_columns": [d["original"] for d in upstream_static.get("datetime_extracted", [])],
             "raw_data": final_df.to_dict(orient="list"),
             "log_messages": logs,
         }
@@ -175,7 +174,6 @@ def column_selection_node(state: PipelineState) -> dict:
         "static_filter_result": static_report,
         "column_recommendation": recommendation,
         "selected_columns": selected_names,
-        "datetime_columns": [d["original"] for d in static_report["datetime_extracted"]],
         "raw_data": final_df.to_dict(orient="list"),
         "log_messages": logs,
     }
