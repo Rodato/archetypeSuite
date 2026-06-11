@@ -148,6 +148,19 @@ Decisión del usuario: Fase 3 en espera; primero quitar legacy y construir las 2
       el valor del producto cuando el clustering sale débil (el caso común con datos reales).
 - **Verificado:** 158/158 tests · E2E real del perfilado contra el run demo.
 
+## 5.6 · Arquitectura de agentes (Jun 10, 2026) — Pasos 0-1 ✅, 2-3 pendientes
+Principio: dos capas — números deterministas (pipeline), lenguaje agéntico (chat/interpretación).
+- [x] **Paso 0 · k de dos regímenes:** curva plana (<0.03) → mejor k ≤ 4 + flag `flat_k_curve` +
+      copy honesta. Caso real arreglado: estudiantes daba 10 arquetipos, ahora 4.
+- [x] **Paso 1 · Chat agéntico:** loop ReAct acotado (5 tool-calls) con tools deterministas
+      (consultar_datos / ver_esquema / ver_arquetipos / comparar_grupos), flag + fallback al
+      one-shot, trace en el payload. Resuelve el pendiente "comparar dos grupos lado a lado".
+      E2E real: auto-corrección de label verificada.
+- [ ] **Paso 2 · Intérprete con evidencia:** interpret_node como agente con tools de solo lectura
+      (compare_clusters, top_differentiators, get_crosstab) — narrativas que citan evidencia.
+- [ ] **Paso 3 · Trace en la UI:** stream del "pensando: consultando…" en el chat.
+- [ ] (Relacionado) Degradar refinement a gate determinista por umbral.
+
 ## 6. Fase 3 · Pre-beta (ex Grupo B + seguridad/escala)
 
 Seguridad y robustez (nuevo, de la auditoría):

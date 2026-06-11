@@ -56,3 +56,43 @@ class TestKOptimizer:
         optimizer = KOptimizer(k_min=2, k_max=5)
         result = optimizer.analyze(numeric_df.values)
         assert result["optimal_k"] == result["best_silhouette_k"]
+
+
+class TestSelectOptimalK:
+    """Regla de dos regímenes, fijada con las dos curvas reales que la motivaron."""
+
+    def test_flat_curve_prefers_few_workable_clusters(self):
+        # Curva real de estudiantes_portugal.csv (rango 0.022): antes elegía k=10.
+        from src.data.k_optimizer import select_optimal_k
+        k_range = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        scores = [0.131, 0.131, 0.135, 0.136, 0.142, 0.137, 0.146, 0.146, 0.153]
+        k, flat = select_optimal_k(k_range, scores)
+        assert flat is True
+        assert k == 4  # el mejor entre los "pocos y trabajables" (2-4)
+
+    def test_peaked_curve_keeps_argmax(self):
+        # Curva real del demo bienestar_digital.csv (pico claro en k=4).
+        from src.data.k_optimizer import select_optimal_k
+        k_range = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+        scores = [0.361, 0.359, 0.370, 0.298, 0.232, 0.200, 0.177, 0.172, 0.187]
+        k, flat = select_optimal_k(k_range, scores)
+        assert flat is False
+        assert k == 4
+
+    def test_single_k_is_not_flat(self):
+        from src.data.k_optimizer import select_optimal_k
+        k, flat = select_optimal_k([2], [0.5])
+        assert (k, flat) == (2, False)
+
+    def test_flat_fallback_when_no_small_k_available(self):
+        from src.data.k_optimizer import select_optimal_k
+        # Rango que empieza arriba del flat_max_k: usar todos los candidatos.
+        k, flat = select_optimal_k([6, 7, 8], [0.10, 0.11, 0.105])
+        assert flat is True
+        assert k == 7
+
+    def test_analyze_exposes_flat_flag(self, numeric_df):
+        from src.data.k_optimizer import KOptimizer
+        analysis = KOptimizer().analyze(numeric_df.values)
+        assert "flat_k_curve" in analysis
+        assert isinstance(analysis["flat_k_curve"], bool)

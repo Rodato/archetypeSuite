@@ -398,9 +398,20 @@ export default function RunPage() {
           <Eyebrow>Metodología</Eyebrow>
           <div className="text-sm font-semibold">¿Por qué {run.optimal_k} arquetipos?</div>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Probamos dividir tus datos en distintos números de grupos y medimos qué tan bien separados quedan.{" "}
-            <strong className="text-foreground">{run.optimal_k}</strong> es el punto donde cada grupo es distintivo y
-            suficientemente grande para nombrarlo.
+            {run.k_analysis.flat_k_curve ? (
+              <>
+                Probamos varios números de grupos y <strong className="text-foreground">ninguno separa claramente
+                mejor que otro</strong> — tus datos no marcan una división nítida. En esos casos usamos la
+                segmentación más simple (<strong className="text-foreground">{run.optimal_k}</strong> grupos) y
+                tratamos los arquetipos con cautela extra.
+              </>
+            ) : (
+              <>
+                Probamos dividir tus datos en distintos números de grupos y medimos qué tan bien separados quedan.{" "}
+                <strong className="text-foreground">{run.optimal_k}</strong> es el punto donde cada grupo es
+                distintivo y suficientemente grande para nombrarlo.
+              </>
+            )}
           </p>
           <div className="mt-3">
             <SilhouetteCurve

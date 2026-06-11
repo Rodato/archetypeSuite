@@ -237,6 +237,7 @@ def serialize_qa_result(result: DataQAResult) -> Dict[str, Any]:
         "operation": result.operation,
         "error": result.error,
         "clarification": to_jsonable(result.clarification) if result.clarification else None,
+        "trace": to_jsonable(result.trace) if result.trace else None,
         "table": None,
         "chart": None,
     }
@@ -362,6 +363,7 @@ def build_run_record(
             "silhouette_scores": [_safe(s) for s in (k_analysis.get("silhouette_scores") or [])],
             "optimal_k": int(k_analysis.get("optimal_k", optimal_k)) if k_analysis else int(optimal_k),
             "forced_k_min": bool(k_analysis.get("forced_k_min", False)),
+            "flat_k_curve": bool(k_analysis.get("flat_k_curve", False)),
         },
         "charts": {
             "scatter": cluster_scatter(processed_data, raw_df, numeric_cols, labels, label_map),

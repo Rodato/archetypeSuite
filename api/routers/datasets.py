@@ -12,7 +12,7 @@ from api.transform import classify_columns, preview_rows, serialize_qa_result
 from src.agents.nodes.column_selection_node import suggest_columns
 from src.data.ingest import DataIngestor, read_upload
 from src.data.profiler import DataProfiler
-from src.llm.data_qa import answer_data_question
+from src.llm.chat_agent import answer_chat
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
@@ -119,7 +119,7 @@ def suggest(dataset_id: str, body: ContextBody) -> Dict[str, Any]:
 @router.post("/{dataset_id}/chat")
 def chat(dataset_id: str, body: ChatBody) -> Dict[str, Any]:
     df = _require_df(dataset_id)
-    result = answer_data_question(
+    result = answer_chat(
         df, body.question, context=body.context, mode="raw", history=body.history,
     )
     return serialize_qa_result(result)

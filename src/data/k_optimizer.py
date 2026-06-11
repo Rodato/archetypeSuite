@@ -9,6 +9,35 @@ from sklearn.metrics import silhouette_score
 from src.config.settings import settings
 
 
+def select_optimal_k(
+    k_range: List[int],
+    silhouette_scores: List[float],
+    *,
+    flat_range: float = None,
+    flat_max_k: int = None,
+) -> tuple:
+    """Regla de dos regímenes para elegir k. Devuelve (k, flat_curve).
+
+    - Curva con señal (max−min ≥ flat_range): argmax clásico — hay un k que separa mejor.
+    - Curva plana: los datos no distinguen ningún k (el silhouette se arrastra hacia
+      arriba con k por pura fragmentación). Elegir el mejor entre los "pocos y
+      trabajables" (k ≤ flat_max_k) en vez de perseguir el tope del rango.
+    """
+    flat_range = flat_range if flat_range is not None else settings.k_flat_curve_range
+    flat_max_k = flat_max_k if flat_max_k is not None else settings.k_flat_max_k
+
+    spread = max(silhouette_scores) - min(silhouette_scores)
+    flat = spread < flat_range and len(k_range) > 1
+    if not flat:
+        return k_range[int(np.argmax(silhouette_scores))], False
+
+    candidates = [(k, s) for k, s in zip(k_range, silhouette_scores) if k <= flat_max_k]
+    if not candidates:
+        candidates = list(zip(k_range, silhouette_scores))
+    best_k = max(candidates, key=lambda t: t[1])[0]
+    return best_k, True
+
+
 class KOptimizer:
     """Determina el número óptimo de clusters mediante Elbow Method y Silhouette Analysis."""
 
@@ -19,8 +48,9 @@ class KOptimizer:
 
     def analyze(self, data: np.ndarray) -> Dict[str, Any]:
         n_samples = data.shape[0]
-        # Aim for at least ~5 samples per cluster, but never below k_min and never k >= n.
-        effective_k_max = min(self.k_max, max(self.k_min, n_samples // 5), n_samples - 1)
+        # Cap conservador (~10 muestras por cluster); antes vivía duplicado y en
+        # conflicto entre este módulo (n//5) y optimize_k_node (n//10) — gana n//10.
+        effective_k_max = min(self.k_max, max(self.k_min, n_samples // 10), n_samples - 1)
         effective_k_max = max(effective_k_max, self.k_min)
 
         k_range: List[int] = list(range(self.k_min, effective_k_max + 1))
@@ -39,6 +69,7 @@ class KOptimizer:
         best_silhouette_score = silhouette_scores[best_sil_idx]
 
         elbow_k = self._find_elbow(k_range, inertias)
+        optimal_k, flat_k_curve = select_optimal_k(k_range, silhouette_scores)
 
         return {
             "k_range": k_range,
@@ -47,7 +78,8 @@ class KOptimizer:
             "best_silhouette_k": best_silhouette_k,
             "best_silhouette_score": best_silhouette_score,
             "elbow_k": elbow_k,
-            "optimal_k": best_silhouette_k,
+            "optimal_k": optimal_k,
+            "flat_k_curve": flat_k_curve,
             "forced_k_min": forced_k_min,
         }
 

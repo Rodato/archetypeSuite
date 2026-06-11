@@ -21,17 +21,25 @@ def optimize_k_node(state: PipelineState) -> dict:
             "Revisa la selección de variables y el filtrado estático."
         )
 
-    k_max = min(settings.k_optimizer_max, max(settings.k_optimizer_min, n_samples // 10))
-    optimizer = KOptimizer(k_min=settings.k_optimizer_min, k_max=k_max)
+    # El cap por tamaño de muestra (~n//10) vive dentro de KOptimizer.analyze.
+    optimizer = KOptimizer(k_min=settings.k_optimizer_min, k_max=settings.k_optimizer_max)
     analysis = optimizer.analyze(processed_df.values)
+
+    logs = [
+        f"[optimize_k] Silhouette Analysis → mejor k = {analysis['best_silhouette_k']} "
+        f"(score={analysis['best_silhouette_score']:.3f})",
+        f"[optimize_k] Elbow Method → k sugerido = {analysis['elbow_k']}",
+    ]
+    if analysis.get("flat_k_curve"):
+        logs.append(
+            f"[optimize_k] Curva de silhouette plana: ningún k separa claramente mejor — "
+            f"se usa la segmentación más simple (k = {analysis['optimal_k']})."
+        )
+    else:
+        logs.append(f"[optimize_k] k final seleccionado = {analysis['optimal_k']} (por Silhouette)")
 
     return {
         "optimal_k": analysis["optimal_k"],
         "k_analysis": analysis,
-        "log_messages": [
-            f"[optimize_k] Silhouette Analysis → k óptimo = {analysis['best_silhouette_k']} "
-            f"(score={analysis['best_silhouette_score']:.3f})",
-            f"[optimize_k] Elbow Method → k sugerido = {analysis['elbow_k']}",
-            f"[optimize_k] k final seleccionado = {analysis['optimal_k']} (por Silhouette)",
-        ],
+        "log_messages": logs,
     }

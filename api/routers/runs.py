@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from api.store import delete_run, get_run, list_runs, new_id, now_iso, save_run
 from api.transform import label_map_from_archetypes, serialize_qa_result
-from src.llm.data_qa import answer_data_question
+from src.llm.chat_agent import answer_chat
 from src.llm.group_profile import profile_group
 from src.core.export import archetypes_to_csv, build_markdown_report, labels_to_csv
 
@@ -171,10 +171,11 @@ def _reconstruct_labeled_df(record: Dict[str, Any]) -> pd.DataFrame:
 def chat(run_id: str, body: ChatBody) -> Dict[str, Any]:
     record = _require_run(run_id)
     df = _reconstruct_labeled_df(record)
-    result = answer_data_question(
+    result = answer_chat(
         df, body.question,
         context=body.context or record.get("dataset_context", ""),
         mode="archetypes", history=body.history,
+        archetypes=record.get("archetypes"),
     )
     return serialize_qa_result(result)
 

@@ -213,7 +213,7 @@ class TestDatasets:
     def test_dataset_chat_mocked(self, client, monkeypatch):
         from api.routers import datasets as datasets_router
 
-        monkeypatch.setattr(datasets_router, "answer_data_question", lambda *a, **kw: _qa_result())
+        monkeypatch.setattr(datasets_router, "answer_chat", lambda *a, **kw: _qa_result())
         up = client.post("/api/datasets/upload", files={"file": ("t.csv", CSV_BYTES, "text/csv")})
         dataset_id = up.json()["dataset_id"]
 
@@ -324,7 +324,7 @@ class TestRuns:
     def test_run_chat_mocked(self, client, monkeypatch):
         from api.routers import runs as runs_router
 
-        monkeypatch.setattr(runs_router, "answer_data_question", lambda *a, **kw: _qa_result())
+        monkeypatch.setattr(runs_router, "answer_chat", lambda *a, **kw: _qa_result())
         store.save_run(_saved_record())
         res = client.post("/api/runs/abc123abc123/chat", json={"question": "¿cuál es más grande?"})
         assert res.status_code == 200

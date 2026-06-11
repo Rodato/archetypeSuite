@@ -98,6 +98,7 @@ export interface ChatChart {
   z?: (number | null)[][];
 }
 export interface QAResult {
+  trace?: { tool: string; ok: boolean; summary: string }[] | null;
   narrative: string;
   operation: string;
   error: string | null;
@@ -271,7 +272,7 @@ export interface RunRecord {
     davies_bouldin_score: number | null;
     n_clusters: number;
   };
-  k_analysis: { k_range: number[]; silhouette_scores: (number | null)[]; optimal_k: number; forced_k_min?: boolean };
+  k_analysis: { k_range: number[]; silhouette_scores: (number | null)[]; optimal_k: number; forced_k_min?: boolean; flat_k_curve?: boolean };
   charts: { scatter: ScatterPoint[]; radar: RadarData; box: Record<string, BoxGroup[]> };
   columns: { numeric: string[]; categorical: string[] };
   labels: number[];

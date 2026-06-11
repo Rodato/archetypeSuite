@@ -40,6 +40,19 @@ def get_llm_json() -> ChatOpenAI:
     )
 
 
+def get_agent_llm() -> ChatOpenAI:
+    """Modelo para el loop agéntico del chat: tool-calling, SIN response_format
+    (un agente alterna tool-calls y texto — forzar JSON rompería el cierre)."""
+    _ensure_api_key()
+    return ChatOpenAI(
+        model=settings.llm_model,
+        temperature=settings.llm_temperature,
+        openai_api_key=settings.openrouter_api_key,
+        openai_api_base="https://openrouter.ai/api/v1",
+        request_timeout=settings.llm_request_timeout,
+    )
+
+
 def get_fast_text_llm() -> ChatOpenAI:
     """Plain text (no JSON) using the fast narrative model. For short conversational answers."""
     _ensure_api_key()

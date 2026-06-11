@@ -83,7 +83,7 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 ## Como ejecutar
 - **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests backend:** `python3 -m pytest tests/ -v` → 158/158 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 173/173 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
 ## Capa comportamental integrada + auditoría del sistema (Jun 5, 2026)
@@ -147,6 +147,30 @@ Tras la limpieza del legacy, dos features de producto (decisión del usuario: Fa
   E2E real verificado: "quienes usan redes de madrugada y nunca toman pausas" → filtros correctos,
   117 filas, narrativa COM-B con cautela media.
 - **Tests: 158/158.**
+
+## Arquitectura de agentes — Paso 0 + Paso 1 (Jun 10, 2026 — noche)
+Principio rector acordado: **dos capas** — los números son deterministas (pipeline, sin agentes);
+el lenguaje/exploración es agéntico (chat, interpretación, perfilado), con outputs curables.
+- **Paso 0 · k de dos regímenes** (`select_optimal_k` en `k_optimizer.py`): si la curva de
+  silhouette es plana (max−min < `k_flat_curve_range`=0.03), los datos no distinguen ningún k y el
+  argmax se arrastraba al tope del rango (caso real: estudiantes_portugal daba k=10 con curva
+  0.131→0.153) → se elige el mejor k ≤ `k_flat_max_k`=4 ("pocos y trabajables") + flag
+  `flat_k_curve` en k_analysis + copy honesta en la card "¿Por qué N arquetipos?". Con señal
+  (demo: pico 0.37 en k=4) → argmax como siempre. De paso: el cap n//10 vs n//5 quedó unificado
+  (n//10, dentro de KOptimizer).
+- **Paso 1 · Chat agéntico** (`src/llm/chat_agent.py` + `chat_tools.py`): loop ReAct hand-rolled
+  (sin prebuilt) con presupuesto duro (`agent_max_tool_calls`=5) y 4 tools DETERMINISTAS:
+  `consultar_datos` (el executor whitelisteado de data_qa — hereda de DataQuery), `ver_esquema`,
+  `ver_arquetipos`, `comparar_grupos` (nueva — resuelve el pendiente "comparar dos grupos lado a
+  lado" de chat_pendientes.md). `get_agent_llm()` en provider (sin response_format — el agente
+  alterna tool-calls y texto). Flag `settings.agentic_chat=True` + fallback fail-soft al one-shot
+  (answer_chat). La tabla/gráfica de la ÚLTIMA tool-call acompaña la respuesta; `trace` de
+  tool-calls viaja en el payload del chat (UI del "pensando…" = paso 3 pendiente).
+  E2E real verificado: pregunta comparativa multi-paso → ver_arquetipos → comparar_grupos con
+  label equivocado (grupo vacío) → **auto-corrección** con el label exacto → respuesta con tabla.
+- Pendientes de la arquitectura: Paso 2 (intérprete con evidencia) y Paso 3 (streaming del trace
+  en la UI). El refinement sigue candidato a degradarse a gate determinista.
+- **Tests: 173/173.**
 
 ## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
 Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, manteniendo el pipeline `src/` intacto. Streamlit queda como legacy.

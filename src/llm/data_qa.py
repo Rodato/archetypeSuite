@@ -31,6 +31,7 @@ class DataQAResult:
     chart: Optional[Dict[str, Any]] = None  # {type, data, x, y, color}
     error: Optional[str] = None
     clarification: Optional[Dict[str, Any]] = None  # {question, options}
+    trace: Optional[List[Dict[str, Any]]] = None  # tool-calls del agente (modo agéntico)
 
 
 def _summarize_columns(df: pd.DataFrame, max_cols: int = 30) -> List[Dict[str, Any]]:

@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     kmeans_n_init: int = 10
     k_optimizer_min: int = 2
     k_optimizer_max: int = 10
+    # Regla de dos regímenes: si la curva de silhouette es plana (max-min < rango),
+    # los datos no distinguen ningún k → preferir "pocos y trabajables" (k <= flat_max_k).
+    k_flat_curve_range: float = 0.03
+    k_flat_max_k: int = 4
+
+    # Chat agéntico (capa narrativa): loop de tools deterministas con presupuesto acotado.
+    agentic_chat: bool = True
+    agent_max_tool_calls: int = 5
 
     # Preprocessing guards
     enable_pca: bool = False           # PCA off by default — avoids the 1-D collapse that inflates silhouette
