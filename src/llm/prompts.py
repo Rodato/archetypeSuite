@@ -239,6 +239,9 @@ Responde siempre en español.
 ## Perfiles de Clusters (estadísticas por cluster usando columnas ORIGINALES)
 {cluster_profiles}
 
+## Evidencia diferenciadora por cluster (vs el total del dataset — calculada determinísticamente)
+{evidence}
+
 ## Métricas de Clustering
 {metrics}
 
@@ -271,6 +274,9 @@ Responde siempre en español.
 6. Reconoce el contexto (normas, recursos, narrativas culturales), no aplanes al individuo.
 7. Sé honesto con la cautela: métricas débiles → cautela alta y lenguaje provisional.
 8. Cuando dudes, omite (mejor un campo corto y cuidadoso que uno inventado).
+9. ANCLA las narrativas en la evidencia diferenciadora: cita cifras concretas ("58% usa de \
+madrugada vs 19% global", "6.9 horas vs 3.5 del total") cuando un dato sostenga la afirmación. \
+No cites cifras que no estén en la evidencia o los perfiles.
 9. Sin emojis en las narrativas.
 10. No prescribas intervenciones; las oportunidades son pistas para explorar.
 

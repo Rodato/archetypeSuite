@@ -156,9 +156,13 @@ Principio: dos capas — números deterministas (pipeline), lenguaje agéntico (
       (consultar_datos / ver_esquema / ver_arquetipos / comparar_grupos), flag + fallback al
       one-shot, trace en el payload. Resuelve el pendiente "comparar dos grupos lado a lado".
       E2E real: auto-corrección de label verificada.
-- [ ] **Paso 2 · Intérprete con evidencia:** interpret_node como agente con tools de solo lectura
-      (compare_clusters, top_differentiators, get_crosstab) — narrativas que citan evidencia.
-- [ ] **Paso 3 · Trace en la UI:** stream del "pensando: consultando…" en el chat.
+- [x] **Paso 2 · Intérprete con evidencia:** diferenciadores por cluster calculados
+      determinísticamente (`src/core/evidence.py`) e inyectados al prompt de interpretación —
+      las narrativas citan cifras reales (verificado live: "1.19 horas", "84%"). Decisión de
+      diseño: dentro del pipeline la investigación es determinista, no un loop de agente.
+- [x] **Paso 3 · Traza del agente en la UI:** "🔧 esquema → comparación de grupos" colapsable
+      bajo cada respuesta del chat, con marca de auto-corrección. (Streaming live por SSE del
+      chat queda como mejora futura si se quiere para el video.)
 - [ ] (Relacionado) Degradar refinement a gate determinista por umbral.
 
 ## 6. Fase 3 · Pre-beta (ex Grupo B + seguridad/escala)

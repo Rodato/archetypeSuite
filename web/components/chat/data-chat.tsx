@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, SendHorizontal, Sparkles } from "lucide-react";
+import { Loader2, SendHorizontal, Sparkles, Wrench } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { ChatTurn, QAResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -168,7 +168,46 @@ function ChatMessage({
           </div>
         )}
         {!r.chart && r.table && <DataTable table={r.table} maxHeight={220} />}
+
+        {r.trace && r.trace.length > 0 && <AgentTrace trace={r.trace} />}
       </div>
+    </div>
+  );
+}
+
+const TOOL_LABELS: Record<string, string> = {
+  consultar_datos: "consulta de datos",
+  ver_esquema: "esquema del dataset",
+  ver_arquetipos: "arquetipos",
+  comparar_grupos: "comparación de grupos",
+};
+
+/** Transparencia del agente: qué consultó para responder (colapsable). */
+function AgentTrace({ trace }: { trace: NonNullable<QAResult["trace"]> }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="pt-0.5">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+        aria-expanded={open}
+      >
+        <Wrench className="size-3" />
+        {trace.map((t) => TOOL_LABELS[t.tool] ?? t.tool).join(" → ")}
+      </button>
+      {open && (
+        <ul className="mt-1 space-y-0.5 border-l pl-2 text-[11px] text-muted-foreground">
+          {trace.map((t, i) => (
+            <li key={i}>
+              <span className={cn("font-medium", !t.ok && "text-amber-600")}>
+                {TOOL_LABELS[t.tool] ?? t.tool}
+                {!t.ok && " (corregido sobre la marcha)"}
+              </span>
+              {t.summary ? ` — ${t.summary.slice(0, 90)}` : ""}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

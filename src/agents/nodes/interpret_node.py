@@ -1,5 +1,8 @@
 import json
 
+import pandas as pd
+
+from src.core.evidence import cluster_evidence
 from src.llm.methodology import load_methodology
 from src.llm.prompts import INTERPRETATION_PROMPT
 from src.llm.provider import get_narrative_llm, invoke_json_with_retry
@@ -35,8 +38,21 @@ def interpret_node(state: PipelineState) -> dict:
     silhouette = metrics.get("silhouette_score")
 
     context = state.get("dataset_context") or "No se proporcionó contexto adicional."
+
+    # Evidencia diferenciadora determinista (mismos clusters → misma evidencia).
+    # Fail-soft: si algo falla, el prompt sigue funcionando sin el bloque.
+    evidence = "(sin evidencia adicional)"
+    try:
+        df = pd.DataFrame(state.get("raw_data") or {})
+        labels = state.get("labels") or []
+        if len(df) > 0 and len(labels) == len(df):
+            evidence = cluster_evidence(df, labels)
+    except Exception:  # noqa: BLE001
+        pass
+
     prompt = INTERPRETATION_PROMPT.format(
         methodology=load_methodology(),
+        evidence=evidence,
         cluster_profiles=json.dumps(state["cluster_profiles"], indent=2, default=str),
         metrics=json.dumps(metrics, indent=2, default=str),
         silhouette=f"{silhouette:.3f}" if isinstance(silhouette, (int, float)) else "no disponible",

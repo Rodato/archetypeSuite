@@ -83,7 +83,7 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 ## Como ejecutar
 - **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests backend:** `python3 -m pytest tests/ -v` → 173/173 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 177/177 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
 ## Capa comportamental integrada + auditoría del sistema (Jun 5, 2026)
@@ -168,9 +168,18 @@ el lenguaje/exploración es agéntico (chat, interpretación, perfilado), con ou
   tool-calls viaja en el payload del chat (UI del "pensando…" = paso 3 pendiente).
   E2E real verificado: pregunta comparativa multi-paso → ver_arquetipos → comparar_grupos con
   label equivocado (grupo vacío) → **auto-corrección** con el label exacto → respuesta con tabla.
-- Pendientes de la arquitectura: Paso 2 (intérprete con evidencia) y Paso 3 (streaming del trace
-  en la UI). El refinement sigue candidato a degradarse a gate determinista.
-- **Tests: 173/173.**
+- **Paso 2 · Intérprete con evidencia** (`src/core/evidence.py`): diferenciadores por cluster
+  calculados DETERMINÍSTICAMENTE (numéricos en σ vs el total + categorías sobre-representadas
+  ≥5pts) e inyectados a `INTERPRETATION_PROMPT` (placeholder `{evidence}` + regla dura 9: citar
+  cifras). Decisión de diseño: dentro del pipeline NO va loop de agente — la investigación es
+  determinista (mismos clusters → misma evidencia) y solo la redacción es LLM. Fail-soft.
+  Verificado live: las narrativas citan "1.19 horas", "84%", etc.
+- **Paso 3 · Traza del agente en la UI** (`data-chat.tsx`): bajo cada respuesta del chat aparece
+  "🔧 esquema del dataset → comparación de grupos" (colapsable, con summaries y marca
+  "corregido sobre la marcha" cuando una tool falló y el agente se recuperó). El `trace` ya
+  viajaba en el payload. Streaming LIVE de los pasos (SSE del chat) queda como mejora futura.
+- Pendiente de la arquitectura: refinement → gate determinista.
+- **Tests: 177/177.**
 
 ## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
 Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, manteniendo el pipeline `src/` intacto. Streamlit queda como legacy.
