@@ -300,48 +300,6 @@ Responde SOLO con un objeto JSON:
 }}
 """
 
-REFINEMENT_PROMPT = """\
-Eres un experto en calidad de clustering. Revisa los resultados y decide \
-si se necesita refinamiento.
-
-## Métricas Actuales
-{metrics}
-
-## Número de Clusters: {n_clusters}
-## Algoritmo Utilizado: {algorithm} (fijo — no puede cambiarse)
-## Parámetros: {params}
-## Iteración de Refinamiento: {refinement_count} de 2
-
-## Contexto del Dataset
-{context}
-
-## Umbrales de Calidad
-- Silhouette Score: > 0.25 es aceptable, > 0.5 es bueno
-- Calinski-Harabasz: mayor es mejor (> 50 aceptable)
-- Davies-Bouldin: menor es mejor (< 2.0 aceptable)
-
-## Instrucciones
-Decide si el clustering debe refinarse. El algoritmo y el número de clusters \
-están fijos — solo puedes sugerir ajustes de hiperparámetros secundarios \
-(ej. `init`, `n_init`, `max_iter`). No sugieras cambios de `n_clusters` \
-ni de algoritmo.
-
-Considera:
-- ¿Son aceptables las métricas de calidad?
-- ¿Ajustar hiperparámetros mejoraría los resultados?
-- ¿Es probable que un refinamiento adicional ayude?
-
-El `reason` debe escribirse en voz Plural: clara, cuidadora, sin lenguaje moralizante ni de marketing.
-
-Responde SOLO con un objeto JSON:
-{{
-  "should_refine": true/false,
-  "reason": "Explicación",
-  "suggested_params": {{...}} o null
-}}
-"""
-
-
 GROUP_FILTER_PROMPT = """Eres un traductor de descripciones de grupos a filtros de datos.
 
 El usuario describe un grupo de filas de su dataset en lenguaje natural. Tu trabajo es

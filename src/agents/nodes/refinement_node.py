@@ -1,70 +1,54 @@
-import json
+"""Gate determinista de refinamiento.
 
-from src.llm.prompts import REFINEMENT_PROMPT
-from src.llm.provider import get_llm_json, invoke_json_with_retry
-from src.models.schemas import RefinementDecision
+Antes era un LLM decidiendo si re-clusterizar — el único punto del pipeline donde
+un modelo tomaba una decisión numérica. Ahora es una regla por umbral de silhouette
+con un único reintento más exhaustivo (n_init alto): determinista, gratis y auditable.
+"""
+from src.config.settings import settings
 from src.models.state import PipelineState
-
-# Solo hiperparámetros seguros de KMeans pueden venir del LLM. Sin whitelist, una
-# sugerencia como {"algorithm": "DBSCAN"} (kwarg válido de KMeans, valor inválido) o
-# {"random_state": null} crashea la segunda pasada de cluster o rompe el determinismo.
-_ALLOWED_PARAMS = {"init", "n_init", "max_iter"}
-_VALID_INIT = {"k-means++", "random"}
-
-
-def _sanitize_suggested_params(suggested: dict) -> dict:
-    safe: dict = {}
-    for key, value in suggested.items():
-        if key not in _ALLOWED_PARAMS:
-            continue
-        if key == "init":
-            if value in _VALID_INIT:
-                safe[key] = value
-        elif isinstance(value, int) and not isinstance(value, bool) and value > 0:
-            safe[key] = value
-    return safe
 
 
 def refinement_node(state: PipelineState) -> dict:
-    llm = get_llm_json()
     refinement_count = state.get("refinement_count", 0)
+    metrics = state.get("metrics") or {}
+    silhouette = metrics.get("silhouette_score")
+    threshold = settings.refinement_silhouette_threshold
 
-    context = state.get("dataset_context") or "No se proporcionó contexto adicional."
-    prompt = REFINEMENT_PROMPT.format(
-        metrics=json.dumps(state["metrics"], indent=2, default=str),
-        n_clusters=state["n_clusters"],
-        algorithm=state["selected_algorithm"],
-        params=json.dumps(state.get("algorithm_params", {}), default=str),
-        refinement_count=refinement_count,
-        context=context,
+    refine = (
+        refinement_count == 0
+        and isinstance(silhouette, (int, float))
+        and silhouette < threshold
     )
 
-    decision, error = invoke_json_with_retry(
-        llm,
-        prompt,
-        RefinementDecision,
-        lambda: RefinementDecision(should_refine=False, reason="LLM falló, no se refinará"),
-    )
+    if refine:
+        reason = (
+            f"Separación débil (silhouette {silhouette:.2f} < {threshold}): se reintenta "
+            f"el clustering con búsqueda más exhaustiva (n_init={settings.refinement_n_init})."
+        )
+        return {
+            "should_refine": True,
+            "refinement_reason": reason,
+            "refinement_count": refinement_count + 1,
+            "algorithm_params": {
+                **state.get("algorithm_params", {}),
+                "n_init": settings.refinement_n_init,
+            },
+            "log_messages": [f"[refinement] {reason}"],
+        }
 
-    logs = [
-        f"[refinement] Should refine: {decision.should_refine} - {decision.reason}"
-    ]
-    if error:
-        logs.insert(0, f"[refinement] LLM falló, usando fallback. Error: {error}")
+    if refinement_count > 0:
+        reason = "Ya se aplicó el reintento exhaustivo; se conserva este resultado."
+    elif isinstance(silhouette, (int, float)):
+        reason = (
+            f"Separación aceptable (silhouette {silhouette:.2f} ≥ {threshold}): "
+            "no hace falta refinar."
+        )
+    else:
+        reason = "Sin métrica de separación disponible; no se refina."
 
-    result: dict = {
-        "should_refine": decision.should_refine,
-        "refinement_reason": decision.reason,
+    return {
+        "should_refine": False,
+        "refinement_reason": reason,
         "refinement_count": refinement_count + 1,
-        "log_messages": logs,
+        "log_messages": [f"[refinement] {reason}"],
     }
-
-    if decision.should_refine and decision.suggested_params:
-        params = _sanitize_suggested_params(decision.suggested_params)
-        dropped = set(decision.suggested_params) - set(params)
-        if dropped:
-            logs.append(f"[refinement] Parámetros descartados por whitelist: {sorted(dropped)}")
-        if params:
-            result["algorithm_params"] = {**state.get("algorithm_params", {}), **params}
-
-    return result

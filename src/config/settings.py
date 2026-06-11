@@ -12,6 +12,9 @@ class Settings(BaseSettings):
 
     # Pipeline
     max_refinement_iterations: int = 2
+    # Gate determinista de refinamiento: silhouette bajo el umbral → 1 reintento exhaustivo.
+    refinement_silhouette_threshold: float = 0.25
+    refinement_n_init: int = 30
     random_seed: int = 42
 
     # Clustering

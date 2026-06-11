@@ -51,12 +51,6 @@ class InterpretationResult(BaseModel):
     summary: str = ""
 
 
-class RefinementDecision(BaseModel):
-    should_refine: bool = False
-    reason: str = ""
-    suggested_params: Optional[dict] = None
-
-
 FilterOp = Literal["eq", "ne", "gt", "lt", "gte", "lte", "in", "contains"]
 
 

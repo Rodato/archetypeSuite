@@ -19,7 +19,7 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 
 ## Arquitectura
 - **Pipeline LangGraph (10 nodos):** ingest → profile → column_selection(LLM) → preprocess(LLM)
-  → optimize_k → select(KMeans fijo) → cluster → evaluate → interpret(LLM) → refinement(LLM).
+  → optimize_k → select(KMeans fijo) → cluster → evaluate → interpret(LLM) → refinement(gate determinista).
   Nodos LLM con `invoke_json_with_retry` + fallback determinista. Refinamiento máx 2 iteraciones.
   - `optimize_k`: regla de dos regímenes (`select_optimal_k`): curva de silhouette plana
     (max−min < 0.03) → mejor k ≤ 4 + flag `flat_k_curve` (evita el k=10 por fragmentación);
@@ -27,8 +27,9 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
   - `interpret`: recibe **evidencia diferenciadora por cluster** calculada determinísticamente
     (`src/core/evidence.py`: σ vs total + categorías sobre-representadas) y DEBE citar cifras.
     Piso de cautela determinista por silhouette (`caution_from_silhouette` — solo sube, nunca baja).
-  - `refinement`: whitelist dura de hiperparámetros (`init/n_init/max_iter`); el executor
-    re-fuerza `random_state`. Candidato a degradarse a gate determinista.
+  - `refinement`: **gate determinista** (sin LLM): silhouette < `refinement_silhouette_threshold`
+    (0.25) en la primera pasada → 1 reintento con `n_init=30`; si no, termina. El executor
+    re-fuerza `random_state` siempre.
 - **Modelos (OpenRouter):** Claude Sonnet 4.5 (`llm_model`: selección, preproceso, chat agéntico,
   filtros de perfilado) · x-ai/grok-4.3 (`llm_narrative_model`: interpret, narrativa del chat,
   perfilado). Los modelos a veces envuelven JSON en markdown → usar siempre `extract_json()`.
@@ -62,7 +63,7 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 ## Cómo ejecutar
 - **Dev:** `make dev` (API :8000 + Next :3000) · o `docker compose up --build`. Requiere
   `OPENROUTER_API_KEY` en `.env` (plantilla en `.env.example`).
-- **Tests backend:** `python3 -m pytest tests/ -v` → 177/177 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 180/180 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **CI:** `.github/workflows/ci.yml` (pytest desde `requirements.lock` + tsc + next build) en cada push/PR.
 - **Lockfile:** regenerar con `source .venv/bin/activate && pip freeze --exclude-editable > requirements.lock`
   (lo consumen Docker y CI — el determinismo depende de los pins).
@@ -96,7 +97,7 @@ Ver **`PLAN-LANZAMIENTO.md`** (tracking por checkboxes): Fases 0-2 ✅ (quick wi
 demo-ready) · Mesa de trabajo ✅ (curación + perfilado) · Arquitectura de agentes pasos 0-3 ✅ ·
 **Fase 3 (pre-beta: hardening de upload, raw_data fuera del GET, Postgres, Clerk, comparación de
 corridas, PDF) EN ESPERA** por decisión del usuario · backlog de hallazgos menores en §7.
-Mejoras anotadas: refinement → gate determinista · streaming live del trace del agente (SSE del chat).
+Mejora anotada: streaming live del trace del agente (SSE del chat).
 
 ## Historial de rounds (detalle en git log)
 - **May 6-7:** polish UI Streamlit + limpieza foundational (80 tests).
@@ -109,4 +110,4 @@ Mejoras anotadas: refinement → gate determinista · streaming live del trace d
   comparativas, errores dignos, actions Node 24) (143) → dataset demo generado (A2) + fix CSV `;` (146).
 - **Jun 10 (tarde):** limpieza legacy (−2.6k líneas, lock 92→71) + curación de arquetipos +
   perfilado a demanda (158) → **arquitectura de agentes** pasos 0-3: k dos regímenes, chat agéntico
-  con tools deterministas, evidencia en interpret, traza en UI (177).
+  con tools deterministas, evidencia en interpret, traza en UI, refinement → gate determinista (180).

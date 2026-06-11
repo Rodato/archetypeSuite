@@ -33,25 +33,44 @@ class TestOptimizeKGuards:
         assert result["optimal_k"] >= 2
 
 
-class TestRefinementParamWhitelist:
-    def test_drops_unknown_and_dangerous_params(self):
-        from src.agents.nodes.refinement_node import _sanitize_suggested_params
-        out = _sanitize_suggested_params({
-            "random_state": None,   # rompería el determinismo
-            "algorithm": "DBSCAN",  # kwarg válido de KMeans, valor inválido → crash en fit
-            "n_clusters": 5,        # lo gestiona optimize_k, no el LLM
-            "n_init": 20,
-            "init": "random",
-            "max_iter": 500,
+class TestRefinementGate:
+    """Gate determinista: silhouette bajo el umbral → 1 reintento exhaustivo (sin LLM)."""
+
+    def test_refines_once_below_threshold(self):
+        from src.agents.nodes.refinement_node import refinement_node
+        out = refinement_node({
+            "refinement_count": 0,
+            "metrics": {"silhouette_score": 0.12},
+            "algorithm_params": {"n_clusters": 3},
         })
-        assert out == {"n_init": 20, "init": "random", "max_iter": 500}
+        assert out["should_refine"] is True
+        assert out["algorithm_params"]["n_init"] == 30
+        assert out["algorithm_params"]["n_clusters"] == 3  # se preserva lo previo
+        assert "0.12" in out["refinement_reason"]
 
-    def test_drops_wrong_types(self):
-        from src.agents.nodes.refinement_node import _sanitize_suggested_params
-        # bool es subclase de int; strings numéricos y valores de init inválidos tampoco pasan
-        out = _sanitize_suggested_params({"n_init": True, "max_iter": "300", "init": "pca"})
-        assert out == {}
+    def test_does_not_refine_above_threshold(self):
+        from src.agents.nodes.refinement_node import refinement_node
+        out = refinement_node({"refinement_count": 0, "metrics": {"silhouette_score": 0.4}})
+        assert out["should_refine"] is False
+        assert "aceptable" in out["refinement_reason"]
 
+    def test_never_refines_twice(self):
+        from src.agents.nodes.refinement_node import refinement_node
+        out = refinement_node({"refinement_count": 1, "metrics": {"silhouette_score": 0.05}})
+        assert out["should_refine"] is False
+
+    def test_no_silhouette_no_refine(self):
+        from src.agents.nodes.refinement_node import refinement_node
+        out = refinement_node({"refinement_count": 0, "metrics": {}})
+        assert out["should_refine"] is False
+
+    def test_deterministic(self):
+        from src.agents.nodes.refinement_node import refinement_node
+        state = {"refinement_count": 0, "metrics": {"silhouette_score": 0.12}}
+        assert refinement_node(dict(state)) == refinement_node(dict(state))
+
+
+class TestExecutorSeed:
     def test_executor_reforces_random_state(self):
         from src.clustering.executor import ClusteringExecutor
         from src.clustering.registry import AlgorithmRegistry

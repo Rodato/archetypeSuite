@@ -32,15 +32,6 @@ def _preprocess_response() -> str:
     })
 
 
-def _refinement_response(should_refine: bool = False) -> str:
-    return json.dumps({
-        "should_refine": should_refine,
-        "reason": "Métricas aceptables" if not should_refine else "Probar otra config",
-        "suggested_algorithm": None,
-        "suggested_params": None,
-    })
-
-
 def _interpret_response(n_clusters: int) -> str:
     archetypes = [
         {
@@ -82,10 +73,7 @@ class TestPipelineEndToEnd:
     def test_full_pipeline_with_mocked_llms(self, sample_df):
         graph = compile_graph()
 
-        json_llm = _make_mock_llm([
-            _preprocess_response(),
-            _refinement_response(should_refine=False),
-        ])
+        json_llm = _make_mock_llm([_preprocess_response()])
         narrative_llm = _make_mock_llm([
             _interpret_response(n_clusters=10),
         ])
@@ -99,7 +87,6 @@ class TestPipelineEndToEnd:
         }
 
         with patch("src.agents.nodes.preprocess_node.get_llm_json", return_value=json_llm), \
-             patch("src.agents.nodes.refinement_node.get_llm_json", return_value=json_llm), \
              patch("src.agents.nodes.interpret_node.get_narrative_llm", return_value=narrative_llm):
             final_state = None
             for state in graph.stream(initial_state, stream_mode="values"):
@@ -130,12 +117,10 @@ class TestPipelineEndToEnd:
     def test_refinement_respects_max_iterations(self, sample_df):
         graph = compile_graph()
 
-        # LLM siempre pide refinar, para forzar el loop al máximo
-        json_responses = [_preprocess_response()] + [_refinement_response(should_refine=True)] * 10
-        narrative_responses = [_interpret_response(n_clusters=10)] * 10
-
-        json_llm = _make_mock_llm(json_responses)
-        narrative_llm = _make_mock_llm(narrative_responses)
+        # El gate determinista decide el refinamiento según silhouette (sin LLM):
+        # con datos aleatorios de 50 filas la separación es débil → refina 1 vez máximo.
+        json_llm = _make_mock_llm([_preprocess_response()] * 10)
+        narrative_llm = _make_mock_llm([_interpret_response(n_clusters=10)] * 10)
 
         initial_state = {
             "raw_data": sample_df.to_dict(orient="list"),
@@ -145,7 +130,6 @@ class TestPipelineEndToEnd:
         }
 
         with patch("src.agents.nodes.preprocess_node.get_llm_json", return_value=json_llm), \
-             patch("src.agents.nodes.refinement_node.get_llm_json", return_value=json_llm), \
              patch("src.agents.nodes.interpret_node.get_narrative_llm", return_value=narrative_llm):
             final_state = None
             for state in graph.stream(initial_state, stream_mode="values"):
