@@ -1,12 +1,12 @@
-"""Run endpoints: list / get / archetypes-mode chat / exports / delete."""
+"""Run endpoints: list / get / archetypes-mode chat / exports / curation / delete."""
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from api.store import delete_run, get_run, list_runs
+from api.store import delete_run, get_run, list_runs, now_iso, save_run
 from api.transform import label_map_from_archetypes, serialize_qa_result
 from src.llm.data_qa import answer_data_question
 from src.core.export import archetypes_to_csv, build_markdown_report, labels_to_csv
@@ -18,6 +18,20 @@ class ChatBody(BaseModel):
     question: str
     context: str = ""
     history: Optional[List[Dict[str, str]]] = None
+
+
+class ArchetypeEdit(BaseModel):
+    """Campos curables por el equipo. `nivel_cautela` NO es editable: su piso lo fija
+    determinísticamente la calidad del clustering (caution_from_silhouette)."""
+    label: Optional[str] = Field(None, min_length=1, max_length=120)
+    description: Optional[str] = Field(None, max_length=2000)
+    comportamiento_principal: Optional[str] = Field(None, max_length=1000)
+    microcomportamientos: Optional[List[str]] = None
+    barreras: Optional[List[str]] = None
+    habilitadores: Optional[List[str]] = None
+    oportunidades_accion: Optional[List[str]] = None
+    cautela_reason: Optional[str] = Field(None, max_length=1000)
+    validated: Optional[bool] = None
 
 
 @router.get("")
@@ -50,6 +64,53 @@ def remove_run(run_id: str) -> Dict[str, Any]:
     if not delete_run(run_id):
         raise HTTPException(404, "Análisis no encontrado.")
     return {"ok": True}
+
+
+_EDITABLE_LIST_FIELDS = ("microcomportamientos", "barreras", "habilitadores", "oportunidades_accion")
+
+
+@router.patch("/{run_id}/archetypes/{cluster_id}")
+def edit_archetype(run_id: str, cluster_id: int, body: ArchetypeEdit) -> Dict[str, Any]:
+    """Curación humana: el equipo edita la hipótesis que propuso el LLM y la marca validada."""
+    record = _require_run(run_id)
+    target = next(
+        (a for a in record.get("archetypes", []) if a.get("cluster_id") == cluster_id), None,
+    )
+    if target is None:
+        raise HTTPException(404, "Arquetipo no encontrado en este análisis.")
+
+    changes = body.model_dump(exclude_unset=True)
+    validated = changes.pop("validated", None)
+    for field, value in changes.items():
+        if field in _EDITABLE_LIST_FIELDS:
+            value = [str(v).strip() for v in value if str(v).strip()]
+        target[field] = value
+    if validated is not None:
+        target["validated"] = validated
+    if changes or validated is not None:
+        target["curated_at"] = now_iso()
+
+    # El label vive denormalizado en sizes y charts — propagarlo para que toda la UI
+    # (barras, radar, mapa, box) hable con el nombre curado.
+    new_label = changes.get("label")
+    if new_label:
+        for row in record.get("cluster_sizes", []) or []:
+            if row.get("cluster_id") == cluster_id:
+                row["label"] = new_label
+        charts = record.get("charts", {}) or {}
+        for serie in (charts.get("radar", {}) or {}).get("series", []) or []:
+            if serie.get("cluster_id") == cluster_id:
+                serie["label"] = new_label
+        for point in charts.get("scatter", []) or []:
+            if point.get("cluster_id") == cluster_id:
+                point["archetype"] = new_label
+        for groups in (charts.get("box", {}) or {}).values():
+            for g in groups or []:
+                if g.get("cluster_id") == cluster_id:
+                    g["label"] = new_label
+
+    save_run(record)
+    return target
 
 
 def _reconstruct_labeled_df(record: Dict[str, Any]) -> pd.DataFrame:

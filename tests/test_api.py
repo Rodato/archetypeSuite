@@ -392,3 +392,52 @@ class TestBuildRunRecord:
         summary = run_summary(_saved_record())
         assert summary["n_archetypes"] == 2
         assert summary["archetype_labels"] == ["Exploradores prudentes", "Adoptantes tempranos"]
+
+
+# --------------------------------------------------------------------------- #
+# Curación de arquetipos
+# --------------------------------------------------------------------------- #
+class TestArchetypeCuration:
+    def test_edit_archetype(self, client):
+        store.save_run(_saved_record())
+        res = client.patch("/api/runs/abc123abc123/archetypes/0", json={
+            "label": "Quienes evalúan antes de actuar",
+            "barreras": ["Desconfianza institucional", "   ", "Costo percibido"],
+            "validated": True,
+            "nivel_cautela": "baja",  # NO editable — debe ignorarse silenciosamente
+        })
+        assert res.status_code == 200
+        card = res.json()
+        assert card["label"] == "Quienes evalúan antes de actuar"
+        assert card["barreras"] == ["Desconfianza institucional", "Costo percibido"]
+        assert card["validated"] is True
+        assert card["curated_at"]
+        assert card["nivel_cautela"] == "media"  # el piso determinista no se toca
+
+        # Persistido + label propagado a todo lo denormalizado.
+        rec = client.get("/api/runs/abc123abc123").json()
+        edited = next(a for a in rec["archetypes"] if a["cluster_id"] == 0)
+        assert edited["label"] == "Quienes evalúan antes de actuar"
+        assert any(r["label"] == "Quienes evalúan antes de actuar" for r in rec["cluster_sizes"])
+        scatter_0 = [p for p in rec["charts"]["scatter"] if p["cluster_id"] == 0]
+        assert scatter_0 and all(p["archetype"] == "Quienes evalúan antes de actuar" for p in scatter_0)
+        radar_0 = [s for s in rec["charts"]["radar"]["series"] if s["cluster_id"] == 0]
+        assert radar_0 and radar_0[0]["label"] == "Quienes evalúan antes de actuar"
+
+        # Los exports hablan con el nombre curado.
+        arch_csv = client.get("/api/runs/abc123abc123/export/archetypes.csv")
+        assert "Quienes evalúan antes de actuar" in arch_csv.text
+
+    def test_partial_edit_only_touches_sent_fields(self, client):
+        store.save_run(_saved_record())
+        res = client.patch("/api/runs/abc123abc123/archetypes/1", json={"validated": True})
+        assert res.status_code == 200
+        card = res.json()
+        assert card["validated"] is True
+        assert card["label"] == "Adoptantes tempranos"  # intacto
+        assert card["barreras"] == ["Desconfianza institucional (motivación)"]  # intacto
+
+    def test_edit_archetype_404s(self, client):
+        store.save_run(_saved_record())
+        assert client.patch("/api/runs/feedbeefcafe/archetypes/0", json={"label": "x"}).status_code == 404
+        assert client.patch("/api/runs/abc123abc123/archetypes/9", json={"label": "x"}).status_code == 404

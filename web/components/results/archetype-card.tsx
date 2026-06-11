@@ -1,21 +1,39 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import {
   Activity,
   AlertCircle,
+  BadgeCheck,
   ChevronDown,
   Compass,
+  Pencil,
   ShieldAlert,
   Sparkles,
   Sprout,
   Target,
   Users,
 } from "lucide-react";
-import type { Archetype, CautionLevel } from "@/lib/types";
+import { toast } from "sonner";
+import { api } from "@/lib/api";
+import type { Archetype, ArchetypePatch, CautionLevel } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const CAUTION_META: Record<CautionLevel, { label: string; cls: string }> = {
   baja: { label: "Cautela baja", cls: "grade-green" },
@@ -23,8 +41,17 @@ const CAUTION_META: Record<CautionLevel, { label: string; cls: string }> = {
   alta: { label: "Cautela alta", cls: "grade-red" },
 };
 
-export function ArchetypeCard({ archetype, index }: { archetype: Archetype; index: number }) {
+export function ArchetypeCard({
+  archetype,
+  index,
+  runId,
+}: {
+  archetype: Archetype;
+  index: number;
+  runId?: string;
+}) {
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const a = archetype;
 
   const micro = a.microcomportamientos ?? [];
@@ -63,19 +90,49 @@ export function ArchetypeCard({ archetype, index }: { archetype: Archetype; inde
             </span>
             <h3 className="text-base font-semibold leading-tight tracking-tight">{a.label}</h3>
           </div>
-          {caution && (
-            <span
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                caution.cls,
-              )}
-              title={a.cautela_reason || caution.label}
-            >
-              <ShieldAlert className="size-3" />
-              {a.nivel_cautela}
-            </span>
-          )}
+          <div className="flex shrink-0 items-center gap-1">
+            {a.validated && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold grade-green"
+                title={a.curated_at ? `Validado por el equipo · ${a.curated_at.slice(0, 10)}` : "Validado por el equipo"}
+              >
+                <BadgeCheck className="size-3" /> validado
+              </span>
+            )}
+            {caution && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                  caution.cls,
+                )}
+                title={a.cautela_reason || caution.label}
+              >
+                <ShieldAlert className="size-3" />
+                {a.nivel_cautela}
+              </span>
+            )}
+            {runId && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Editar ${a.label}`}
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setEditOpen(true)}
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
+
+        {runId && (
+          <EditArchetypeDialog
+            runId={runId}
+            archetype={a}
+            open={editOpen}
+            onOpenChange={setEditOpen}
+          />
+        )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
@@ -135,6 +192,145 @@ export function ArchetypeCard({ archetype, index }: { archetype: Archetype; inde
         )}
       </Card>
     </motion.div>
+  );
+}
+
+function linesToList(s: string): string[] {
+  return s
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+}
+
+function seedForm(a: Archetype) {
+  return {
+    label: a.label,
+    description: a.description ?? "",
+    comportamiento: a.comportamiento_principal ?? "",
+    micro: (a.microcomportamientos ?? []).join("\n"),
+    barreras: (a.barreras ?? []).join("\n"),
+    habilitadores: (a.habilitadores ?? []).join("\n"),
+    oportunidades: (a.oportunidades_accion ?? []).join("\n"),
+    cautelaReason: a.cautela_reason ?? "",
+    validated: a.validated ?? false,
+  };
+}
+
+function EditArchetypeDialog({
+  runId,
+  archetype,
+  open,
+  onOpenChange,
+}: {
+  runId: string;
+  archetype: Archetype;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  const qc = useQueryClient();
+  const a = archetype;
+  const [form, setForm] = useState(() => seedForm(a));
+
+  const handleOpenChange = (next: boolean) => {
+    if (next) setForm(seedForm(a)); // re-sembrar con la versión vigente al abrir
+    onOpenChange(next);
+  };
+
+  const save = useMutation({
+    mutationFn: () =>
+      api.updateArchetype(runId, a.cluster_id, {
+        label: form.label.trim() || a.label,
+        description: form.description.trim(),
+        comportamiento_principal: form.comportamiento.trim(),
+        microcomportamientos: linesToList(form.micro),
+        barreras: linesToList(form.barreras),
+        habilitadores: linesToList(form.habilitadores),
+        oportunidades_accion: linesToList(form.oportunidades),
+        cautela_reason: form.cautelaReason.trim(),
+        validated: form.validated,
+      } satisfies ArchetypePatch),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["run", runId] });
+      toast.success("Arquetipo actualizado");
+      onOpenChange(false);
+    },
+    onError: () => toast.error("No se pudo guardar el arquetipo. Inténtalo de nuevo."),
+  });
+
+  const set = (key: keyof ReturnType<typeof seedForm>) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent showCloseButton={false} className="max-h-[85dvh] overflow-y-auto sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Editar arquetipo</DialogTitle>
+          <DialogDescription>
+            El arquetipo es una hipótesis propuesta por la IA — afínala con lo que tu equipo sabe.
+            El nivel de cautela no es editable: lo fija la calidad estadística del agrupamiento.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4">
+          <Field label="Nombre">
+            <Input value={form.label} onChange={set("label")} maxLength={120} />
+          </Field>
+          <Field label="Descripción del patrón">
+            <Textarea value={form.description} onChange={set("description")} rows={3} />
+          </Field>
+          <Field label="Comportamiento principal">
+            <Textarea value={form.comportamiento} onChange={set("comportamiento")} rows={2} />
+          </Field>
+          <Field label="Microcomportamientos" hint="Uno por línea.">
+            <Textarea value={form.micro} onChange={set("micro")} rows={3} />
+          </Field>
+          <Field label="Barreras probables" hint="Una por línea.">
+            <Textarea value={form.barreras} onChange={set("barreras")} rows={3} />
+          </Field>
+          <Field label="Habilitadores" hint="Uno por línea.">
+            <Textarea value={form.habilitadores} onChange={set("habilitadores")} rows={3} />
+          </Field>
+          <Field label="Oportunidades de acción" hint="Una por línea.">
+            <Textarea value={form.oportunidades} onChange={set("oportunidades")} rows={3} />
+          </Field>
+          <Field label="Nota de cautela">
+            <Textarea value={form.cautelaReason} onChange={set("cautelaReason")} rows={2} />
+          </Field>
+
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.validated}
+              onChange={(e) => setForm((f) => ({ ...f, validated: e.target.checked }))}
+              className="size-4 accent-[var(--primary)]"
+            />
+            <span className="inline-flex items-center gap-1 font-medium">
+              <BadgeCheck className="size-4 text-emerald-500" /> Validado por el equipo
+            </span>
+          </label>
+        </div>
+
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>Cancelar</DialogClose>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+            {save.isPending ? "Guardando…" : "Guardar cambios"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="grid gap-1.5">
+      <Label className="text-xs font-semibold">
+        {label}
+        {hint && <span className="ml-1 font-normal text-muted-foreground">({hint})</span>}
+      </Label>
+      {children}
+    </div>
   );
 }
 

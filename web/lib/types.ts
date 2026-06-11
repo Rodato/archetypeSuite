@@ -180,6 +180,22 @@ export interface Archetype {
   size: number;
   prevalence: number;
   color: string;
+  // Curación humana.
+  validated?: boolean;
+  curated_at?: string | null;
+}
+
+/** Campos editables vía PATCH /runs/{id}/archetypes/{cluster_id} (nivel_cautela no es editable). */
+export interface ArchetypePatch {
+  label?: string;
+  description?: string;
+  comportamiento_principal?: string;
+  microcomportamientos?: string[];
+  barreras?: string[];
+  habilitadores?: string[];
+  oportunidades_accion?: string[];
+  cautela_reason?: string;
+  validated?: boolean;
 }
 export interface ClusterSize {
   cluster_id: number;

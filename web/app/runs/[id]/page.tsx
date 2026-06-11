@@ -235,7 +235,7 @@ export default function RunPage() {
         )}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {run.archetypes.map((a, i) => (
-            <ArchetypeCard key={a.cluster_id} archetype={a} index={i} />
+            <ArchetypeCard key={a.cluster_id} archetype={a} index={i} runId={run.id} />
           ))}
         </div>
       </section>

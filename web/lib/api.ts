@@ -1,6 +1,8 @@
 // Typed client for the Archetype Suite FastAPI backend.
 import type {
   AnalyzeEvent,
+  Archetype,
+  ArchetypePatch,
   DatasetResponse,
   QAResult,
   RunRecord,
@@ -77,6 +79,16 @@ export const api = {
 
   async deleteRun(id: string): Promise<{ ok: boolean }> {
     return jsonOrThrow(await fetch(`${API_BASE}/api/runs/${id}`, { method: "DELETE" }));
+  },
+
+  async updateArchetype(runId: string, clusterId: number, patch: ArchetypePatch): Promise<Archetype> {
+    return jsonOrThrow(
+      await fetch(`${API_BASE}/api/runs/${runId}/archetypes/${clusterId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      }),
+    );
   },
 
   async chatRun(
