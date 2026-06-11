@@ -161,8 +161,10 @@ Principio: dos capas — números deterministas (pipeline), lenguaje agéntico (
       las narrativas citan cifras reales (verificado live: "1.19 horas", "84%"). Decisión de
       diseño: dentro del pipeline la investigación es determinista, no un loop de agente.
 - [x] **Paso 3 · Traza del agente en la UI:** "🔧 esquema → comparación de grupos" colapsable
-      bajo cada respuesta del chat, con marca de auto-corrección. (Streaming live por SSE del
-      chat queda como mejora futura si se quiere para el video.)
+      bajo cada respuesta del chat, con marca de auto-corrección.
+- [x] **Paso 3b · Streaming LIVE:** endpoints `/chat/stream` (SSE) en datasets y runs; la UI
+      muestra cada tool-call con ✓ mientras el agente trabaja ("consultando arquetipos…").
+      Verificado live: eventos a los +4s/+8s y respuesta a los +13s.
 - [x] (Relacionado) Refinement degradado a gate determinista: silhouette < 0.25 en primera
       pasada → 1 reintento con n_init=30. Eliminados REFINEMENT_PROMPT y RefinementDecision
       (un LLM-call menos por corrida; el pipeline ya no tiene decisiones numéricas de LLM).

@@ -124,7 +124,84 @@ export const api = {
   exportUrl(runId: string, kind: "archetypes.csv" | "labeled.csv" | "report.md"): string {
     return `${API_BASE}/api/runs/${runId}/export/${kind}`;
   },
+
+  /** Chat con streaming: resuelve con el resultado final y emite cada tool-call en vivo. */
+  chatDatasetStream(
+    id: string,
+    payload: { question: string; context?: string; history?: { role: string; text: string }[] },
+    onTool?: (step: ChatToolStep) => void,
+  ): Promise<QAResult> {
+    return streamChatRequest(`${API_BASE}/api/datasets/${id}/chat/stream`, payload, onTool);
+  },
+
+  chatRunStream(
+    id: string,
+    payload: { question: string; context?: string; history?: { role: string; text: string }[] },
+    onTool?: (step: ChatToolStep) => void,
+  ): Promise<QAResult> {
+    return streamChatRequest(`${API_BASE}/api/runs/${id}/chat/stream`, payload, onTool);
+  },
 };
+
+export interface ChatToolStep {
+  tool: string;
+  ok: boolean;
+  summary?: string;
+}
+
+function streamChatRequest(
+  url: string,
+  body: unknown,
+  onTool?: (step: ChatToolStep) => void,
+): Promise<QAResult> {
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok || !res.body) {
+          let detail = `Error ${res.status}`;
+          try {
+            const errBody = await res.json();
+            if (errBody.detail) detail = errBody.detail;
+          } catch {
+            /* cuerpo no-JSON */
+          }
+          throw new Error(detail);
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let result: QAResult | null = null;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop() ?? "";
+          for (const chunk of chunks) {
+            const line = chunk.split("\n").find((l) => l.startsWith("data:"));
+            if (!line) continue;
+            try {
+              const ev = JSON.parse(line.slice(5).trim());
+              if (ev.type === "tool") onTool?.(ev as ChatToolStep);
+              else if (ev.type === "result") result = ev.payload as QAResult;
+            } catch {
+              /* línea malformada */
+            }
+          }
+        }
+        if (result) resolve(result);
+        else reject(new Error("El servidor cerró la conexión sin respuesta."));
+      } catch (err) {
+        reject(err as Error);
+      }
+    })();
+  });
+}
 
 export interface AnalyzeBody {
   context?: string;

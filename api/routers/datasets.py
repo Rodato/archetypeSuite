@@ -12,7 +12,7 @@ from api.transform import classify_columns, preview_rows, serialize_qa_result
 from src.agents.nodes.column_selection_node import suggest_columns
 from src.data.ingest import DataIngestor, read_upload
 from src.data.profiler import DataProfiler
-from src.llm.chat_agent import answer_chat
+from src.llm.chat_agent import answer_chat, stream_chat
 
 router = APIRouter(prefix="/api/datasets", tags=["datasets"])
 
@@ -123,3 +123,13 @@ def chat(dataset_id: str, body: ChatBody) -> Dict[str, Any]:
         df, body.question, context=body.context, mode="raw", history=body.history,
     )
     return serialize_qa_result(result)
+
+
+@router.post("/{dataset_id}/chat/stream")
+def chat_stream(dataset_id: str, body: ChatBody):
+    from api.routers.runs import sse_chat_stream
+
+    df = _require_df(dataset_id)
+    return sse_chat_stream(stream_chat(
+        df, body.question, context=body.context, mode="raw", history=body.history,
+    ))

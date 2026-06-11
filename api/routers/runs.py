@@ -6,9 +6,13 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+import json
+
+from fastapi.responses import StreamingResponse
+
 from api.store import delete_run, get_run, list_runs, new_id, now_iso, save_run
 from api.transform import label_map_from_archetypes, serialize_qa_result
-from src.llm.chat_agent import answer_chat
+from src.llm.chat_agent import answer_chat, stream_chat
 from src.llm.group_profile import profile_group
 from src.core.export import archetypes_to_csv, build_markdown_report, labels_to_csv
 
@@ -178,6 +182,40 @@ def chat(run_id: str, body: ChatBody) -> Dict[str, Any]:
         archetypes=record.get("archetypes"),
     )
     return serialize_qa_result(result)
+
+
+def sse_chat_stream(events) -> StreamingResponse:
+    """Retransmite los eventos del agente como SSE (tools en vivo + resultado final)."""
+    def gen():
+        for ev in events:
+            if ev["type"] == "tool":
+                payload = {
+                    "type": "tool",
+                    "tool": ev["tool"],
+                    "ok": ev["ok"],
+                    "summary": (ev.get("summary") or "")[:160],
+                }
+            else:
+                payload = {"type": "result", "payload": serialize_qa_result(ev["result"])}
+            yield f"data: {json.dumps(payload, ensure_ascii=False, default=str)}\n\n"
+
+    return StreamingResponse(
+        gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/{run_id}/chat/stream")
+def chat_stream(run_id: str, body: ChatBody) -> StreamingResponse:
+    record = _require_run(run_id)
+    df = _reconstruct_labeled_df(record)
+    return sse_chat_stream(stream_chat(
+        df, body.question,
+        context=body.context or record.get("dataset_context", ""),
+        mode="archetypes", history=body.history,
+        archetypes=record.get("archetypes"),
+    ))
 
 
 def _result_like(record: Dict[str, Any]) -> Dict[str, Any]:

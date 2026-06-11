@@ -384,7 +384,9 @@ export default function RunPage() {
             <TabsContent value="chat" keepMounted>
               <div className="flex h-[440px] flex-col">
                 <DataChat
-                  ask={(q, history) => api.chatRun(run.id, { question: q, context: run.dataset_context, history })}
+                  ask={(q, history, onTool) =>
+                    api.chatRunStream(run.id, { question: q, context: run.dataset_context, history }, onTool)
+                  }
                   suggestions={chatSuggestions}
                   placeholder="Pregunta sobre los arquetipos…"
                 />

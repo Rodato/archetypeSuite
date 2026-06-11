@@ -135,3 +135,45 @@ class TestAnswerChatDispatch:
              patch("src.llm.chat_agent.answer_data_question", lambda *a, **kw: sentinel):
             out = answer_chat(df, "¿cuántas filas?")
         assert out.narrative == "fallback one-shot"
+
+
+class TestStreamAgent:
+    def test_emits_tool_events_then_result(self, df):
+        from src.llm.chat_agent import stream_agent
+
+        fake = FakeLLM([
+            _tool_call_msg("ver_esquema", {}),
+            AIMessage(content="Respuesta final."),
+        ])
+        with patch("src.llm.chat_agent.get_agent_llm", lambda: fake):
+            events = list(stream_agent(df, "¿qué columnas hay?"))
+        assert [e["type"] for e in events] == ["tool", "result"]
+        assert events[0]["tool"] == "ver_esquema" and events[0]["ok"] is True
+        assert events[1]["result"].narrative == "Respuesta final."
+
+    def test_stream_chat_flag_off_only_result(self, df, monkeypatch):
+        from src.llm.chat_agent import stream_chat
+
+        monkeypatch.setattr(settings, "agentic_chat", False)
+        sentinel = DataQAResult(narrative="one-shot", operation="count")
+        with patch("src.llm.chat_agent.answer_data_question", lambda *a, **kw: sentinel):
+            events = list(stream_chat(df, "¿cuántas filas?"))
+        assert len(events) == 1 and events[0]["type"] == "result"
+        assert events[0]["result"].narrative == "one-shot"
+
+    def test_stream_chat_falls_back_after_partial_failure(self, df, monkeypatch):
+        from src.llm import chat_agent
+
+        monkeypatch.setattr(settings, "agentic_chat", True)
+
+        def broken_stream(*a, **kw):
+            yield {"type": "tool", "tool": "ver_esquema", "args": {}, "ok": True, "summary": "..."}
+            raise RuntimeError("se cayó a mitad")
+
+        sentinel = DataQAResult(narrative="fallback", operation="count")
+        with patch.object(chat_agent, "stream_agent", broken_stream), \
+             patch.object(chat_agent, "answer_data_question", lambda *a, **kw: sentinel):
+            events = list(chat_agent.stream_chat(df, "pregunta"))
+        # 1 tool emitido + el resultado del fallback
+        assert [e["type"] for e in events] == ["tool", "result"]
+        assert events[1]["result"].narrative == "fallback"

@@ -3,8 +3,11 @@
 Arquitectura de dos capas: los números los producen las tools (executor
 whitelisteado de data_qa); el agente solo decide QUÉ consultar y redacta.
 Presupuesto duro de tool-calls + fallback al chat one-shot si el loop falla.
+
+El núcleo es un GENERADOR (`stream_agent`) que emite cada tool-call al ejecutarse
+— el endpoint SSE los retransmite en vivo y la UI muestra "consultando…".
 """
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 import pandas as pd
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
@@ -27,7 +30,7 @@ def _history_messages(history: Optional[List[Dict[str, str]]], max_entries: int 
     return messages
 
 
-def run_agent(
+def stream_agent(
     df: pd.DataFrame,
     question: str,
     *,
@@ -35,7 +38,11 @@ def run_agent(
     mode: str = "raw",
     history: Optional[List[Dict[str, str]]] = None,
     archetypes: Optional[List[Dict[str, Any]]] = None,
-) -> DataQAResult:
+) -> Iterator[Dict[str, Any]]:
+    """Núcleo del agente. Emite eventos:
+    - {"type": "tool", "tool", "args", "ok", "summary"} tras cada tool-call ejecutada
+    - {"type": "result", "result": DataQAResult} al final (siempre, exactamente uno)
+    """
     max_steps = settings.agent_max_tool_calls
     base_llm = get_agent_llm()
     llm = base_llm.bind_tools(TOOL_SCHEMAS)
@@ -62,10 +69,11 @@ def run_agent(
         if not tool_calls:
             narrative = (response.content or "").strip()
             if narrative:
-                return DataQAResult(
+                yield {"type": "result", "result": DataQAResult(
                     narrative=narrative, operation="agent",
                     table=last_table, chart=last_chart, trace=trace,
-                )
+                )}
+                return
             break  # respuesta vacía sin tools: salir al cierre forzado
 
         messages.append(response)
@@ -76,12 +84,14 @@ def run_agent(
             execution = execute_tool(name, args, df, archetypes)
             if execution.table is not None:
                 last_table, last_chart = execution.table, execution.chart
-            trace.append({
+            step = {
                 "tool": name,
                 "args": args,
                 "ok": execution.error is None,
                 "summary": execution.text[:200],
-            })
+            }
+            trace.append(step)
+            yield {"type": "tool", **step}
             messages.append(ToolMessage(content=execution.text, tool_call_id=tc.get("id") or name))
 
     # Presupuesto agotado (o respuesta vacía): cierre forzado sin tools.
@@ -90,10 +100,56 @@ def run_agent(
     ))
     response = base_llm.invoke(messages)
     narrative = (response.content or "").strip() or "No pude completar el análisis — intenta reformular la pregunta."
-    return DataQAResult(
+    yield {"type": "result", "result": DataQAResult(
         narrative=narrative, operation="agent",
         table=last_table, chart=last_chart, trace=trace,
-    )
+    )}
+
+
+def run_agent(
+    df: pd.DataFrame,
+    question: str,
+    *,
+    context: str = "",
+    mode: str = "raw",
+    history: Optional[List[Dict[str, str]]] = None,
+    archetypes: Optional[List[Dict[str, Any]]] = None,
+) -> DataQAResult:
+    """Versión síncrona: consume el stream y devuelve solo el resultado final."""
+    final: Optional[DataQAResult] = None
+    for event in stream_agent(
+        df, question, context=context, mode=mode, history=history, archetypes=archetypes,
+    ):
+        if event["type"] == "result":
+            final = event["result"]
+    assert final is not None  # stream_agent siempre termina con un result
+    return final
+
+
+def stream_chat(
+    df: pd.DataFrame,
+    question: str,
+    *,
+    context: str = "",
+    mode: str = "raw",
+    history: Optional[List[Dict[str, str]]] = None,
+    archetypes: Optional[List[Dict[str, Any]]] = None,
+) -> Iterator[Dict[str, Any]]:
+    """Punto de entrada streaming: agente si está activado, con fallback fail-soft
+    al one-shot (que no emite eventos de tools, solo el resultado)."""
+    if not settings.agentic_chat:
+        yield {"type": "result", "result": answer_data_question(
+            df, question, context=context, mode=mode, history=history,
+        )}
+        return
+    try:
+        yield from stream_agent(
+            df, question, context=context, mode=mode, history=history, archetypes=archetypes,
+        )
+    except Exception:  # noqa: BLE001 — el chat nunca debe romperse por el agente
+        yield {"type": "result", "result": answer_data_question(
+            df, question, context=context, mode=mode, history=history,
+        )}
 
 
 def answer_chat(
@@ -105,13 +161,12 @@ def answer_chat(
     history: Optional[List[Dict[str, str]]] = None,
     archetypes: Optional[List[Dict[str, Any]]] = None,
 ) -> DataQAResult:
-    """Punto de entrada del chat: agente si está activado, con fallback fail-soft
-    al one-shot determinista (la misma filosofía que los nodos LLM del pipeline)."""
+    """Punto de entrada no-streaming (endpoints /chat clásicos)."""
     if not settings.agentic_chat:
         return answer_data_question(df, question, context=context, mode=mode, history=history)
     try:
         return run_agent(
             df, question, context=context, mode=mode, history=history, archetypes=archetypes,
         )
-    except Exception:  # noqa: BLE001 — el chat nunca debe romperse por el agente
+    except Exception:  # noqa: BLE001
         return answer_data_question(df, question, context=context, mode=mode, history=history)

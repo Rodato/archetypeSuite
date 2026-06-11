@@ -95,7 +95,9 @@ export function StepDatos({ autoSample }: { autoSample?: boolean }) {
         <Card className="flex h-[420px] flex-col p-5">
           <Eyebrow>Pregunta sobre tus datos</Eyebrow>
           <DataChat
-            ask={(q, history) => api.chatDataset(dataset.dataset_id, { question: q, context, history })}
+            ask={(q, history, onTool) =>
+              api.chatDatasetStream(dataset.dataset_id, { question: q, context, history }, onTool)
+            }
             suggestions={suggestions}
           />
         </Card>

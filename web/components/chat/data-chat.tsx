@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, SendHorizontal, Sparkles, Wrench } from "lucide-react";
+import { Check, Loader2, SendHorizontal, Sparkles, Wrench } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import type { ChatToolStep } from "@/lib/api";
 import type { ChatTurn, QAResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ChatChartView } from "@/components/charts/chat-chart";
@@ -10,7 +11,11 @@ import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  ask: (question: string, history: { role: string; text: string }[]) => Promise<QAResult>;
+  ask: (
+    question: string,
+    history: { role: string; text: string }[],
+    onTool?: (step: ChatToolStep) => void,
+  ) => Promise<QAResult>;
   suggestions?: string[];
   placeholder?: string;
 }
@@ -19,11 +24,12 @@ export function DataChat({ ask, suggestions = [], placeholder = "Pregunta sobre 
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [liveSteps, setLiveSteps] = useState<ChatToolStep[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns, busy]);
+  }, [turns, busy, liveSteps]);
 
   const historyForLlm = (list: ChatTurn[]) =>
     list
@@ -37,8 +43,11 @@ export function DataChat({ ask, suggestions = [], placeholder = "Pregunta sobre 
     setTurns(base);
     setInput("");
     setBusy(true);
+    setLiveSteps([]);
     try {
-      const result = await ask(question, historyForLlm(turns));
+      const result = await ask(question, historyForLlm(turns), (step) =>
+        setLiveSteps((prev) => [...prev, step]),
+      );
       setTurns([
         ...base,
         { role: "assistant", result, originalQuestion: originalForClarification ?? question },
@@ -60,6 +69,7 @@ export function DataChat({ ask, suggestions = [], placeholder = "Pregunta sobre 
       ]);
     } finally {
       setBusy(false);
+      setLiveSteps([]);
     }
   };
 
@@ -95,8 +105,18 @@ export function DataChat({ ask, suggestions = [], placeholder = "Pregunta sobre 
         ))}
 
         {busy && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-3.5 animate-spin" /> Pensando…
+          <div className="space-y-1.5 text-sm text-muted-foreground">
+            {liveSteps.map((s, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                <Check className="size-3 text-emerald-500" />
+                {TOOL_LABELS[s.tool] ?? s.tool}
+                {!s.ok && <span className="text-amber-600">· corrigiendo…</span>}
+              </div>
+            ))}
+            <div className="flex items-center gap-2">
+              <Loader2 className="size-3.5 animate-spin" />
+              {liveSteps.length > 0 ? "Analizando la evidencia…" : "Pensando…"}
+            </div>
           </div>
         )}
       </div>

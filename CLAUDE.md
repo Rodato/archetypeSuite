@@ -37,8 +37,10 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
   presupuesto `agent_max_tool_calls=5`, cierre forzado, fallback fail-soft al one-shot
   (`answer_data_question`). Tools DETERMINISTAS: `consultar_datos` (executor whitelisteado de
   data_qa), `ver_esquema`, `ver_arquetipos`, `comparar_grupos` (tabla lado a lado). Flag
-  `settings.agentic_chat=True`. El `trace` de tool-calls viaja en el payload y la UI lo muestra
-  colapsable ("🔧 esquema → comparación de grupos", con marca de auto-corrección).
+  `settings.agentic_chat=True`. **Streaming live**: los endpoints `/chat/stream` (datasets y runs)
+  emiten cada tool-call por SSE mientras el agente trabaja — la UI muestra los pasos con ✓ bajo
+  "Pensando…" y, al terminar, la traza queda colapsable en la respuesta ("🔧 esquema → comparación
+  de grupos", con marca de auto-corrección). Los endpoints `/chat` no-streaming siguen vivos.
 - **Perfilado a demanda** (`src/llm/group_profile.py` + `POST /api/runs/{id}/profile-group`):
   grupo en lenguaje natural → filtros (LLM) → subset determinista → stats grupo-vs-total →
   hipótesis de 8 campos con **piso de cautela por tamaño de muestra** (<30 alta, <100 media).
@@ -63,7 +65,7 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 ## Cómo ejecutar
 - **Dev:** `make dev` (API :8000 + Next :3000) · o `docker compose up --build`. Requiere
   `OPENROUTER_API_KEY` en `.env` (plantilla en `.env.example`).
-- **Tests backend:** `python3 -m pytest tests/ -v` → 180/180 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 186/186 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **CI:** `.github/workflows/ci.yml` (pytest desde `requirements.lock` + tsc + next build) en cada push/PR.
 - **Lockfile:** regenerar con `source .venv/bin/activate && pip freeze --exclude-editable > requirements.lock`
   (lo consumen Docker y CI — el determinismo depende de los pins).
@@ -97,7 +99,7 @@ Ver **`PLAN-LANZAMIENTO.md`** (tracking por checkboxes): Fases 0-2 ✅ (quick wi
 demo-ready) · Mesa de trabajo ✅ (curación + perfilado) · Arquitectura de agentes pasos 0-3 ✅ ·
 **Fase 3 (pre-beta: hardening de upload, raw_data fuera del GET, Postgres, Clerk, comparación de
 corridas, PDF) EN ESPERA** por decisión del usuario · backlog de hallazgos menores en §7.
-Mejora anotada: streaming live del trace del agente (SSE del chat).
+La arquitectura de agentes quedó completa (pasos 0-3 + gate + streaming live).
 
 ## Historial de rounds (detalle en git log)
 - **May 6-7:** polish UI Streamlit + limpieza foundational (80 tests).
@@ -110,4 +112,4 @@ Mejora anotada: streaming live del trace del agente (SSE del chat).
   comparativas, errores dignos, actions Node 24) (143) → dataset demo generado (A2) + fix CSV `;` (146).
 - **Jun 10 (tarde):** limpieza legacy (−2.6k líneas, lock 92→71) + curación de arquetipos +
   perfilado a demanda (158) → **arquitectura de agentes** pasos 0-3: k dos regímenes, chat agéntico
-  con tools deterministas, evidencia en interpret, traza en UI, refinement → gate determinista (180).
+  con tools deterministas, evidencia en interpret, traza en UI, refinement → gate determinista, streaming live del agente por SSE (186).

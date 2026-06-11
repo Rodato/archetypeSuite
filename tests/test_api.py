@@ -504,3 +504,38 @@ class TestGroupProfiles:
         store.save_run(_saved_record())
         assert client.post("/api/runs/abc123abc123/profile-group", json={"description": "ab"}).status_code == 422
         assert client.post("/api/runs/feedbeefcafe/profile-group", json={"description": "grupo válido"}).status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Chat streaming (SSE)
+# --------------------------------------------------------------------------- #
+class TestChatStream:
+    def _fake_events(self):
+        yield {"type": "tool", "tool": "ver_arquetipos", "args": {}, "ok": True, "summary": "2 arquetipos"}
+        yield {"type": "result", "result": _qa_result()}
+
+    def test_run_chat_stream_sse(self, client, monkeypatch):
+        from api.routers import runs as runs_router
+
+        monkeypatch.setattr(runs_router, "stream_chat", lambda *a, **kw: self._fake_events())
+        store.save_run(_saved_record())
+        res = client.post("/api/runs/abc123abc123/chat/stream", json={"question": "¿cuál es mayor?"})
+        assert res.status_code == 200
+        events = _sse_events(res.text)
+        assert [e["type"] for e in events] == ["tool", "result"]
+        assert events[0]["tool"] == "ver_arquetipos"
+        assert "3 filas" in events[1]["payload"]["narrative"]
+        assert events[1]["payload"]["table"]["columns"] == ["conteo"]
+
+    def test_dataset_chat_stream_sse(self, client, monkeypatch):
+        from api.routers import datasets as datasets_router
+
+        monkeypatch.setattr(datasets_router, "stream_chat", lambda *a, **kw: self._fake_events())
+        up = client.post("/api/datasets/upload", files={"file": ("t.csv", CSV_BYTES, "text/csv")})
+        dataset_id = up.json()["dataset_id"]
+        res = client.post(f"/api/datasets/{dataset_id}/chat/stream", json={"question": "¿cuántos?"})
+        events = _sse_events(res.text)
+        assert [e["type"] for e in events] == ["tool", "result"]
+
+    def test_chat_stream_404(self, client):
+        assert client.post("/api/runs/feedbeefcafe/chat/stream", json={"question": "x"}).status_code == 404
