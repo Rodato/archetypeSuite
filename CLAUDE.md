@@ -83,7 +83,7 @@ Foco: que el chat del paso 1 (y tab "Conversar" del paso 3) se sienta como habla
 ## Como ejecutar
 - **Stack SaaS (recomendado):** `make dev` (API FastAPI :8000 + Next.js :3000 juntos) · o `docker compose up --build` · o `cd web && pnpm dev` + `uvicorn api.main:app --reload --port 8000`. Detalle en `README.md`.
 - **Activar venv:** `source .venv/bin/activate`
-- **Tests backend:** `python3 -m pytest tests/ -v` → 145/145 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 158/158 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **Requisito:** configurar `OPENROUTER_API_KEY` en `.env` (usa `.env.example` como plantilla)
 
 ## Capa comportamental integrada + auditoría del sistema (Jun 5, 2026)
@@ -129,6 +129,24 @@ Auditoría completa (pipeline/API/front/infra, ~45 hallazgos) consolidada en `PL
   Fix previo del mismo día: CSV con separador `;`/tab (export Excel es-*) se detecta automáticamente.
 - **Tests: 145/145.**
 - Pendientes priorizados en `PLAN-LANZAMIENTO.md` (Fases 2-3) y backlog de hallazgos menores ahí mismo.
+
+## Mesa de trabajo: curación + perfilado a demanda (Jun 10, 2026 — tarde)
+Tras la limpieza del legacy, dos features de producto (decisión del usuario: Fase 3 sigue en espera):
+- **Curación de arquetipos:** `PATCH /api/runs/{id}/archetypes/{cluster_id}` con whitelist de campos
+  narrativos (label, descripción, 8 campos; `nivel_cautela` NO editable — piso determinista) +
+  `validated`/`curated_at`. El label se propaga a cluster_sizes/radar/scatter/box. Front: lápiz en
+  cada card → dialog de edición + badge "✓ validado". Exports reflejan la versión curada.
+- **Perfilado a demanda** (`src/llm/group_profile.py` + `POST /api/runs/{id}/profile-group`):
+  descripción NL → filtros (LLM, `GroupFilterSpec`, duck-type con `_apply_filters` de data_qa) →
+  subset determinista → stats grupo-vs-total → narrativa con metodología (`GROUP_PROFILE_PROMPT`,
+  modelo narrativo) → `GroupProfileDescription` con **piso de cautela por tamaño de muestra**
+  (`caution_floor_for_group_size`: <30 alta, <100 media). Se persiste en `record["custom_profiles"]`
+  (con id/created_at/filters/n/share) y se puede borrar. Front: sección "Perfilar un grupo" en el
+  run, cards reusan ArchetypeCard (color violeta, sin edición). La columna "Arquetipo" del df
+  reconstruido permite perfilar por arquetipo ("los del arquetipo X que...").
+  E2E real verificado: "quienes usan redes de madrugada y nunca toman pausas" → filtros correctos,
+  117 filas, narrativa COM-B con cautela media.
+- **Tests: 158/158.**
 
 ## SaaS rewrite — Next.js + FastAPI (Jun 5, 2026)
 Round grande: la UI principal pasó de Streamlit a **Next.js 16 + FastAPI**, manteniendo el pipeline `src/` intacto. Streamlit queda como legacy.

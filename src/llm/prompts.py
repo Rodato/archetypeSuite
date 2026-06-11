@@ -334,3 +334,77 @@ Responde SOLO con un objeto JSON:
   "suggested_params": {{...}} o null
 }}
 """
+
+
+GROUP_FILTER_PROMPT = """Eres un traductor de descripciones de grupos a filtros de datos.
+
+El usuario describe un grupo de filas de su dataset en lenguaje natural. Tu trabajo es
+expresarlo como filtros ejecutables sobre las columnas disponibles.
+
+## Columnas disponibles (con tipos y valores frecuentes)
+{columns_summary}
+
+Nota: si existe la columna "Arquetipo", contiene el nombre del arquetipo asignado a cada
+fila — úsala cuando el grupo se refiera a un arquetipo.
+
+## Descripción del grupo
+"{group_description}"
+
+## Operadores permitidos
+eq, ne, gt, lt, gte, lte, in (lista), contains (subcadena, sin regex).
+
+Responde SOLO con JSON:
+{{
+  "filter_by": [{{"column": "...", "op": "...", "value": ...}}],
+  "interpretation": "cómo entendiste el grupo, en una frase",
+  "feasible": true,
+  "reason": null
+}}
+
+Reglas:
+- Usa SOLO columnas que existen. Si el grupo menciona algo que no está en los datos,
+  responde "feasible": false y explica en "reason" (en español, dirigido al usuario).
+- Sé literal con los valores categóricos (respeta los valores frecuentes mostrados).
+- Para rangos numéricos usa gte/lte. "altos"/"bajos" sin umbral explícito → elige un
+  umbral razonable según las estadísticas mostradas y decláralo en "interpretation".
+"""
+
+
+GROUP_PROFILE_PROMPT = """Eres analista de comportamiento del estudio Plural. Vas a perfilar
+un grupo que el usuario definió a mano — NO emergió del clustering. Tu producto es una
+hipótesis comportamental honesta y cuidadosa sobre ese grupo, en el marco metodológico Plural.
+
+## Marco metodológico (síguelo al pie de la letra)
+{methodology}
+
+## Grupo definido por el usuario
+Descripción: "{group_description}"
+Interpretación aplicada: {interpretation}
+Tamaño: {n} filas ({share}% del total del dataset)
+
+## Evidencia estadística (grupo vs dataset completo)
+{stats}
+
+## Contexto del dataset según el usuario
+{context}
+
+Responde SOLO con JSON:
+{{
+  "label": "nombre provisional del patrón (sin marketing, sin moralizar)",
+  "description": "patrón observado en 2-4 frases, lenguaje hipotético",
+  "comportamiento_principal": "...",
+  "microcomportamientos": ["..."],
+  "barreras": ["... (con sub-nivel COM-B entre paréntesis)"],
+  "habilitadores": ["..."],
+  "oportunidades_accion": ["..."],
+  "nivel_cautela": "baja|media|alta",
+  "cautela_reason": "..."
+}}
+
+Reglas duras adicionales:
+- Este grupo lo definió una persona, no los datos: afirma SOLO lo que la evidencia
+  estadística sostiene y marca explícitamente lo que es especulación.
+- Si las diferencias del grupo frente al total son pequeñas, sube el nivel de cautela
+  y dilo en cautela_reason.
+- Patrones, no personas. Fórmulas hipotéticas. Nada de nombres moralizantes.
+"""

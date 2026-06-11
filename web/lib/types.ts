@@ -197,6 +197,27 @@ export interface ArchetypePatch {
   cautela_reason?: string;
   validated?: boolean;
 }
+/** Perfil de grupo definido por el usuario (perfilado a demanda). */
+export interface GroupProfile {
+  id: string;
+  created_at: string;
+  origin: "user_defined";
+  group_description: string;
+  interpretation: string;
+  filters: unknown[];
+  n: number;
+  share: number;
+  label: string;
+  description: string;
+  comportamiento_principal: string;
+  microcomportamientos: string[];
+  barreras: string[];
+  habilitadores: string[];
+  oportunidades_accion: string[];
+  nivel_cautela: CautionLevel;
+  cautela_reason: string;
+}
+
 export interface ClusterSize {
   cluster_id: number;
   label: string;
@@ -231,6 +252,7 @@ export interface BoxGroup {
   max: number;
 }
 export interface RunRecord {
+  custom_profiles?: GroupProfile[];
   id: string;
   created_at: string;
   file_name: string;

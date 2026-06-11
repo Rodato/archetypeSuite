@@ -6,9 +6,10 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-from api.store import delete_run, get_run, list_runs, now_iso, save_run
+from api.store import delete_run, get_run, list_runs, new_id, now_iso, save_run
 from api.transform import label_map_from_archetypes, serialize_qa_result
 from src.llm.data_qa import answer_data_question
+from src.llm.group_profile import profile_group
 from src.core.export import archetypes_to_csv, build_markdown_report, labels_to_csv
 
 router = APIRouter(prefix="/api/runs", tags=["runs"])
@@ -63,6 +64,49 @@ def one_run(run_id: str) -> Dict[str, Any]:
 def remove_run(run_id: str) -> Dict[str, Any]:
     if not delete_run(run_id):
         raise HTTPException(404, "Análisis no encontrado.")
+    return {"ok": True}
+
+
+class ProfileGroupBody(BaseModel):
+    description: str = Field(min_length=3, max_length=500)
+
+
+@router.post("/{run_id}/profile-group")
+def create_group_profile(run_id: str, body: ProfileGroupBody) -> Dict[str, Any]:
+    """Perfilado a demanda: hipótesis comportamental para un grupo descrito en lenguaje
+    natural — funciona aunque el grupo no coincida con ningún arquetipo del clustering."""
+    record = _require_run(run_id)
+    df = _reconstruct_labeled_df(record)
+    if df.empty:
+        raise HTTPException(422, "Este análisis no tiene datos para perfilar.")
+    result = profile_group(df, body.description, context=record.get("dataset_context", ""))
+    if result.error:
+        raise HTTPException(422, result.error)
+    profile = {
+        "id": new_id(),
+        "created_at": now_iso(),
+        "origin": "user_defined",
+        "group_description": body.description,
+        "interpretation": result.interpretation,
+        "filters": result.filters,
+        "n": result.n,
+        "share": result.share,
+        **(result.profile or {}),
+    }
+    record.setdefault("custom_profiles", []).append(profile)
+    save_run(record)
+    return profile
+
+
+@router.delete("/{run_id}/profiles/{profile_id}")
+def delete_group_profile(run_id: str, profile_id: str) -> Dict[str, Any]:
+    record = _require_run(run_id)
+    profiles = record.get("custom_profiles", []) or []
+    kept = [p for p in profiles if p.get("id") != profile_id]
+    if len(kept) == len(profiles):
+        raise HTTPException(404, "Perfil no encontrado.")
+    record["custom_profiles"] = kept
+    save_run(record)
     return {"ok": True}
 
 

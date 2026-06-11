@@ -107,3 +107,27 @@ class DataQuery(BaseModel):
     @classmethod
     def _columns_none_to_empty(cls, v):
         return [] if v is None else v
+
+
+class GroupFilterSpec(BaseModel):
+    """Traducción LLM de una descripción de grupo en lenguaje natural a filtros ejecutables.
+
+    Duck-type compatible con `_apply_filters` de data_qa (expone `filter_by`).
+    """
+    filter_by: List[FilterCondition] = Field(default_factory=list)
+    interpretation: str = ""
+    feasible: bool = True
+    reason: Optional[str] = None
+
+
+class GroupProfileDescription(BaseModel):
+    """Hipótesis comportamental para un grupo definido por el usuario (no emergente del clustering)."""
+    label: str
+    description: str = ""
+    comportamiento_principal: str = ""
+    microcomportamientos: List[str] = Field(default_factory=list)
+    barreras: List[str] = Field(default_factory=list)
+    habilitadores: List[str] = Field(default_factory=list)
+    oportunidades_accion: List[str] = Field(default_factory=list)
+    nivel_cautela: Literal["baja", "media", "alta"] = "media"
+    cautela_reason: str = ""

@@ -441,3 +441,66 @@ class TestArchetypeCuration:
         store.save_run(_saved_record())
         assert client.patch("/api/runs/feedbeefcafe/archetypes/0", json={"label": "x"}).status_code == 404
         assert client.patch("/api/runs/abc123abc123/archetypes/9", json={"label": "x"}).status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Perfilado de grupos a demanda
+# --------------------------------------------------------------------------- #
+class TestGroupProfiles:
+    def _fake_result(self):
+        from src.llm.group_profile import GroupProfileResult
+        return GroupProfileResult(
+            profile={
+                "label": "Quienes consultan antes de decidir",
+                "description": "Patrón de prueba.",
+                "comportamiento_principal": "Consultan a pares",
+                "microcomportamientos": [], "barreras": [], "habilitadores": [],
+                "oportunidades_accion": [], "nivel_cautela": "alta",
+                "cautela_reason": "Grupo chico.",
+            },
+            n=3, share=50.0,
+            filters=[{"column": "ciudad", "op": "eq", "value": "Lima"}],
+            interpretation="Filtré ciudad = Lima",
+        )
+
+    def test_create_and_delete_profile(self, client, monkeypatch):
+        from api.routers import runs as runs_router
+
+        monkeypatch.setattr(runs_router, "profile_group", lambda *a, **kw: self._fake_result())
+        store.save_run(_saved_record())
+
+        res = client.post("/api/runs/abc123abc123/profile-group", json={"description": "personas de Lima"})
+        assert res.status_code == 200
+        profile = res.json()
+        assert profile["id"]
+        assert profile["origin"] == "user_defined"
+        assert profile["label"] == "Quienes consultan antes de decidir"
+        assert profile["n"] == 3
+
+        # Persistido en el record.
+        rec = client.get("/api/runs/abc123abc123").json()
+        assert len(rec["custom_profiles"]) == 1
+
+        # Borrado.
+        assert client.delete(f"/api/runs/abc123abc123/profiles/{profile['id']}").json() == {"ok": True}
+        rec = client.get("/api/runs/abc123abc123").json()
+        assert rec.get("custom_profiles") == []
+        assert client.delete(f"/api/runs/abc123abc123/profiles/{profile['id']}").status_code == 404
+
+    def test_profile_error_becomes_422(self, client, monkeypatch):
+        from api.routers import runs as runs_router
+        from src.llm.group_profile import GroupProfileResult
+
+        monkeypatch.setattr(
+            runs_router, "profile_group",
+            lambda *a, **kw: GroupProfileResult(error="Ninguna fila cumple esos criterios."),
+        )
+        store.save_run(_saved_record())
+        res = client.post("/api/runs/abc123abc123/profile-group", json={"description": "grupo imposible"})
+        assert res.status_code == 422
+        assert "Ninguna fila" in res.json()["detail"]
+
+    def test_profile_validation(self, client):
+        store.save_run(_saved_record())
+        assert client.post("/api/runs/abc123abc123/profile-group", json={"description": "ab"}).status_code == 422
+        assert client.post("/api/runs/feedbeefcafe/profile-group", json={"description": "grupo válido"}).status_code == 404

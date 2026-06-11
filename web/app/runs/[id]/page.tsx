@@ -15,9 +15,13 @@ import {
   Sparkles,
   Table2,
   Trash2,
+  UserSearch,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import type { Archetype, GroupProfile } from "@/lib/types";
+import { Input } from "@/components/ui/input";
 import { formatDate } from "@/lib/palette";
 import { AppShell } from "@/components/app-shell";
 import { WizardProgress } from "@/components/wizard/wizard-progress";
@@ -89,6 +93,23 @@ export default function RunPage() {
   const boxCols = run ? Object.keys(run.charts.box) : [];
   const [boxCol, setBoxCol] = useState<string | null>(null);
   const activeBoxCol = boxCol ?? boxCols[0] ?? null;
+
+  // Perfilado a demanda
+  const [profileDesc, setProfileDesc] = useState("");
+  const prof = useMutation({
+    mutationFn: () => api.profileGroup(id, profileDesc.trim()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["run", id] });
+      setProfileDesc("");
+      toast.success("Perfil creado");
+    },
+    onError: (e: Error) => toast.error(e.message || "No pudimos perfilar ese grupo."),
+  });
+  const delProf = useMutation({
+    mutationFn: (profileId: string) => api.deleteProfile(id, profileId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["run", id] }),
+    onError: () => toast.error("No se pudo eliminar el perfil."),
+  });
 
   if (isLoading) {
     return (
@@ -240,6 +261,63 @@ export default function RunPage() {
         </div>
       </section>
 
+      {/* Perfilado a demanda */}
+      <section className="mt-6">
+        <Card className="p-5">
+          <div className="mb-1 flex items-center gap-2">
+            <UserSearch className="size-4 text-primary" />
+            <h2 className="text-base font-semibold tracking-tight">Perfilar un grupo</h2>
+          </div>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Describe un grupo en tus palabras y la IA construye su hipótesis comportamental con la
+            misma metodología — útil aunque el grupo no coincida con ningún arquetipo.
+          </p>
+          <form
+            className="mt-3 flex flex-col gap-2 sm:flex-row"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (profileDesc.trim().length >= 3 && !prof.isPending) prof.mutate();
+            }}
+          >
+            <Input
+              value={profileDesc}
+              onChange={(e) => setProfileDesc(e.target.value)}
+              placeholder='Ej.: "quienes usan redes de madrugada y nunca toman pausas"'
+              maxLength={500}
+              disabled={prof.isPending}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={prof.isPending || profileDesc.trim().length < 3}>
+              {prof.isPending ? "Perfilando…" : "Perfilar"}
+            </Button>
+          </form>
+          {prof.isPending && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Traduciendo el grupo a filtros y construyendo la hipótesis… suele tomar ~20 s.
+            </p>
+          )}
+          {(run.custom_profiles ?? []).length > 0 && (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {(run.custom_profiles ?? []).map((p, i) => (
+                <div key={p.id} className="relative">
+                  <ArchetypeCard archetype={profileToArchetype(p, i)} index={i} />
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Eliminar perfil ${p.label}`}
+                    className="absolute -right-2 -top-2 rounded-full border bg-background shadow-sm"
+                    onClick={() => delProf.mutate(p.id)}
+                    disabled={delProf.isPending}
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </section>
+
       {/* Explore */}
       <section className="mt-6 grid gap-4 lg:grid-cols-[3fr_1.1fr]">
         <Card className="p-5">
@@ -372,6 +450,25 @@ export default function RunPage() {
       </section>
     </AppShell>
   );
+}
+
+/** Adapta un perfil a demanda a la forma que espera ArchetypeCard (misma visual, sin edición). */
+function profileToArchetype(p: GroupProfile, i: number): Archetype {
+  return {
+    cluster_id: -(i + 1),
+    label: p.label,
+    description: p.description,
+    comportamiento_principal: p.comportamiento_principal,
+    microcomportamientos: p.microcomportamientos,
+    barreras: p.barreras,
+    habilitadores: p.habilitadores,
+    oportunidades_accion: p.oportunidades_accion,
+    nivel_cautela: p.nivel_cautela,
+    cautela_reason: p.cautela_reason,
+    size: p.n,
+    prevalence: p.share,
+    color: "#8B5CF6",
+  };
 }
 
 function DownloadLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {

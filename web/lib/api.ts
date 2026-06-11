@@ -4,6 +4,7 @@ import type {
   Archetype,
   ArchetypePatch,
   DatasetResponse,
+  GroupProfile,
   QAResult,
   RunRecord,
   RunSummary,
@@ -88,6 +89,22 @@ export const api = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       }),
+    );
+  },
+
+  async profileGroup(runId: string, description: string): Promise<GroupProfile> {
+    return jsonOrThrow(
+      await fetch(`${API_BASE}/api/runs/${runId}/profile-group`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      }),
+    );
+  },
+
+  async deleteProfile(runId: string, profileId: string): Promise<{ ok: boolean }> {
+    return jsonOrThrow(
+      await fetch(`${API_BASE}/api/runs/${runId}/profiles/${profileId}`, { method: "DELETE" }),
     );
   },
 

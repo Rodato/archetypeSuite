@@ -136,6 +136,18 @@ tiene más horas de uso?" y "¿qué arquetipo reporta peor bienestar?" → ambas
 narrativa correcta. Run demo conservado en `api/_data/runs/9dba29549467.json`.
 Falta solo el chequeo visual del wizard persistido (F5 a mitad) en el navegador.
 
+## 5.5 · Mesa de trabajo (Jun 10, 2026) — ✅ COMPLETADA
+Decisión del usuario: Fase 3 en espera; primero quitar legacy y construir las 2 features de mayor palanca.
+- [x] **Limpieza:** `src/ui/` (Streamlit) eliminado (−2.6k líneas; `quality.py`/`export.py` →
+      `src/core/`), `load_sql`+sqlalchemy fuera, deps streamlit/plotly fuera (lock 92→71 paquetes),
+      código muerto del audit, `customers.csv`, panel "Selección de algoritmo".
+- [x] **Curación de arquetipos:** editar + validar cada hipótesis (PATCH con whitelist; cautela no
+      editable; label propagado a charts; badge validado; exports curados).
+- [x] **Perfilado a demanda:** grupo en lenguaje natural → filtros → evidencia → hipótesis Plural de
+      8 campos con piso de cautela por tamaño de muestra. Persistido en el run, borrable. Rescata
+      el valor del producto cuando el clustering sale débil (el caso común con datos reales).
+- **Verificado:** 158/158 tests · E2E real del perfilado contra el run demo.
+
 ## 6. Fase 3 · Pre-beta (ex Grupo B + seguridad/escala)
 
 Seguridad y robustez (nuevo, de la auditoría):
