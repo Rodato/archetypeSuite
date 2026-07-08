@@ -5,6 +5,7 @@ un modelo tomaba una decisión numérica. Ahora es una regla por umbral de silho
 con un único reintento más exhaustivo (n_init alto): determinista, gratis y auditable.
 """
 from src.config.settings import settings
+from src.core.quality import score_unavailable
 from src.models.state import PipelineState
 
 
@@ -12,11 +13,17 @@ def refinement_node(state: PipelineState) -> dict:
     refinement_count = state.get("refinement_count", 0)
     metrics = state.get("metrics") or {}
     silhouette = metrics.get("silhouette_score")
+    # NaN cuenta como 'sin métrica': sin esto, `nan < threshold` es False y el gate
+    # clasificaría una separación inválida como 'aceptable' (no refina + motivo falso).
+    if score_unavailable(silhouette):
+        silhouette = None
     threshold = settings.refinement_silhouette_threshold
 
+    # `silhouette` ya quedó normalizado arriba: None si no es usable, o un Real finito
+    # (incluye escalares NumPy). Por eso alcanza con `is not None`, no `isinstance`.
     refine = (
         refinement_count == 0
-        and isinstance(silhouette, (int, float))
+        and silhouette is not None
         and silhouette < threshold
     )
 
@@ -38,7 +45,7 @@ def refinement_node(state: PipelineState) -> dict:
 
     if refinement_count > 0:
         reason = "Ya se aplicó el reintento exhaustivo; se conserva este resultado."
-    elif isinstance(silhouette, (int, float)):
+    elif silhouette is not None:
         reason = (
             f"Separación aceptable (silhouette {silhouette:.2f} ≥ {threshold}): "
             "no hace falta refinar."

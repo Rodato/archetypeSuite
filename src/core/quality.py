@@ -1,4 +1,26 @@
+import math
+import numbers
 from typing import Dict, Optional
+
+
+def score_unavailable(score: Optional[float]) -> bool:
+    """True si el silhouette no es una métrica usable: None, no numérico, booleano o no finito.
+
+    - `numbers.Real` acepta float de Python y escalares numéricos de NumPy (np.float32/64/…);
+      `isinstance(x, (int, float))` dejaba afuera np.float32 y adentro los bool.
+    - `bool` se excluye a propósito: True/False no son un silhouette.
+    - NaN e Inf cuentan como 'no disponible' (el silhouette está acotado en [-1, 1]): sin este
+      guard, tanto `nan < t` como `nan >= t` son False, así que un NaN se colaría a la rama de
+      baja cautela / grade alto en vez de tratarse como ausente — rompería el piso de cautela
+      (que solo debe SUBIR) y el gate de refinement.
+    """
+    if isinstance(score, bool) or not isinstance(score, numbers.Real):
+        return True
+    try:
+        return not math.isfinite(float(score))
+    except (OverflowError, ValueError):
+        # p.ej. un int accidental gigantesco que no cabe en float → no es un silhouette usable.
+        return True
 
 
 # Nivel de cautela interpretativa atado a la métrica (marco metodológico, sección 9).
@@ -12,8 +34,8 @@ CAUTION_META = {
 
 
 def caution_from_silhouette(score: Optional[float]) -> str:
-    """Piso de cautela derivado del silhouette. None o <0.25 → 'alta'; <0.5 → 'media'; resto 'baja'."""
-    if score is None or score < 0.25:
+    """Piso de cautela derivado del silhouette. None/NaN o <0.25 → 'alta'; <0.5 → 'media'; resto 'baja'."""
+    if score_unavailable(score) or score < 0.25:
         return "alta"
     if score < 0.5:
         return "media"
@@ -21,7 +43,7 @@ def caution_from_silhouette(score: Optional[float]) -> str:
 
 
 def silhouette_to_quality(score: Optional[float]) -> Dict[str, str]:
-    if score is None:
+    if score_unavailable(score):
         return {
             "grade": "—",
             "label": "Sin calcular",

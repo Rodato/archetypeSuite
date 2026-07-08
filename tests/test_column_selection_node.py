@@ -111,3 +111,32 @@ def test_node_runs_llm_when_no_upstream(messy_df):
     assert out["selected_columns"] == ["age", "region"]
     assert set(out["raw_data"].keys()) == {"age", "region"}
     assert any("LLM sugiere" in msg for msg in out["log_messages"])
+
+
+def test_node_raises_clear_error_when_all_columns_filtered():
+    # id + constante + texto libre → los filtros estáticos descartan todo → 0 columnas.
+    # Antes: raw_data={} perdía las filas y optimize_k mentía "0 filas"; ahora: mensaje preciso.
+    df = pd.DataFrame({
+        "user_id": list(range(6)),
+        "country": ["MX"] * 6,
+        "notes": ["comentario larguísimo del usuario sobre el producto y su experiencia"] * 6,
+    })
+    with pytest.raises(ValueError, match="ninguna columna utilizable"):
+        column_selection_node({"raw_data": df.to_dict(orient="list"), "dataset_context": "x"})
+
+
+def test_node_raises_clear_error_fast_path_when_all_columns_filtered():
+    # Fast path (upstream selection presente) donde los filtros dejan 0 columnas → mismo guard.
+    df = pd.DataFrame({
+        "user_id": list(range(6)),
+        "country": ["MX"] * 6,
+        "notes": ["comentario larguísimo del usuario sobre el producto y su experiencia"] * 6,
+    })
+    state = {
+        "raw_data": df.to_dict(orient="list"),
+        "selected_columns": ["user_id"],
+        "static_filter_result": {"kept": [], "dropped": [], "datetime_extracted": []},
+        "column_recommendation": {"selected_columns": [], "excluded_columns": [], "summary": "—"},
+    }
+    with pytest.raises(ValueError, match="ninguna columna utilizable"):
+        column_selection_node(state)

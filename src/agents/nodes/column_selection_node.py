@@ -120,6 +120,21 @@ def suggest_columns(
     }
 
 
+def _require_columns(final_df: pd.DataFrame) -> None:
+    """Falla loud y con mensaje preciso si no quedó ninguna columna para segmentar.
+
+    Sin esto, un DataFrame N×0 se serializa a `{}` con to_dict(orient="list") y pierde
+    el conteo de filas → optimize_k lanzaría el engañoso "0 filas tras preprocesamiento"
+    cuando la causa real es "ninguna columna sobrevivió a los filtros".
+    """
+    if final_df.shape[1] == 0:
+        raise ValueError(
+            "No quedó ninguna columna utilizable para segmentar: los filtros automáticos "
+            "descartaron todas las variables (identificadores, fechas, texto libre, alta "
+            "cardinalidad o sin variación). Revisá la selección de variables."
+        )
+
+
 def column_selection_node(state: PipelineState) -> dict:
     df = pd.DataFrame(state["raw_data"])
     logs: List[str] = []
@@ -138,6 +153,7 @@ def column_selection_node(state: PipelineState) -> dict:
             logs.append("[column_selection] selected_columns no validaron — usando todas las columnas post-filtros.")
             valid = list(filtered_df.columns)
         final_df = filtered_df[valid]
+        _require_columns(final_df)
         logs.append(f"[column_selection] Usuario seleccionó {len(valid)} columnas: {', '.join(valid)}")
         return {
             "static_filter_result": upstream_static,
@@ -164,6 +180,7 @@ def column_selection_node(state: PipelineState) -> dict:
 
     selected_names = [r["name"] for r in recommendation["selected_columns"]]
     final_df = filtered_df[selected_names] if selected_names else filtered_df
+    _require_columns(final_df)
 
     logs.append(
         f"[column_selection] LLM sugiere {len(selected_names)} columnas: "

@@ -96,3 +96,31 @@ class TestSelectOptimalK:
         analysis = KOptimizer().analyze(numeric_df.values)
         assert "flat_k_curve" in analysis
         assert isinstance(analysis["flat_k_curve"], bool)
+
+
+class TestDegenerateData:
+    """Un k que colapsa a <2 clusters no debe abortar toda la búsqueda (round adversarial)."""
+
+    def test_all_identical_rows_raise_clear_error(self):
+        # np.zeros → KMeans colapsa a 1 label para todo k → antes: ValueError opaco de
+        # sklearn ('Number of labels is 1'); ahora: mensaje de dominio.
+        with pytest.raises(ValueError, match="partición válida"):
+            KOptimizer(k_min=2, k_max=3).analyze(np.zeros((10, 2)))
+
+    def test_separable_with_heavy_duplicates_still_works(self):
+        # Dos ubicaciones distintas muy repetidas: k=2 es válido → análisis normal, sin abortar.
+        data = np.vstack([np.zeros((10, 3)), np.full((10, 3), 5.0)])
+        result = KOptimizer(k_min=2, k_max=2).analyze(data)
+        assert result["optimal_k"] == 2
+        assert result["k_range"] == [2]
+        assert len(result["silhouette_scores"]) == len(result["k_range"])
+
+    def test_parallel_lists_stay_aligned(self, numeric_df):
+        # Invariante tras el filtrado de k inválidos: k_range/inertias/silhouette_scores
+        # se llenan en la MISMA iteración → siempre paralelas (best_sil_idx/select_optimal_k
+        # /_find_elbow indexan sobre ellas). Nota: el caso "algunos k colapsan y otros no"
+        # no es construible con KMeans — si un k colapsa a 1 label hay <2 puntos distintos,
+        # así que TODO k colapsa; por eso se cubre 'todos' (raise) y 'ninguno' (este).
+        result = KOptimizer(k_min=2, k_max=6).analyze(numeric_df.values)
+        assert len(result["k_range"]) == len(result["inertias"]) == len(result["silhouette_scores"])
+        assert result["k_range"] == sorted(result["k_range"])  # orden determinista preservado

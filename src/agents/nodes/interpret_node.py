@@ -8,7 +8,7 @@ from src.llm.prompts import INTERPRETATION_PROMPT
 from src.llm.provider import get_narrative_llm, invoke_json_with_retry
 from src.models.schemas import ArchetypeDescription, InterpretationResult
 from src.models.state import PipelineState
-from src.core.quality import CAUTION_ORDER, caution_from_silhouette
+from src.core.quality import CAUTION_ORDER, caution_from_silhouette, score_unavailable
 
 
 def _fallback_interpretation(n_clusters: int) -> InterpretationResult:
@@ -36,6 +36,10 @@ def interpret_node(state: PipelineState) -> dict:
     n_clusters = state["n_clusters"]
     metrics = state.get("metrics") or {}
     silhouette = metrics.get("silhouette_score")
+    # Normaliza lo no-usable (None/NaN/Inf/no numérico) a None → downstream chequea
+    # `is not None` (mismo criterio que score_unavailable, robusto a escalares NumPy).
+    if score_unavailable(silhouette):
+        silhouette = None
 
     context = state.get("dataset_context") or "No se proporcionó contexto adicional."
 
@@ -55,7 +59,7 @@ def interpret_node(state: PipelineState) -> dict:
         evidence=evidence,
         cluster_profiles=json.dumps(state["cluster_profiles"], indent=2, default=str),
         metrics=json.dumps(metrics, indent=2, default=str),
-        silhouette=f"{silhouette:.3f}" if isinstance(silhouette, (int, float)) else "no disponible",
+        silhouette=f"{silhouette:.3f}" if silhouette is not None else "no disponible",
         n_clusters=n_clusters,
         original_columns=json.dumps(state.get("original_columns", [])),
         context=context,

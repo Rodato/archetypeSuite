@@ -53,16 +53,33 @@ class KOptimizer:
         effective_k_max = min(self.k_max, max(self.k_min, n_samples // 10), n_samples - 1)
         effective_k_max = max(effective_k_max, self.k_min)
 
-        k_range: List[int] = list(range(self.k_min, effective_k_max + 1))
-        forced_k_min = len(k_range) <= 1
+        candidate_k: List[int] = list(range(self.k_min, effective_k_max + 1))
+        k_range: List[int] = []
         inertias: List[float] = []
         silhouette_scores: List[float] = []
 
-        for k in k_range:
+        for k in candidate_k:
             km = KMeans(n_clusters=k, n_init=settings.kmeans_n_init, random_state=self.random_state)
             labels = km.fit_predict(data)
+            # KMeans puede colapsar a <2 clusters reales (p.ej. muchas filas idénticas en
+            # encuestas Likert). silhouette_score levantaría ValueError; en vez de abortar
+            # TODA la búsqueda de k, se saltea ese k y se sigue con los válidos.
+            if len(set(labels)) < 2:
+                continue
+            try:
+                sil = float(silhouette_score(data, labels))
+            except ValueError:
+                continue
+            k_range.append(k)
             inertias.append(float(km.inertia_))
-            silhouette_scores.append(float(silhouette_score(data, labels)))
+            silhouette_scores.append(sil)
+
+        if not k_range:
+            raise ValueError(
+                "Ningún número de grupos produjo una partición válida: los datos podrían "
+                "tener demasiadas filas idénticas o muy poca variación tras el preprocesamiento."
+            )
+        forced_k_min = len(k_range) <= 1
 
         best_sil_idx = int(np.argmax(silhouette_scores))
         best_silhouette_k = k_range[best_sil_idx]
