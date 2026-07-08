@@ -1,4 +1,4 @@
-.PHONY: install api web dev test docker stop
+.PHONY: install api web dev test docker stop kill
 
 # Install backend (editable) + frontend deps
 install:
@@ -31,3 +31,9 @@ docker:
 
 stop:
 	docker compose down
+
+# Stop dev servers only — does NOT touch the browser or other processes
+kill:
+	@pkill -f "uvicorn api.main:app" 2>/dev/null || true
+	@pkill -f "next dev" 2>/dev/null || true
+	@echo "Servers stopped."

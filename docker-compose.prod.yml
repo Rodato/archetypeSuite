@@ -1,0 +1,61 @@
+# Stack de producción para VPS, detrás de un Cloudflare Tunnel.
+# Caddy escucha SOLO en 127.0.0.1:8090 (no pelea por 80/443 con el Traefik del host);
+# cloudflared lo expone a internet con TLS. api y web quedan dentro de la red de Docker.
+#
+# Uso:
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up --build -d
+#   cloudflared tunnel --url http://127.0.0.1:8090     # imprime la URL pública
+#   (127.0.0.1 explícito, no "localhost": Docker publica el puerto solo en IPv4.)
+#
+# Variables (en .env.prod): OPENROUTER_API_KEY.
+# El frontend se hornea con base de API RELATIVA (mismo origen) → funciona con
+# cualquier URL de túnel; por eso NO hace falta un dominio fijo en build time.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?falta OPENROUTER_API_KEY en .env.prod}
+      # Mismo origen que el frontend (todo cuelga del túnel vía Caddy) → CORS es moot.
+      ARCHETYPE_CORS_ORIGINS: "*"
+    volumes:
+      # "Mis análisis" persisten aquí; sobrevive a reinicios/redeploys.
+      - ./api/_data:/data
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        # Vacío → base de API relativa (mismo origen). El navegador pega a /api/...
+        # sobre la URL del túnel, sea cual sea.
+        NEXT_PUBLIC_API_URL: ""
+    expose:
+      - "3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  caddy:
+    # Pinneado (no `2-alpine` flotante): el módulo `encode` de Caddy ya rompió el
+    # streaming SSE dos veces en su historia; fijar la versión evita regresiones sorpresa.
+    image: caddy:2.11.4-alpine
+    ports:
+      # Solo localhost: cloudflared se conecta aquí; nada queda expuesto al exterior.
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

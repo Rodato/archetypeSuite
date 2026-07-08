@@ -1,4 +1,7 @@
 .env
+.env.prod
+# Caddyfile real lleva el hash de basic auth → no al repo. Se versiona Caddyfile.example.
+/Caddyfile
 __pycache__/
 *.pyc
 *.pyo

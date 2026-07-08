@@ -11,8 +11,13 @@ import type {
   SuggestResponse,
 } from "./types";
 
+// En prod detrás del proxy/túnel se hornea NEXT_PUBLIC_API_URL="" → base relativa
+// (mismo origen): robusto ante URLs de túnel que cambian y sin CORS. Si la var NO
+// está definida (dev local) → localhost:8000. OJO: "" es un valor válido (base vacía),
+// por eso NO usamos `|| fallback` (colapsaría "" al default).
+const _apiEnv = process.env.NEXT_PUBLIC_API_URL;
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
+  _apiEnv === undefined ? "http://localhost:8000" : _apiEnv.replace(/\/$/, "");
 
 async function jsonOrThrow<T>(res: Response): Promise<T> {
   if (!res.ok) {

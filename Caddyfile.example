@@ -1,0 +1,31 @@
+# Plantilla del reverse proxy. Copiá a `Caddyfile` (gitignoreado) y pegá el hash real.
+#   cp Caddyfile.example Caddyfile   # luego reemplazá PEGA_EL_HASH_AQUI
+#
+# Reverse proxy interno detrás del Cloudflare Tunnel.
+# NO hace TLS (lo termina Cloudflare en el edge); escucha en HTTP en :8090 dentro
+# de la red de Docker. Su único trabajo: basic auth + separar /api (backend) del
+# resto (frontend) para que todo cuelgue del mismo origen.
+:8090 {
+	# Sin `encode gzip` a propósito: Cloudflare comprime en el edge (y NO toca
+	# text/event-stream), así el SSE del chat agéntico nunca corre riesgo de
+	# bufferearse por compresión de origen.
+
+	# --- Basic auth para todo el sitio ---
+	# Genera el hash con:
+	#   docker run --rm caddy:2.11.4-alpine caddy hash-password --plaintext 'TU_PASSWORD'
+	# y pega el resultado ($2a$14$...) reemplazando PEGA_EL_HASH_AQUI.
+	basic_auth {
+		equipo PEGA_EL_HASH_AQUI
+	}
+
+	# --- API FastAPI: todas sus rutas cuelgan de /api ---
+	# `/api` pelado + `/api/*` (el matcher con barra no cubre la ruta exacta sin barra).
+	@api path /api /api/*
+	reverse_proxy @api api:8000 {
+		# SSE del chat agéntico: sin buffering para que el stream fluya en vivo.
+		flush_interval -1
+	}
+
+	# --- Frontend Next.js: todo lo demás ---
+	reverse_proxy web:3000
+}

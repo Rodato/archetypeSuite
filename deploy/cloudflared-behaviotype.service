@@ -1,0 +1,23 @@
+# Cloudflare Quick Tunnel para behaviotype.
+# Instalar en la VPS:
+#   sudo cp deploy/cloudflared-behaviotype.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now cloudflared-behaviotype
+# La URL pública (https://xxxx.trycloudflare.com) queda en el journal:
+#   journalctl -u cloudflared-behaviotype -o cat | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | tail -1
+# OJO: un quick tunnel genera una URL NUEVA en cada arranque. Para URL estable
+# hace falta un named tunnel (dominio en Cloudflare).
+[Unit]
+Description=Cloudflare Quick Tunnel — behaviotype (127.0.0.1:8090)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 127.0.0.1 explícito (no "localhost"): Docker publica el puerto solo en IPv4.
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8090
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
