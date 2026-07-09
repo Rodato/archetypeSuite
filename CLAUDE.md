@@ -18,19 +18,27 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
   **curables** (el equipo edita/valida). La evidencia que consumen se calcula determinísticamente.
 
 ## Arquitectura
-- **Pipeline LangGraph (10 nodos):** ingest → profile → column_selection(LLM) → preprocess(LLM)
+- **Pipeline LangGraph (10 nodos):** ingest → profile → column_selection(LLM) → preprocess(determinista)
   → optimize_k → select(KMeans fijo) → cluster → evaluate → interpret(LLM) → refinement(gate determinista).
-  Nodos LLM con `invoke_json_with_retry` + fallback determinista. Refinamiento máx 2 iteraciones.
+  Nodos LLM restantes (`column_selection`, `interpret`) con `invoke_json_with_retry` + fallback
+  determinista. Refinamiento máx 2 iteraciones.
+  - `preprocess`: **determinista** (sin LLM desde jul 2026, `src/data/preprocess_strategy.py`):
+    median / one-hot / **standard** (NO auto-robust: las colas de conteos comportamentales son
+    señal, no ruido — robust colapsaba el demo). Camino **ordinal** para escalas de texto vía
+    `ordinal_mappings` (mapea por orden curado → rango → escala, preservando el gradiente que
+    one-hot destruye) — hoy vacío; lo poblará el wizard curado (paso 2). Fallback a estrategia segura.
   - `optimize_k`: regla de dos regímenes (`select_optimal_k`): curva de silhouette plana
     (max−min < 0.03) → mejor k ≤ 4 + flag `flat_k_curve` (evita el k=10 por fragmentación);
-    con pico real → argmax. Cap de k: n//10 (dentro de `KOptimizer`).
+    con pico real → argmax. Cap de k: n//10 (dentro de `KOptimizer`). Un k degenerado (KMeans
+    colapsa a <2) se saltea, no aborta la búsqueda.
   - `interpret`: recibe **evidencia diferenciadora por cluster** calculada determinísticamente
     (`src/core/evidence.py`: σ vs total + categorías sobre-representadas) y DEBE citar cifras.
-    Piso de cautela determinista por silhouette (`caution_from_silhouette` — solo sube, nunca baja).
+    Piso de cautela determinista por silhouette (`caution_from_silhouette` — solo sube, nunca baja;
+    robusto a NaN/Inf vía `score_unavailable`).
   - `refinement`: **gate determinista** (sin LLM): silhouette < `refinement_silhouette_threshold`
     (0.25) en la primera pasada → 1 reintento con `n_init=30`; si no, termina. El executor
     re-fuerza `random_state` siempre.
-- **Modelos (OpenRouter):** Claude Sonnet 4.5 (`llm_model`: selección, preproceso, chat agéntico,
+- **Modelos (OpenRouter):** Claude Sonnet 4.5 (`llm_model`: selección de columnas, chat agéntico,
   filtros de perfilado) · x-ai/grok-4.3 (`llm_narrative_model`: interpret, narrativa del chat,
   perfilado). Los modelos a veces envuelven JSON en markdown → usar siempre `extract_json()`.
 - **Chat agéntico** (`src/llm/chat_agent.py` + `chat_tools.py`): loop ReAct hand-rolled,
@@ -65,7 +73,7 @@ No actualizar por: bugfixes menores, ajustes de umbrales, cambios de copy.
 ## Cómo ejecutar
 - **Dev:** `make dev` (API :8000 + Next :3000) · o `docker compose up --build`. Requiere
   `OPENROUTER_API_KEY` en `.env` (plantilla en `.env.example`).
-- **Tests backend:** `python3 -m pytest tests/ -v` → 186/186 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
+- **Tests backend:** `python3 -m pytest tests/ -v` → 225/225 · **Typecheck front:** `cd web && pnpm exec tsc --noEmit`
 - **CI:** `.github/workflows/ci.yml` (pytest desde `requirements.lock` + tsc + next build) en cada push/PR.
 - **Lockfile:** regenerar con `source .venv/bin/activate && pip freeze --exclude-editable > requirements.lock`
   (lo consumen Docker y CI — el determinismo depende de los pins).
@@ -99,7 +107,9 @@ Ver **`PLAN-LANZAMIENTO.md`** (tracking por checkboxes): Fases 0-2 ✅ (quick wi
 demo-ready) · Mesa de trabajo ✅ (curación + perfilado) · Arquitectura de agentes pasos 0-3 ✅ ·
 **Fase 3 (pre-beta: hardening de upload, raw_data fuera del GET, Postgres, Clerk, comparación de
 corridas, PDF) EN ESPERA** por decisión del usuario · backlog de hallazgos menores en §7.
-La arquitectura de agentes quedó completa (pasos 0-3 + gate + streaming live).
+La arquitectura de agentes quedó completa (pasos 0-3 + gate + streaming live). **Preprocess pasó a
+determinista** (jul 8); pendiente el **paso 2**: wizard curado de ordinales (LLM propone el orden de
+escalas de texto → humano confirma → puebla `ordinal_mappings`).
 
 ## Historial de rounds (detalle en git log)
 - **May 6-7:** polish UI Streamlit + limpieza foundational (80 tests).
@@ -113,3 +123,7 @@ La arquitectura de agentes quedó completa (pasos 0-3 + gate + streaming live).
 - **Jun 10 (tarde):** limpieza legacy (−2.6k líneas, lock 92→71) + curación de arquetipos +
   perfilado a demanda (158) → **arquitectura de agentes** pasos 0-3: k dos regímenes, chat agéntico
   con tools deterministas, evidencia en interpret, traza en UI, refinement → gate determinista, streaming live del agente por SSE (186).
+- **Jul 8:** despliegue a VPS (`behaviotype`, Cloudflare tunnel + Caddy) → **hardening adversarial**
+  del pipeline (guard NaN de silhouette ×4 sitios, KOptimizer resiliente a k degenerado, guard de
+  0-columnas) → **preprocess determinista** (último LLM fuera de la capa numérica) + camino ordinal
+  cableado para escalas de texto. Revisión cross-vendor codex+kimi por round (225).
