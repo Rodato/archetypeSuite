@@ -106,3 +106,57 @@ class TestDataPreprocessor:
         }
         result_df, metadata = preprocessor.preprocess(df, strategy)
         assert result_df.isnull().sum().sum() == 0
+
+    def test_ordinal_mapping_encodes_by_given_order_not_alphabetical(self):
+        # Camino ordinal (paso 1): respeta el orden dado (Nunca<A veces<Frecuentemente<Siempre),
+        # a diferencia de 'label' que ordenaba alfabéticamente (Nunca=2) y no escalaba.
+        df = pd.DataFrame({
+            "num": [1.0, 2.0, 3.0, 4.0],
+            "frec": ["Siempre", "Nunca", "A veces", "Frecuentemente"],
+        })
+        strategy = {
+            "drop_columns": [], "imputation": "median", "scaling": "standard",
+            "encoding": "onehot", "dimensionality_reduction": None,
+            "ordinal_mappings": {"frec": ["Nunca", "A veces", "Frecuentemente", "Siempre"]},
+        }
+        result_df, metadata = DataPreprocessor().preprocess(df, strategy)
+        assert metadata["ordinal_encoded"] == ["frec"]
+        assert not any(c.startswith("frec_") for c in result_df.columns)  # NO one-hot
+        # Orden preservado tras escalar (monótono): Nunca (fila 1) < Siempre (fila 0).
+        assert result_df["frec"].iloc[1] < result_df["frec"].iloc[0]
+
+    def test_ordinal_mapping_with_duplicate_order_dedupes_first_occurrence(self):
+        # Regresión (round adversarial paso 1): un orden con duplicados NO debe invertir
+        # la escala. Dedup por primera aparición → Bajo(0) < Medio(1) < Alto(2).
+        df = pd.DataFrame({"nivel": ["Bajo", "Medio", "Alto"]})
+        strategy = {
+            "drop_columns": [], "imputation": "median", "scaling": "standard",
+            "encoding": "onehot", "dimensionality_reduction": None,
+            "ordinal_mappings": {"nivel": ["Bajo", "Medio", "Bajo", "Alto"]},  # 'Bajo' duplicado
+        }
+        result_df, metadata = DataPreprocessor().preprocess(df, strategy)
+        assert metadata["ordinal_encoded"] == ["nivel"]
+        assert result_df["nivel"].iloc[0] < result_df["nivel"].iloc[1] < result_df["nivel"].iloc[2]
+
+    def test_ordinal_mapping_handles_string_dtype(self):
+        # dtype='string' (pandas moderno) también entra al camino ordinal, no queda crudo.
+        df = pd.DataFrame({"nivel": pd.Series(["Bajo", "Medio", "Alto"], dtype="string")})
+        strategy = {
+            "drop_columns": [], "imputation": "median", "scaling": "standard",
+            "encoding": "onehot", "dimensionality_reduction": None,
+            "ordinal_mappings": {"nivel": ["Bajo", "Medio", "Alto"]},
+        }
+        result_df, metadata = DataPreprocessor().preprocess(df, strategy)
+        assert metadata["ordinal_encoded"] == ["nivel"]
+        assert result_df["nivel"].iloc[0] < result_df["nivel"].iloc[2]  # orden preservado
+
+    def test_ordinal_mapping_empty_falls_back_to_onehot(self):
+        df = pd.DataFrame({"num": [1.0, 2.0, 3.0], "cat": ["x", "y", "z"]})
+        strategy = {
+            "drop_columns": [], "imputation": "median", "scaling": "standard",
+            "encoding": "onehot", "dimensionality_reduction": None,
+            "ordinal_mappings": {},
+        }
+        result_df, metadata = DataPreprocessor().preprocess(df, strategy)
+        assert metadata["ordinal_encoded"] == []
+        assert any(c.startswith("cat_") for c in result_df.columns)

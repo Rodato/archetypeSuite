@@ -196,35 +196,6 @@ Responde SOLO con un objeto JSON:
 }}
 """
 
-PREPROCESSING_PROMPT = """\
-Eres un experto en ciencia de datos. Analiza el siguiente perfil de datos y decide \
-la estrategia de preprocesamiento óptima para clustering.
-
-## Perfil de Datos
-{profile}
-
-## Contexto del Dataset
-{context}
-
-## Instrucciones
-Decide:
-1. Qué columnas eliminar (IDs, constantes, texto de alta cardinalidad, etc.)
-2. Estrategia de imputación: "mean", "median" o "most_frequent" (para numéricas prefiere median)
-3. Método de escalado: "standard", "minmax" o "robust"
-4. Codificación para categóricas: "onehot" o "label"
-5. Reducción de dimensionalidad: deja SIEMPRE `null`. No usamos PCA (colapsa la estructura y distorsiona la calidad).
-
-Responde SOLO con un objeto JSON:
-{{
-  "drop_columns": [...],
-  "imputation": "median",
-  "scaling": "...",
-  "encoding": "...",
-  "dimensionality_reduction": null,
-  "reasoning": "Breve explicación de tus decisiones"
-}}
-"""
-
 INTERPRETATION_PROMPT = """\
 ## MARCO METODOLÓGICO (autoridad — síguelo al pie de la letra)
 {methodology}

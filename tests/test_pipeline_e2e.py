@@ -21,15 +21,14 @@ def _make_mock_llm(responses: list) -> MagicMock:
     return llm
 
 
-def _preprocess_response() -> str:
-    return json.dumps({
-        "drop_columns": ["customer_id"],
-        "imputation": "median",
-        "scaling": "standard",
-        "encoding": "onehot",
-        "dimensionality_reduction": None,
-        "reasoning": "Test fixture",
-    })
+def _upstream_selection(df: pd.DataFrame) -> dict:
+    """Estado que dispara el fast path de column_selection (sin LLM) → e2e hermético."""
+    cols = list(df.columns)
+    return {
+        "selected_columns": cols,
+        "static_filter_result": {"kept": cols, "dropped": [], "datetime_extracted": []},
+        "column_recommendation": {"selected_columns": [], "excluded_columns": [], "summary": "test"},
+    }
 
 
 def _interpret_response(n_clusters: int) -> str:
@@ -73,7 +72,7 @@ class TestPipelineEndToEnd:
     def test_full_pipeline_with_mocked_llms(self, sample_df):
         graph = compile_graph()
 
-        json_llm = _make_mock_llm([_preprocess_response()])
+        # preprocess ya es determinista (sin LLM) → solo se mockea la capa narrativa (interpret).
         narrative_llm = _make_mock_llm([
             _interpret_response(n_clusters=10),
         ])
@@ -84,10 +83,11 @@ class TestPipelineEndToEnd:
             "dataset_context": "Dataset de prueba",
             "refinement_count": 0,
             "log_messages": [],
+            # Fast path de column_selection (sin LLM) → e2e hermético, sin red.
+            **_upstream_selection(sample_df),
         }
 
-        with patch("src.agents.nodes.preprocess_node.get_llm_json", return_value=json_llm), \
-             patch("src.agents.nodes.interpret_node.get_narrative_llm", return_value=narrative_llm):
+        with patch("src.agents.nodes.interpret_node.get_narrative_llm", return_value=narrative_llm):
             final_state = None
             for state in graph.stream(initial_state, stream_mode="values"):
                 final_state = state
@@ -119,7 +119,6 @@ class TestPipelineEndToEnd:
 
         # El gate determinista decide el refinamiento según silhouette (sin LLM):
         # con datos aleatorios de 50 filas la separación es débil → refina 1 vez máximo.
-        json_llm = _make_mock_llm([_preprocess_response()] * 10)
         narrative_llm = _make_mock_llm([_interpret_response(n_clusters=10)] * 10)
 
         initial_state = {
@@ -127,10 +126,10 @@ class TestPipelineEndToEnd:
             "file_name": "customers.csv",
             "refinement_count": 0,
             "log_messages": [],
+            **_upstream_selection(sample_df),
         }
 
-        with patch("src.agents.nodes.preprocess_node.get_llm_json", return_value=json_llm), \
-             patch("src.agents.nodes.interpret_node.get_narrative_llm", return_value=narrative_llm):
+        with patch("src.agents.nodes.interpret_node.get_narrative_llm", return_value=narrative_llm):
             final_state = None
             for state in graph.stream(initial_state, stream_mode="values"):
                 final_state = state

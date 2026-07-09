@@ -1,59 +1,48 @@
-import json
-
 import pandas as pd
 
+from src.data.preprocess_strategy import derive_preprocess_strategy
 from src.data.preprocessor import DataPreprocessor
-from src.llm.prompts import PREPROCESSING_PROMPT
-from src.llm.provider import get_llm_json, invoke_json_with_retry
-from src.models.schemas import PreprocessingDecision
 from src.models.state import PipelineState
+
+# Estrategia SEGURA por defecto si la determinista fallara sobre datos públicos raros.
+_SAFE_STRATEGY = {
+    "drop_columns": [],
+    "imputation": "median",
+    "scaling": "standard",
+    "encoding": "onehot",
+    "dimensionality_reduction": None,
+    "ordinal_mappings": {},
+}
 
 
 def preprocess_node(state: PipelineState) -> dict:
-    llm = get_llm_json()
+    """Preprocesamiento DETERMINISTA (sin LLM): misma entrada → misma estrategia → mismos clusters.
 
-    profile_str = json.dumps(state["profile"], indent=2, default=str)
-    context = state.get("dataset_context") or "No se proporcionó contexto adicional."
-    prompt = PREPROCESSING_PROMPT.format(profile=profile_str, context=context)
-
-    decision, error = invoke_json_with_retry(
-        llm, prompt, PreprocessingDecision, PreprocessingDecision
-    )
-
-    strategy = {
-        "drop_columns": decision.drop_columns,
-        "imputation": decision.imputation,
-        "scaling": decision.scaling,
-        "encoding": decision.encoding,
-        "dimensionality_reduction": decision.dimensionality_reduction,
-    }
-
+    Antes un LLM decidía scaling/encoding/drops (el último modelo dentro de la capa que
+    promete determinismo). Ahora la estrategia se deriva de los datos; el único insumo
+    semántico —qué texto es ordinal y en qué orden— llega curado en `ordinal_mappings`.
+    """
     df = pd.DataFrame(state["raw_data"])
     original_cols = df.columns.tolist()
+    ordinal_mappings = state.get("ordinal_mappings") or {}
+
+    strategy = derive_preprocess_strategy(df, ordinal_mappings)
     preprocessor = DataPreprocessor()
 
     logs: list = []
     try:
-        processed_df, _ = preprocessor.preprocess(df, strategy)
-        logs.append(
-            f"[preprocess] LLM strategy: scaling={decision.scaling}, "
-            f"encoding={decision.encoding}, dropped={decision.drop_columns}"
-        )
-    except Exception as exc:  # noqa: BLE001 — fall back to a known-safe strategy
-        safe_strategy = {
-            "drop_columns": [],
-            "imputation": "median",
-            "scaling": "standard",
-            "encoding": "onehot",
-            "dimensionality_reduction": None,
-        }
-        processed_df, _ = preprocessor.preprocess(df, safe_strategy)
-        strategy = safe_strategy
-        logs.append(f"[preprocess] Estrategia del LLM falló ({exc}); se usó una estrategia segura por defecto.")
+        processed_df, meta = preprocessor.preprocess(df, strategy)
+    except Exception as exc:  # noqa: BLE001 — red de seguridad para datos públicos arbitrarios
+        processed_df, meta = preprocessor.preprocess(df, dict(_SAFE_STRATEGY))
+        strategy = dict(_SAFE_STRATEGY)
+        logs.append(f"[preprocess] Estrategia determinista falló ({exc}); se usó la segura por defecto.")
 
+    ordinal_applied = meta.get("ordinal_encoded") or []
+    logs.append(
+        f"[preprocess] Estrategia determinista: scaling={strategy['scaling']}, encoding=onehot"
+        + (f", ordinales={ordinal_applied}" if ordinal_applied else "")
+    )
     logs.append(f"[preprocess] Result shape: {processed_df.shape}")
-    if error:
-        logs.insert(0, f"[preprocess] LLM falló, usando defaults. Error: {error}")
 
     return {
         "preprocess_strategy": strategy,

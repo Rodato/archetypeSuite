@@ -46,7 +46,32 @@ class DataPreprocessor:
             df[col] = df[col].astype(str)
 
         numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        categorical_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+        # Incluye "string" (StringDtype de pandas): sin esto, una columna dtype='string' se
+        # saltea de categorical_cols → ni one-hot ni ordinal → strings crudos a KMeans → crash.
+        categorical_cols = df.select_dtypes(include=["object", "category", "string"]).columns.tolist()
+
+        # --- Ordinal-en-texto: mapear por el orden curado → rango entero (feature numérica) ---
+        # Vacío por defecto ⇒ toda categórica es nominal (one-hot). El mapa lo provee el wizard
+        # (paso 2); acá solo se aplica. La columna pasa a numérica: se imputa (median) y se escala,
+        # preservando el gradiente ordinal en la distancia de KMeans (a diferencia de one-hot).
+        ordinal_mappings = strategy.get("ordinal_mappings") or {}
+        ordinal_applied: list[str] = []
+        for col in sorted(ordinal_mappings, key=str):  # orden estable → metadata/log deterministas
+            order = ordinal_mappings[col]
+            if col not in categorical_cols or not isinstance(order, (list, tuple)) or not order:
+                continue
+            # Dedup por PRIMERA aparición: un orden con duplicados no debe invertir la escala
+            # (con dict-comprehension la última aparición pisaba y daba Bajo>Medio).
+            rank: dict[str, int] = {}
+            for cat in order:
+                rank.setdefault(str(cat), len(rank))
+            mapped = df[col].astype(str).map(rank)  # desconocidos/faltantes → NaN (los cubre la imputación)
+            if mapped.notna().any():  # al menos un valor cae dentro del orden dado
+                df[col] = mapped.astype(float)
+                categorical_cols.remove(col)
+                numeric_cols.append(col)
+                ordinal_applied.append(col)
+        metadata["ordinal_encoded"] = ordinal_applied
 
         # --- Impute missing values ---
         raw_imp = str(strategy.get("imputation", "median")).lower()

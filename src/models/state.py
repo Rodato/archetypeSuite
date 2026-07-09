@@ -20,6 +20,9 @@ class PipelineState(TypedDict, total=False):
     preprocess_strategy: Dict[str, Any]
     processed_data: Dict[str, list]
     original_columns: List[str]
+    # Mapa ordinal curado {columna: [categorías en orden]} que puebla el wizard (paso 2).
+    # Vacío/ausente ⇒ toda categórica de texto va a one-hot (tratada como nominal).
+    ordinal_mappings: Dict[str, list]
 
     # K optimization
     optimal_k: int

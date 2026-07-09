@@ -20,15 +20,6 @@ class ColumnRelevanceDecision(BaseModel):
     summary: str = ""
 
 
-class PreprocessingDecision(BaseModel):
-    drop_columns: List[str] = Field(default_factory=list)
-    imputation: str = "median"
-    scaling: str = "standard"
-    encoding: str = "onehot"
-    dimensionality_reduction: Optional[dict] = None
-    reasoning: str = ""
-
-
 class ArchetypeDescription(BaseModel):
     """Arquetipo como hipótesis comportamental (8 campos del marco metodológico Plural)."""
     cluster_id: int
